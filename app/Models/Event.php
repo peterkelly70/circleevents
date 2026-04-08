@@ -101,4 +101,22 @@ class Event extends Model
     {
         return Str::headline($this->visibility);
     }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    public function googleMapsUrl(): ?string
+    {
+        if ($this->hasCoordinates()) {
+            return 'https://www.google.com/maps/search/?api=1&query=' . $this->latitude . ',' . $this->longitude;
+        }
+
+        if ($this->venue_address) {
+            return 'https://www.google.com/maps/search/?api=1&query=' . urlencode($this->venue_address);
+        }
+
+        return null;
+    }
 }

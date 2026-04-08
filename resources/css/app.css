@@ -44,4 +44,12 @@
     .google-place-widget::part(prediction-item-match) {
         color: rgb(252 211 77);
     }
+
+    .event-map {
+        min-height: 20rem;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 }

@@ -11,6 +11,22 @@ const googleMapsApiKey = document
     ?.getAttribute('content')
     ?.trim();
 
+const waitForGoogleMapsCore = (attempt = 0) => new Promise((resolve, reject) => {
+    if (window.google?.maps?.Map) {
+        resolve(window.google.maps);
+        return;
+    }
+
+    if (attempt > 100) {
+        reject(new Error('Google Maps failed to load.'));
+        return;
+    }
+
+    window.setTimeout(() => {
+        waitForGoogleMapsCore(attempt + 1).then(resolve).catch(reject);
+    }, 150);
+});
+
 const waitForGoogleMaps = (attempt = 0) => new Promise((resolve, reject) => {
     if (window.google?.maps?.places?.PlaceAutocompleteElement) {
         resolve(window.google.maps);
@@ -113,6 +129,62 @@ const initPlaceAutocomplete = async () => {
     });
 };
 
+const initEventMaps = async () => {
+    if (!googleMapsApiKey) {
+        return;
+    }
+
+    const mapNodes = document.querySelectorAll('[data-event-map]');
+
+    if (!mapNodes.length) {
+        return;
+    }
+
+    const maps = await waitForGoogleMapsCore();
+
+    mapNodes.forEach((node) => {
+        if (node.dataset.mapReady === 'true') {
+            return;
+        }
+
+        const latitude = Number.parseFloat(node.dataset.eventLatitude ?? '');
+        const longitude = Number.parseFloat(node.dataset.eventLongitude ?? '');
+
+        if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+            return;
+        }
+
+        const position = { lat: latitude, lng: longitude };
+        const map = new maps.Map(node, {
+            center: position,
+            zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#1c1917' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#d6d3d1' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#0c0a09' }] },
+                { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+                { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#44403c' }] },
+                { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f766e' }] },
+            ],
+        });
+
+        new maps.Marker({
+            position,
+            map,
+            title: node.dataset.eventTitle ?? 'Event location',
+        });
+
+        node.dataset.mapReady = 'true';
+    });
+};
+
 initPlaceAutocomplete().catch((error) => {
+    console.error(error);
+});
+
+initEventMaps().catch((error) => {
     console.error(error);
 });

@@ -28,6 +28,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Attendees with RSVP status `going` receive reminder emails before upcoming events
 - Event discussions, organization posts, and organization member messages support BBCode-style formatting and optional image attachments
 - Event creation uses separate date and time controls and supports Google Maps Places-powered location lookup when `GOOGLE_MAPS_API_KEY` is configured
+- Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
 
 ## Data Model
 - `users`

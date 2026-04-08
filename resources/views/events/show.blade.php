@@ -27,6 +27,9 @@
                     <p class="mt-2 text-xl font-bold text-stone-100">{{ $event->venue_name }}</p>
                     <p class="mt-2 text-stone-400">{{ $event->venue_address }}</p>
                     <p class="text-stone-400">{{ $event->city }}</p>
+                    @if ($event->googleMapsUrl())
+                        <a href="{{ $event->googleMapsUrl() }}" target="_blank" rel="noreferrer" class="mt-3 inline-flex text-sm font-semibold text-emerald-400">Open in Google Maps</a>
+                    @endif
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Organizer</h2>
@@ -35,6 +38,24 @@
                     <a href="{{ route('organizations.show', $event->organization) }}" class="mt-3 inline-flex text-sm font-semibold text-amber-300">View organization</a>
                 </div>
             </div>
+
+            @if ($event->hasCoordinates())
+                <div class="mt-8 border-t border-white/10 pt-8">
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Map</h2>
+                        @if ($event->googleMapsUrl())
+                            <a href="{{ $event->googleMapsUrl() }}" target="_blank" rel="noreferrer" class="text-sm font-semibold text-emerald-400">Directions</a>
+                        @endif
+                    </div>
+                    <div
+                        class="event-map mt-4"
+                        data-event-map
+                        data-event-title="{{ $event->title }}"
+                        data-event-latitude="{{ $event->latitude }}"
+                        data-event-longitude="{{ $event->longitude }}"
+                    ></div>
+                </div>
+            @endif
             <div class="mt-8 border-t border-white/10 pt-8">
                 <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Description</h2>
                 <div class="prose prose-invert mt-4 max-w-none text-stone-300">
