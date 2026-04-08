@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Support\ImageUploads;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -95,11 +96,21 @@ class OrganizationController extends Controller
         $validated = $this->validatedOrganizationData($request);
 
         if ($request->hasFile('avatar')) {
-            $validated['avatar_path'] = $request->file('avatar')->store('organization-avatars', 'public');
+            $validated['avatar_path'] = ImageUploads::storeResizedPublicImage(
+                $request->file('avatar'),
+                'organization-avatars',
+                512,
+                512,
+            );
         }
 
         if ($request->hasFile('banner')) {
-            $validated['banner_path'] = $request->file('banner')->store('organization-banners', 'public');
+            $validated['banner_path'] = ImageUploads::storeResizedPublicImage(
+                $request->file('banner'),
+                'organization-banners',
+                1560,
+                1024,
+            );
         }
 
         $organization = Organization::create([
@@ -129,7 +140,12 @@ class OrganizationController extends Controller
                 Storage::disk('public')->delete($organization->avatar_path);
             }
 
-            $validated['avatar_path'] = $request->file('avatar')->store('organization-avatars', 'public');
+            $validated['avatar_path'] = ImageUploads::storeResizedPublicImage(
+                $request->file('avatar'),
+                'organization-avatars',
+                512,
+                512,
+            );
         }
 
         if ($request->hasFile('banner')) {
@@ -137,7 +153,12 @@ class OrganizationController extends Controller
                 Storage::disk('public')->delete($organization->banner_path);
             }
 
-            $validated['banner_path'] = $request->file('banner')->store('organization-banners', 'public');
+            $validated['banner_path'] = ImageUploads::storeResizedPublicImage(
+                $request->file('banner'),
+                'organization-banners',
+                1560,
+                1024,
+            );
         }
 
         $organization->update($validated);
