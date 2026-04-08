@@ -64,7 +64,7 @@ class EventController extends Controller
             'timezone' => ['required', 'string', 'max:64'],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'max:12288'],
         ]);
 
         $organization = Organization::findOrFail($validated['organization_id']);

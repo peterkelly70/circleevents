@@ -26,8 +26,8 @@ class OrganizationController extends Controller
             'description' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:120'],
             'website_url' => ['nullable', 'url', 'max:255'],
-            'avatar' => ['nullable', 'image', 'max:3072'],
-            'banner' => ['nullable', 'image', 'max:6144'],
+            'avatar' => ['nullable', 'image', 'max:12288'],
+            'banner' => ['nullable', 'image', 'max:20480'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
         ]);
     }
