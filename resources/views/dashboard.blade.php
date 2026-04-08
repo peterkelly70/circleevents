@@ -163,7 +163,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('organizations.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('organizations.store') }}" enctype="multipart/form-data" novalidate class="mt-5 space-y-4">
                         @csrf
                         <div>
                             <label class="text-sm font-medium text-stone-300" for="org-name">Name</label>
@@ -212,7 +212,7 @@
                             </select>
                             <x-input-error :messages="$errors->get('visibility')" class="mt-2" />
                         </div>
-                        <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Create organization</button>
+                        <button type="submit" class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Create organization</button>
                     </form>
                 </section>
 
