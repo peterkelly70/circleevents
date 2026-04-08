@@ -18,6 +18,48 @@
                     </div>
                 @endif
 
+                <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-100">Following feed</h3>
+                            <p class="mt-1 text-sm text-stone-400">Recent posts and announcements from the organizations you follow.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-4">
+                        @forelse ($feedItems as $item)
+                            <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="flex items-center gap-3 text-xs uppercase tracking-[0.2em]">
+                                            <span class="{{ $item->type === 'message' ? 'text-emerald-300' : 'text-amber-300' }}">
+                                                {{ $item->type === 'message' ? 'Member message' : 'Community post' }}
+                                            </span>
+                                            <a href="{{ route('organizations.show', $item->organization) }}" class="text-stone-500 hover:text-stone-300">
+                                                {{ $item->organization->name }}
+                                            </a>
+                                        </div>
+
+                                        @if ($item->title)
+                                            <h4 class="mt-3 text-xl font-bold text-stone-100">{{ $item->title }}</h4>
+                                        @endif
+
+                                        <p class="mt-2 text-sm text-stone-400">By {{ $item->author->name }}</p>
+                                    </div>
+
+                                    <p class="shrink-0 text-xs uppercase tracking-[0.2em] text-stone-500">{{ $item->created_at->diffForHumans() }}</p>
+                                </div>
+
+                                <p class="mt-4 whitespace-pre-line text-stone-300">{{ $item->body }}</p>
+                            </div>
+                        @empty
+                            <div class="rounded-3xl border border-dashed border-white/15 p-5 text-sm text-stone-400">
+                                No feed activity yet. Follow more organizations or wait for new posts and announcements.
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+
                 <section class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-stone-200">
                     <div class="flex items-center justify-between gap-4">
                         <div>
