@@ -36,7 +36,7 @@ class Organization extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withPivot('role')
+            ->withPivot('role', 'email_opt_out_at', 'email_opt_out_token')
             ->withTimestamps();
     }
 
@@ -58,6 +58,11 @@ class Organization extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(OrganizationMessage::class)->latest();
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class)->latest();
     }
 
     public function avatarUrl(): ?string

@@ -7,7 +7,9 @@ use App\Models\Organization;
 use App\Models\OrganizationMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class OrganizationMessageController extends Controller
 {
@@ -32,7 +34,30 @@ class OrganizationMessageController extends Controller
         $organization->loadMissing('members');
 
         foreach ($organization->members->unique('email') as $member) {
-            Mail::to($member->email)->send(new OrganizationAnnouncementMail($message, $member));
+            $membership = DB::table('organization_user')
+                ->where('organization_id', $organization->id)
+                ->where('user_id', $member->id)
+                ->first();
+
+            if (! $membership || $membership->email_opt_out_at) {
+                continue;
+            }
+
+            if (! $membership->email_opt_out_token) {
+                $token = Str::random(48);
+
+                DB::table('organization_user')
+                    ->where('organization_id', $organization->id)
+                    ->where('user_id', $member->id)
+                    ->update([
+                        'email_opt_out_token' => $token,
+                        'updated_at' => now(),
+                    ]);
+
+                $membership->email_opt_out_token = $token;
+            }
+
+            Mail::to($member->email)->send(new OrganizationAnnouncementMail($message, $member, $membership->email_opt_out_token));
         }
 
         return redirect()

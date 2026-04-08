@@ -7,4 +7,9 @@
         View the organization page:
         <a href="{{ route('organizations.show', $messageRecord->organization) }}">{{ route('organizations.show', $messageRecord->organization) }}</a>
     </p>
+
+    <p>
+        Stop future email messages from this organization:
+        <a href="{{ route('organizations.email-preferences.opt-out', [$messageRecord->organization, $optOutToken]) }}">opt out</a>
+    </p>
 </div>

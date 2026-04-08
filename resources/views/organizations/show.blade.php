@@ -133,6 +133,15 @@
                                 <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required></textarea>
                                 <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
                             </form>
+
+                            <form method="POST" action="{{ route('organizations.invitations.store', $organization) }}" class="mt-5 space-y-4 border-t border-white/10 pt-5">
+                                @csrf
+                                <h3 class="text-lg font-semibold text-stone-100">Invite people to the group</h3>
+                                <input name="name" placeholder="Name (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                                <input name="email" type="email" placeholder="Email address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                                <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
+                                <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Send invite</button>
+                            </form>
                         @endif
                     @endauth
 
@@ -152,6 +161,20 @@
                             <p class="text-sm text-stone-400">No member messages yet.</p>
                         @endforelse
                     </div>
+
+                    @if ($organization->invitations->isNotEmpty())
+                        <div class="mt-6 border-t border-white/10 pt-6">
+                            <h3 class="text-lg font-semibold text-stone-100">Pending invites</h3>
+                            <div class="mt-4 space-y-3">
+                                @foreach ($organization->invitations->whereNull('accepted_at') as $invitation)
+                                    <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                        <div class="font-semibold text-stone-100">{{ $invitation->name ?: $invitation->email }}</div>
+                                        <div class="mt-1 text-sm text-stone-400">{{ $invitation->email }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">

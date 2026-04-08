@@ -33,6 +33,7 @@ class OrganizationController extends Controller
             'members',
             'posts.user',
             'messages.user',
+            'invitations',
             'events' => fn ($query) => $query->where('is_published', true)->orderBy('starts_at'),
             'mailingLists',
         ]);
@@ -70,6 +71,9 @@ class OrganizationController extends Controller
         ]);
 
         $organization->members()->attach($request->user()->id, ['role' => 'owner']);
+        $organization->members()->updateExistingPivot($request->user()->id, [
+            'email_opt_out_token' => Str::random(48),
+        ]);
 
         return redirect()
             ->route('organizations.show', $organization)

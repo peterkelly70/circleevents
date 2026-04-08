@@ -13,6 +13,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Public homepage highlighting featured events, organizations, and mailing lists
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
+- Invite-by-email flow for organizations with account creation/login handoff
 - Organizer dashboard for:
   - creating organizations
   - creating events
@@ -34,6 +35,8 @@ Build a Laravel application that replaces the practical parts of Facebook Events
   - organization, user, body
 - `organization_messages`
   - organization, sender, subject, body, emailed timestamp
+- `organization_invitations`
+  - organization, inviter, recipient email, token, accepted timestamp
 - `events`
   - organization, creator, title, slug, summary, description, venue, dates, timezone, capacity, visibility, published flag
 - `event_rsvps`

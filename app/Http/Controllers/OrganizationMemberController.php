@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class OrganizationMemberController extends Controller
 {
@@ -12,6 +13,9 @@ class OrganizationMemberController extends Controller
     {
         if (! $request->user()->organizations()->where('organization_id', $organization->id)->exists()) {
             $request->user()->organizations()->attach($organization->id, ['role' => 'follower']);
+            $request->user()->organizations()->updateExistingPivot($organization->id, [
+                'email_opt_out_token' => Str::random(48),
+            ]);
         }
 
         return redirect()

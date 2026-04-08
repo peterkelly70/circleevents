@@ -5,6 +5,12 @@
         </div>
     @endif
 
+    @if (! empty($inviteOrganizationName))
+        <div class="mb-4 rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
+            You were invited to follow <span class="font-semibold">{{ $inviteOrganizationName }}</span>. Create your account with the invited email to accept it.
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -46,7 +52,7 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+            <a class="rounded-md text-sm text-stone-400 underline hover:text-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 focus:ring-offset-stone-950" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 

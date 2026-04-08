@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable(['name', 'email', 'password', 'city', 'bio', 'is_admin'])]
 #[Hidden(['password', 'remember_token'])]
@@ -36,7 +37,7 @@ class User extends Authenticatable
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)
-            ->withPivot('role')
+            ->withPivot('role', 'email_opt_out_at', 'email_opt_out_token')
             ->withTimestamps();
     }
 
@@ -75,6 +76,11 @@ class User extends Authenticatable
         return $this->hasMany(OrganizationMessage::class);
     }
 
+    public function organizationInvitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class, 'invited_by_user_id');
+    }
+
     public function mailingLists(): BelongsToMany
     {
         return $this->belongsToMany(MailingList::class)
@@ -102,6 +108,15 @@ class User extends Authenticatable
 
         return $this->organizations()
             ->where('organization_id', $organization->id)
+            ->exists();
+    }
+
+    public function isEmailOptedOutOf(Organization $organization): bool
+    {
+        return DB::table('organization_user')
+            ->where('organization_id', $organization->id)
+            ->where('user_id', $this->id)
+            ->whereNotNull('email_opt_out_at')
             ->exists();
     }
 }

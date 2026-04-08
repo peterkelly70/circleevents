@@ -15,6 +15,7 @@ class OrganizationAnnouncementMail extends Mailable
     public function __construct(
         public OrganizationMessage $messageRecord,
         public User $recipient,
+        public string $optOutToken,
     ) {
     }
 

@@ -7,6 +7,8 @@ use App\Http\Controllers\EventInvitationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MailingListController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationEmailPreferenceController;
+use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationMessageController;
 use App\Http\Controllers\OrganizationPostController;
@@ -18,6 +20,8 @@ Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
 Route::get('/event-invitations/{token}', [EventInvitationController::class, 'accept'])->name('event-invitations.accept');
 Route::get('/organizations/{organization:slug}', [OrganizationController::class, 'show'])->name('organizations.show');
+Route::get('/organization-invitations/{token}', [OrganizationInvitationController::class, 'accept'])->name('organizations.invitations.accept');
+Route::get('/organizations/{organization:slug}/email-preferences/{token}/opt-out', [OrganizationEmailPreferenceController::class, 'optOut'])->name('organizations.email-preferences.opt-out');
 Route::get('/mailing-lists/{mailingList:slug}', [MailingListController::class, 'show'])->name('mailing-lists.show');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
@@ -27,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::patch('/organizations/{organization:slug}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{organization:slug}/follow', [OrganizationMemberController::class, 'follow'])->name('organizations.follow');
+    Route::post('/organizations/{organization:slug}/invitations', [OrganizationInvitationController::class, 'store'])->name('organizations.invitations.store');
     Route::post('/organizations/{organization:slug}/posts', [OrganizationPostController::class, 'store'])->name('organizations.posts.store');
     Route::post('/organizations/{organization:slug}/messages', [OrganizationMessageController::class, 'store'])->name('organizations.messages.store');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');

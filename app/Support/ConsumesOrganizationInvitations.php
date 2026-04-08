@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\Organization;
+use App\Models\OrganizationInvitation;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class ConsumesOrganizationInvitations
+{
+    public static function consumeFromSession(Request $request, User $user): ?Organization
+    {
+        $token = $request->session()->pull('organization_invitation_token');
+
+        if (! $token) {
+            return null;
+        }
+
+        $invitation = OrganizationInvitation::query()
+            ->with('organization')
+            ->where('token', $token)
+            ->whereNull('accepted_at')
+            ->first();
+
+        if (! $invitation) {
+            return null;
+        }
+
+        if (strtolower($invitation->email) !== strtolower($user->email)) {
+            $request->session()->flash('status', 'Invitation email did not match this account.');
+
+            return null;
+        }
+
+        $invitation->update([
+            'accepted_at' => now(),
+        ]);
+
+        $existingMembership = DB::table('organization_user')
+            ->where('organization_id', $invitation->organization_id)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if (! $existingMembership) {
+            $user->organizations()->attach($invitation->organization_id, [
+                'role' => 'follower',
+                'email_opt_out_token' => Str::random(48),
+            ]);
+        } else {
+            DB::table('organization_user')
+                ->where('organization_id', $invitation->organization_id)
+                ->where('user_id', $user->id)
+                ->update([
+                    'email_opt_out_at' => null,
+                    'email_opt_out_token' => DB::raw("COALESCE(email_opt_out_token, '".Str::random(48)."')"),
+                    'updated_at' => now(),
+                ]);
+        }
+
+        $request->session()->flash('status', 'Invitation accepted. You are now following this organization.');
+
+        return $invitation->organization;
+    }
+}

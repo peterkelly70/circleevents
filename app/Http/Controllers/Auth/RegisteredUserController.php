@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ConsumesEventInvitations;
+use App\Support\ConsumesOrganizationInvitations;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class RegisteredUserController extends Controller
         return view('auth.register', [
             'prefillEmail' => $request->query('email', session('invited_email')),
             'inviteEventTitle' => session('invited_event_title'),
+            'inviteOrganizationName' => session('invited_organization_name'),
         ]);
     }
 
@@ -54,6 +56,12 @@ class RegisteredUserController extends Controller
 
         if ($invitedEvent) {
             return redirect()->route('events.show', $invitedEvent);
+        }
+
+        $invitedOrganization = ConsumesOrganizationInvitations::consumeFromSession($request, $user);
+
+        if ($invitedOrganization) {
+            return redirect()->route('organizations.show', $invitedOrganization);
         }
 
         return redirect(route('dashboard', absolute: false));
