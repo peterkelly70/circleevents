@@ -29,6 +29,7 @@ Route::get('/mailing-lists/{mailingList:slug}', [MailingListController::class, '
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/events/{event:slug}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::get('/organizations/{organization:slug}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::patch('/organizations/{organization:slug}', [OrganizationController::class, 'update'])->name('organizations.update');
@@ -40,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     Route::post('/blocks', [BlockController::class, 'store'])->name('blocks.store');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::patch('/events/{event:slug}', [EventController::class, 'update'])->name('events.update');
     Route::post('/events/{event:slug}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
     Route::post('/events/{event:slug}/invitations', [EventInvitationController::class, 'store'])->name('events.invitations.store');
     Route::post('/events/{event:slug}/discussion', [EventDiscussionController::class, 'store'])->name('events.discussion.store');

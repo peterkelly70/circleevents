@@ -5,6 +5,11 @@
                 <p class="text-sm uppercase tracking-[0.3em] text-amber-300">{{ $event->organization->name }}</p>
                 <h1 class="text-3xl font-black text-stone-100">{{ $event->title }}</h1>
             </div>
+            @auth
+                @if (auth()->user()->isManagerOf($event->organization))
+                    <a href="{{ route('events.edit', $event) }}" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Edit event</a>
+                @endif
+            @endauth
         </div>
     </x-slot>
 

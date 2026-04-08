@@ -82,30 +82,20 @@ class EventController extends Controller
         ]);
     }
 
+    public function edit(Request $request, Event $event): View
+    {
+        abort_unless($request->user()->isManagerOf($event->organization), 403);
+
+        return view('events.edit', [
+            'event' => $event->load('organization'),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $this->mergeDateTimeFields($request);
 
-        $validated = $request->validate([
-            'organization_id' => ['required', 'exists:organizations,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'summary' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'venue_name' => ['required', 'string', 'max:255'],
-            'venue_address' => ['nullable', 'string', 'max:255'],
-            'google_place_id' => ['nullable', 'string', 'max:255'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'city' => ['nullable', 'string', 'max:120'],
-            'starts_at' => ['required', 'date'],
-            'ends_at' => ['required', 'date', 'after:starts_at'],
-            'timezone' => ['required', 'string', 'max:64'],
-            'capacity' => ['nullable', 'integer', 'min:1'],
-            'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
-            'repeat_frequency' => ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])],
-            'repeat_until' => ['nullable', 'date', 'after_or_equal:starts_at'],
-            'image' => ['nullable', 'image', 'max:12288'],
-        ]);
+        $validated = $this->validatedEventData($request);
 
         $organization = Organization::findOrFail($validated['organization_id']);
         abort_unless($request->user()->isManagerOf($organization), 403);
@@ -140,6 +130,71 @@ class EventController extends Controller
         return redirect()
             ->route('events.show', $event)
             ->with('status', 'Event published.');
+    }
+
+    public function update(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->isManagerOf($event->organization), 403);
+
+        $this->mergeDateTimeFields($request);
+
+        $validated = $this->validatedEventData($request, false);
+
+        if ($request->hasFile('image')) {
+            $validated['image_path'] = ImageUploads::storeResizedPublicImage(
+                $request->file('image'),
+                'event-images',
+                1600,
+                900,
+            );
+        }
+
+        $event->update([
+            ...$validated,
+            'repeat_frequency' => ($validated['repeat_frequency'] ?? 'none') === 'none'
+                ? null
+                : ($validated['repeat_frequency'] ?? null),
+            'repeat_until' => ($validated['repeat_frequency'] ?? 'none') === 'none'
+                ? null
+                : ($validated['repeat_until'] ?? null),
+        ]);
+
+        if ($event->mailingList) {
+            $event->mailingList->update([
+                'name' => $event->title.' updates · '.$event->starts_at->format('d M Y'),
+                'description' => 'Automatic event update list for '.$event->title.' on '.$event->starts_at->format('d M Y').'.',
+            ]);
+        }
+
+        return redirect()
+            ->route('events.show', $event)
+            ->with('status', 'Event updated.');
+    }
+
+    protected function validatedEventData(Request $request, bool $allowRepeat = true): array
+    {
+        return $request->validate([
+            'organization_id' => ['required', 'exists:organizations,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'summary' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'venue_name' => ['required', 'string', 'max:255'],
+            'venue_address' => ['nullable', 'string', 'max:255'],
+            'google_place_id' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'starts_at' => ['required', 'date'],
+            'ends_at' => ['required', 'date', 'after:starts_at'],
+            'timezone' => ['required', 'string', 'max:64'],
+            'capacity' => ['nullable', 'integer', 'min:1'],
+            'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
+            'repeat_frequency' => $allowRepeat
+                ? ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])]
+                : ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])],
+            'repeat_until' => ['nullable', 'date', 'after_or_equal:starts_at'],
+            'image' => ['nullable', 'image', 'max:12288'],
+        ]);
     }
 
     protected function buildSeriesPayloads(array $validated, int $creatorId, int $organizationId, ?string $imagePath): array
