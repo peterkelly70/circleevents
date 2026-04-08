@@ -236,43 +236,64 @@
                     </form>
                 </section>
 
-                <section id="new-event" class="rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-6 shadow-sm ring-1 ring-emerald-100">
+                <section id="new-event" class="rounded-[2rem] border border-emerald-300/20 bg-stone-900/80 p-6 shadow-sm ring-1 ring-emerald-300/15">
                     <div class="flex items-center justify-between gap-4">
                         <div>
-                            <p class="text-sm uppercase tracking-[0.25em] text-emerald-700">Primary action</p>
-                            <h3 class="text-2xl font-bold text-stone-900">Publish an event</h3>
-                            <p class="mt-1 text-sm text-stone-600">Create the public event page and its automatic update mailing list in one step.</p>
+                            <p class="text-sm uppercase tracking-[0.25em] text-emerald-400">Primary action</p>
+                            <h3 class="text-2xl font-bold text-stone-100">Publish an event</h3>
+                            <p class="mt-1 text-sm text-stone-400">Create the public event page, optional repeating schedule, and automatic update mailing list in one step.</p>
                         </div>
                     </div>
                     <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
-                        <select name="organization_id" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
+                        <select name="organization_id" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                             <option value="">Select organization</option>
                             @foreach ($managedOrganizations as $organization)
                                 <option value="{{ $organization->id }}">{{ $organization->name }}</option>
                             @endforeach
                         </select>
-                        <input name="title" placeholder="Event title" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                        <input name="summary" placeholder="Short summary" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                        <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border border-stone-200 px-4 py-3"></textarea>
+                        <input name="title" value="{{ old('title') }}" placeholder="Event title" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                        <input name="summary" value="{{ old('summary') }}" placeholder="Short summary" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                        <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('description') }}</textarea>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <input name="venue_name" placeholder="Venue" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                            <input name="venue_address" placeholder="Address" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
+                            <input name="venue_name" value="{{ old('venue_name') }}" placeholder="Venue" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                            <input name="venue_address" value="{{ old('venue_address') }}" placeholder="Address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                         </div>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <input type="datetime-local" name="starts_at" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                            <input type="datetime-local" name="ends_at" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-stone-300" for="event-starts-at">Starts</label>
+                                <input id="event-starts-at" type="datetime-local" name="starts_at" value="{{ old('starts_at') }}" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-stone-300" for="event-ends-at">Ends</label>
+                                <input id="event-ends-at" type="datetime-local" name="ends_at" value="{{ old('ends_at') }}" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                            </div>
                         </div>
                         <div class="grid gap-4 md:grid-cols-3">
-                            <input name="city" placeholder="City" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
-                            <input name="timezone" value="Australia/Perth" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                            <input name="capacity" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
+                            <input name="city" value="{{ old('city') }}" placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                            <input name="timezone" value="{{ old('timezone', 'Australia/Perth') }}" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                            <input name="capacity" type="number" min="1" value="{{ old('capacity') }}" placeholder="Capacity" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-stone-300" for="event-repeat-frequency">Repeats</label>
+                                <select id="event-repeat-frequency" name="repeat_frequency" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                    <option value="none" @selected(old('repeat_frequency', 'none') === 'none')>Does not repeat</option>
+                                    <option value="daily" @selected(old('repeat_frequency') === 'daily')>Daily</option>
+                                    <option value="weekly" @selected(old('repeat_frequency') === 'weekly')>Weekly</option>
+                                    <option value="monthly" @selected(old('repeat_frequency') === 'monthly')>Monthly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-stone-300" for="event-repeat-until">Repeat until</label>
+                                <input id="event-repeat-until" type="datetime-local" name="repeat_until" value="{{ old('repeat_until') }}" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                            </div>
                         </div>
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-stone-700" for="event-image">Event image</label>
-                            <input id="event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
+                            <label class="mb-2 block text-sm font-medium text-stone-300" for="event-image">Event image</label>
+                            <input id="event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                         </div>
-                        <select name="visibility" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
+                        <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                             <option value="public">Public</option>
                             <option value="private">Private</option>
                             <option value="unlisted">Unlisted</option>
@@ -281,24 +302,24 @@
                     </form>
                 </section>
 
-                <section id="new-mailing-list" class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-stone-200">
+                <section id="new-mailing-list" class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                     <div class="flex items-center justify-between gap-4">
                         <div>
-                            <h3 class="text-2xl font-bold text-stone-900">Add a mailing list</h3>
-                            <p class="mt-1 text-sm text-stone-600">Manual lists still sit alongside the automatic event update lists.</p>
+                            <h3 class="text-2xl font-bold text-stone-100">Add a mailing list</h3>
+                            <p class="mt-1 text-sm text-stone-400">Manual lists still sit alongside the automatic event update lists.</p>
                         </div>
                     </div>
                     <form method="POST" action="{{ route('mailing-lists.store') }}" class="mt-5 space-y-4">
                         @csrf
-                        <select name="organization_id" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
+                        <select name="organization_id" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                             <option value="">Select organization</option>
                             @foreach ($managedOrganizations as $organization)
                                 <option value="{{ $organization->id }}">{{ $organization->name }}</option>
                             @endforeach
                         </select>
-                        <input name="name" placeholder="List name" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
-                        <textarea name="description" rows="3" placeholder="What subscribers should expect" class="w-full rounded-2xl border border-stone-200 px-4 py-3"></textarea>
-                        <select name="audience" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
+                        <input name="name" placeholder="List name" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                        <textarea name="description" rows="3" placeholder="What subscribers should expect" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
+                        <select name="audience" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                             <option value="all-members">All members</option>
                             <option value="students">Students</option>
                             <option value="sponsors">Sponsors</option>

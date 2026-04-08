@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'organization_id',
     'mailing_list_id',
+    'recurrence_group',
     'creator_id',
     'title',
     'slug',
@@ -25,6 +26,8 @@ use Illuminate\Support\Str;
     'timezone',
     'capacity',
     'visibility',
+    'repeat_frequency',
+    'repeat_until',
     'is_published',
     'image_path',
 ])]
@@ -35,6 +38,7 @@ class Event extends Model
         return [
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'repeat_until' => 'datetime',
             'is_published' => 'boolean',
         ];
     }

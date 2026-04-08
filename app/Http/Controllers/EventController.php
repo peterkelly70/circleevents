@@ -8,6 +8,7 @@ use App\Models\EventRsvp;
 use App\Models\MailingList;
 use App\Models\Organization;
 use App\Support\ImageUploads;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -69,6 +70,8 @@ class EventController extends Controller
             'timezone' => ['required', 'string', 'max:64'],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
+            'repeat_frequency' => ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])],
+            'repeat_until' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'image' => ['nullable', 'image', 'max:12288'],
         ]);
 
@@ -79,30 +82,73 @@ class EventController extends Controller
             ? ImageUploads::storeResizedPublicImage($request->file('image'), 'event-images', 1600, 900)
             : null;
 
-        $event = DB::transaction(function () use ($validated, $request, $organization, $imagePath) {
-            $mailingList = MailingList::create([
-                'organization_id' => $organization->id,
-                'name' => $validated['title'].' updates',
-                'slug' => Str::slug($validated['title'].' updates').'-'.Str::lower(Str::random(6)),
-                'description' => 'Automatic event update list for '.$validated['title'].'.',
-                'audience' => 'all-members',
-            ]);
+        $eventSeries = DB::transaction(function () use ($validated, $request, $organization, $imagePath) {
+            $seriesPayloads = $this->buildSeriesPayloads($validated, $request->user()->id, $organization->id, $imagePath);
 
-            return Event::create([
-                ...$validated,
-                'mailing_list_id' => $mailingList->id,
-                'creator_id' => $request->user()->id,
-                'slug' => Str::slug($validated['title']).'-'.Str::lower(Str::random(6)),
-                'is_published' => true,
-                'image_path' => $imagePath,
-            ]);
+            return collect($seriesPayloads)->map(function (array $payload) use ($organization) {
+                $mailingList = MailingList::create([
+                    'organization_id' => $organization->id,
+                    'name' => $payload['title'].' updates · '.$payload['starts_at']->format('d M Y'),
+                    'slug' => Str::slug($payload['title'].' updates '.$payload['starts_at']->format('Y-m-d')).'-'.Str::lower(Str::random(6)),
+                    'description' => 'Automatic event update list for '.$payload['title'].' on '.$payload['starts_at']->format('d M Y').'.',
+                    'audience' => 'all-members',
+                ]);
+
+                return Event::create([
+                    ...$payload,
+                    'mailing_list_id' => $mailingList->id,
+                ]);
+            });
         });
 
-        $this->notifyMailingListSubscribers($event);
+        $eventSeries->each(fn (Event $event) => $this->notifyMailingListSubscribers($event));
+
+        $event = $eventSeries->first();
 
         return redirect()
             ->route('events.show', $event)
             ->with('status', 'Event published.');
+    }
+
+    protected function buildSeriesPayloads(array $validated, int $creatorId, int $organizationId, ?string $imagePath): array
+    {
+        $start = CarbonImmutable::parse($validated['starts_at']);
+        $end = CarbonImmutable::parse($validated['ends_at']);
+        $repeatFrequency = $validated['repeat_frequency'] ?? 'none';
+        $repeatUntil = ! empty($validated['repeat_until']) ? CarbonImmutable::parse($validated['repeat_until']) : null;
+        $seriesId = $repeatFrequency !== 'none' ? (string) Str::uuid() : null;
+
+        $payloads = [];
+        $currentStart = $start;
+        $currentEnd = $end;
+
+        do {
+            $payloads[] = [
+                ...$validated,
+                'organization_id' => $organizationId,
+                'creator_id' => $creatorId,
+                'slug' => Str::slug($validated['title']).'-'.Str::lower(Str::random(6)),
+                'is_published' => true,
+                'image_path' => $imagePath,
+                'recurrence_group' => $seriesId,
+                'starts_at' => $currentStart,
+                'ends_at' => $currentEnd,
+                'repeat_frequency' => $repeatFrequency !== 'none' ? $repeatFrequency : null,
+                'repeat_until' => $seriesId ? $repeatUntil : null,
+            ];
+
+            if ($repeatFrequency === 'none' || ! $repeatUntil) {
+                break;
+            }
+
+            [$currentStart, $currentEnd] = match ($repeatFrequency) {
+                'daily' => [$currentStart->addDay(), $currentEnd->addDay()],
+                'weekly' => [$currentStart->addWeek(), $currentEnd->addWeek()],
+                'monthly' => [$currentStart->addMonthNoOverflow(), $currentEnd->addMonthNoOverflow()],
+            };
+        } while ($currentStart->lessThanOrEqualTo($repeatUntil));
+
+        return $payloads;
     }
 
     protected function notifyMailingListSubscribers(Event $event): void

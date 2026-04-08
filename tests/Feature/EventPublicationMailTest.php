@@ -116,8 +116,49 @@ class EventPublicationMailTest extends TestCase
 
         $this->assertNotNull($event->mailing_list_id);
         $this->assertNotNull($event->mailingList);
-        $this->assertSame('Open Studio Night updates', $event->mailingList->name);
+        $this->assertStringStartsWith('Open Studio Night updates', $event->mailingList->name);
         $this->assertSame($organization->id, $event->mailingList->organization_id);
+    }
+
+    public function test_publishing_a_repeating_event_creates_future_occurrences(): void
+    {
+        Mail::fake();
+
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Perth Creators',
+            'slug' => 'perth-creators',
+            'summary' => 'Creative community',
+            'description' => 'Workshops and meetups',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $startsAt = now()->addWeek()->startOfHour();
+
+        $this->actingAs($owner)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'title' => 'Weekly Studio',
+            'summary' => 'Shared making night',
+            'description' => 'Bring your work.',
+            'venue_name' => 'Studio Hall',
+            'venue_address' => '45 Market Street',
+            'city' => 'Perth',
+            'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+            'ends_at' => $startsAt->copy()->addHours(2)->format('Y-m-d H:i:s'),
+            'timezone' => 'Australia/Perth',
+            'capacity' => 25,
+            'visibility' => 'public',
+            'repeat_frequency' => 'weekly',
+            'repeat_until' => $startsAt->copy()->addWeeks(2)->format('Y-m-d H:i:s'),
+        ])->assertRedirect();
+
+        $this->assertSame(3, Event::count());
+        $this->assertSame(3, MailingList::count());
+        $this->assertNotNull(Event::query()->first()->recurrence_group);
     }
 
     public function test_private_events_are_not_emailed_to_mailing_lists(): void
