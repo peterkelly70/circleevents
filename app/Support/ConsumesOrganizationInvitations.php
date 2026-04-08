@@ -46,14 +46,20 @@ class ConsumesOrganizationInvitations
 
         if (! $existingMembership) {
             $user->organizations()->attach($invitation->organization_id, [
-                'role' => 'follower',
+                'role' => $invitation->role,
                 'email_opt_out_token' => Str::random(48),
             ]);
         } else {
+            $role = DB::table('organization_user')
+                ->where('organization_id', $invitation->organization_id)
+                ->where('user_id', $user->id)
+                ->value('role');
+
             DB::table('organization_user')
                 ->where('organization_id', $invitation->organization_id)
                 ->where('user_id', $user->id)
                 ->update([
+                    'role' => $role === 'owner' ? 'owner' : $invitation->role,
                     'email_opt_out_at' => null,
                     'email_opt_out_token' => DB::raw("COALESCE(email_opt_out_token, '".Str::random(48)."')"),
                     'updated_at' => now(),

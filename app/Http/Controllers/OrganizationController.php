@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -39,6 +40,22 @@ class OrganizationController extends Controller
             'events' => fn ($query) => $query->where('is_published', true)->orderBy('starts_at'),
             'mailingLists',
         ]);
+
+        $user = request()->user();
+
+        if ($user) {
+            $blockedUserIds = $user->blocks()
+                ->where('blockable_type', User::class)
+                ->pluck('blockable_id');
+
+            $organization->setRelation('posts', $organization->posts->reject(
+                fn ($post) => $blockedUserIds->contains($post->user_id)
+            )->values());
+
+            $organization->setRelation('messages', $organization->messages->reject(
+                fn ($message) => $blockedUserIds->contains($message->user_id)
+            )->values());
+        }
 
         return view('organizations.show', [
             'organization' => $organization,

@@ -110,7 +110,7 @@
                                 <div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-amber-700">{{ $event->starts_at->format('D d M, g:i A') }}</p>
                                     <h4 class="mt-2 text-xl font-bold text-stone-900">{{ $event->title }}</h4>
-                                    <p class="mt-2 text-sm text-stone-600">{{ $event->organization->name }} · {{ $event->venue_name }}</p>
+                                    <p class="mt-2 text-sm text-stone-600">{{ $event->organization?->name ?? 'Unknown organization' }} · {{ $event->venue_name }}</p>
                                 </div>
                                 <div class="text-sm font-medium text-stone-500">{{ $event->timezone }}</div>
                             </a>

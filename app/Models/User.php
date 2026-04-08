@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,26 @@ class User extends Authenticatable
         return $this->hasMany(OrganizationInvitation::class, 'invited_by_user_id');
     }
 
+    public function submittedReports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reporter_user_id');
+    }
+
+    public function blocks(): HasMany
+    {
+        return $this->hasMany(Block::class);
+    }
+
+    public function reportsAgainst(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
+    }
+
+    public function blocksAgainst(): MorphMany
+    {
+        return $this->morphMany(Block::class, 'blockable');
+    }
+
     public function mailingLists(): BelongsToMany
     {
         return $this->belongsToMany(MailingList::class)
@@ -97,6 +118,18 @@ class User extends Authenticatable
         return $this->organizations()
             ->where('organization_id', $organization->id)
             ->wherePivotIn('role', ['owner', 'manager'])
+            ->exists();
+    }
+
+    public function isOwnerOf(Organization $organization): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->organizations()
+            ->where('organization_id', $organization->id)
+            ->wherePivot('role', 'owner')
             ->exists();
     }
 
@@ -117,6 +150,14 @@ class User extends Authenticatable
             ->where('organization_id', $organization->id)
             ->where('user_id', $this->id)
             ->whereNotNull('email_opt_out_at')
+            ->exists();
+    }
+
+    public function hasBlocked(User|Organization $target): bool
+    {
+        return $this->blocks()
+            ->where('blockable_type', $target::class)
+            ->where('blockable_id', $target->id)
             ->exists();
     }
 }

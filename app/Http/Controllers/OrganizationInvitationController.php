@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class OrganizationInvitationController extends Controller
 {
@@ -21,6 +22,7 @@ class OrganizationInvitationController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'message' => ['nullable', 'string', 'max:1000'],
+            'role' => ['required', Rule::in(['follower', 'manager'])],
         ]);
 
         $invitation = OrganizationInvitation::updateOrCreate(
@@ -32,6 +34,7 @@ class OrganizationInvitationController extends Controller
                 'invited_by_user_id' => $request->user()->id,
                 'name' => $validated['name'] ?? null,
                 'message' => $validated['message'] ?? null,
+                'role' => $validated['role'],
                 'token' => Str::random(48),
                 'accepted_at' => null,
                 'opted_out_at' => null,

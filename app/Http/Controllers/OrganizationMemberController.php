@@ -22,4 +22,19 @@ class OrganizationMemberController extends Controller
             ->route('organizations.show', $organization)
             ->with('status', 'You are now following this organization.');
     }
+
+    public function promote(Request $request, Organization $organization): RedirectResponse
+    {
+        abort_unless($request->user()->isOwnerOf($organization), 403);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $organization->members()->updateExistingPivot($validated['user_id'], [
+            'role' => 'manager',
+        ]);
+
+        return back()->with('status', 'Manager added.');
+    }
 }

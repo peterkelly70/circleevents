@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Organization;
 use App\Models\OrganizationMessage;
 use App\Models\OrganizationPost;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -21,8 +23,14 @@ class DashboardController extends Controller
         ]);
 
         $organizationIds = $user->organizations->pluck('id');
+        $blockedOrganizationIds = $user->blocks()
+            ->where('blockable_type', Organization::class)
+            ->pluck('blockable_id');
+        $blockedUserIds = $user->blocks()
+            ->where('blockable_type', User::class)
+            ->pluck('blockable_id');
 
-        $feedItems = $this->feedItemsForOrganizations($organizationIds);
+        $feedItems = $this->feedItemsForOrganizations($organizationIds, $blockedOrganizationIds, $blockedUserIds);
 
         return view('dashboard', [
             'managedOrganizations' => $user->organizations
@@ -34,6 +42,8 @@ class DashboardController extends Controller
             'rsvps' => $user->rsvps->sortBy(fn ($rsvp) => $rsvp->event?->starts_at)->values(),
             'upcomingEvents' => Event::query()
                 ->with('organization')
+                ->whereHas('organization')
+                ->whereNotIn('organization_id', $blockedOrganizationIds)
                 ->whereIn('organization_id', $organizationIds)
                 ->where('starts_at', '>=', now())
                 ->orderBy('starts_at')
@@ -42,11 +52,13 @@ class DashboardController extends Controller
         ]);
     }
 
-    protected function feedItemsForOrganizations(Collection $organizationIds): Collection
+    protected function feedItemsForOrganizations(Collection $organizationIds, Collection $blockedOrganizationIds, Collection $blockedUserIds): Collection
     {
         $posts = OrganizationPost::query()
             ->with(['organization', 'user'])
             ->whereIn('organization_id', $organizationIds)
+            ->whereNotIn('organization_id', $blockedOrganizationIds)
+            ->whereNotIn('user_id', $blockedUserIds)
             ->latest()
             ->take(20)
             ->get()
@@ -62,6 +74,8 @@ class DashboardController extends Controller
         $messages = OrganizationMessage::query()
             ->with(['organization', 'user'])
             ->whereIn('organization_id', $organizationIds)
+            ->whereNotIn('organization_id', $blockedOrganizationIds)
+            ->whereNotIn('user_id', $blockedUserIds)
             ->latest()
             ->take(20)
             ->get()

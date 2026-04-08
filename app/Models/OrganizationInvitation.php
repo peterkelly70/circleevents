@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'name',
     'email',
     'message',
+    'role',
     'token',
     'accepted_at',
     'opted_out_at',

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlockController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventDiscussionController;
 use App\Http\Controllers\EventController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationMessageController;
 use App\Http\Controllers\OrganizationPostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -31,9 +33,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::patch('/organizations/{organization:slug}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{organization:slug}/follow', [OrganizationMemberController::class, 'follow'])->name('organizations.follow');
+    Route::post('/organizations/{organization:slug}/members/promote', [OrganizationMemberController::class, 'promote'])->name('organizations.members.promote');
     Route::post('/organizations/{organization:slug}/invitations', [OrganizationInvitationController::class, 'store'])->name('organizations.invitations.store');
     Route::post('/organizations/{organization:slug}/posts', [OrganizationPostController::class, 'store'])->name('organizations.posts.store');
     Route::post('/organizations/{organization:slug}/messages', [OrganizationMessageController::class, 'store'])->name('organizations.messages.store');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::post('/blocks', [BlockController::class, 'store'])->name('blocks.store');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::post('/events/{event:slug}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
     Route::post('/events/{event:slug}/invitations', [EventInvitationController::class, 'store'])->name('events.invitations.store');

@@ -56,6 +56,21 @@
                         @else
                             <span class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">Following</span>
                         @endif
+
+                        <form method="POST" action="{{ route('reports.store') }}" class="inline-flex">
+                            @csrf
+                            <input type="hidden" name="type" value="organization">
+                            <input type="hidden" name="id" value="{{ $organization->id }}">
+                            <input type="hidden" name="reason" value="organization concern">
+                            <button class="rounded-full border border-amber-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Report</button>
+                        </form>
+
+                        <form method="POST" action="{{ route('blocks.store') }}" class="inline-flex">
+                            @csrf
+                            <input type="hidden" name="type" value="organization">
+                            <input type="hidden" name="id" value="{{ $organization->id }}">
+                            <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Block</button>
+                        </form>
                     @else
                         <a href="{{ route('login') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-stone-200">Log in to follow</a>
                     @endauth
@@ -66,6 +81,25 @@
                     <div>
                         <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Owner</h2>
                         <p class="mt-2 text-lg font-bold text-stone-100">{{ $organization->owner->name }}</p>
+                        @auth
+                            @if (auth()->id() !== $organization->owner->id)
+                                <div class="mt-3 flex gap-2">
+                                    <form method="POST" action="{{ route('reports.store') }}">
+                                        @csrf
+                                        <input type="hidden" name="type" value="user">
+                                        <input type="hidden" name="id" value="{{ $organization->owner->id }}">
+                                        <input type="hidden" name="reason" value="user concern">
+                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report user</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('blocks.store') }}">
+                                        @csrf
+                                        <input type="hidden" name="type" value="user">
+                                        <input type="hidden" name="id" value="{{ $organization->owner->id }}">
+                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-300">Block user</button>
+                                    </form>
+                                </div>
+                            @endif
+                        @endauth
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">City</h2>
@@ -109,7 +143,28 @@
                         @forelse ($organization->posts as $post)
                             <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
                                 <div class="flex items-center justify-between gap-4">
-                                    <p class="font-semibold text-stone-100">{{ $post->user->name }}</p>
+                                    <div>
+                                        <p class="font-semibold text-stone-100">{{ $post->user->name }}</p>
+                                        @auth
+                                            @if (auth()->id() !== $post->user->id)
+                                                <div class="mt-1 flex gap-2">
+                                                    <form method="POST" action="{{ route('reports.store') }}">
+                                                        @csrf
+                                                        <input type="hidden" name="type" value="user">
+                                                        <input type="hidden" name="id" value="{{ $post->user->id }}">
+                                                        <input type="hidden" name="reason" value="community post concern">
+                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report</button>
+                                                    </form>
+                                                    <form method="POST" action="{{ route('blocks.store') }}">
+                                                        @csrf
+                                                        <input type="hidden" name="type" value="user">
+                                                        <input type="hidden" name="id" value="{{ $post->user->id }}">
+                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-300">Block</button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        @endauth
+                                    </div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>
                                 <p class="mt-3 whitespace-pre-line text-stone-300">{{ $post->body }}</p>
@@ -140,9 +195,51 @@
                                 <h3 class="text-lg font-semibold text-stone-100">Invite people to the group</h3>
                                 <input name="name" placeholder="Name (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                 <input name="email" type="email" placeholder="Email address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                                <select name="role" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                    <option value="follower">Invite as follower</option>
+                                    <option value="manager">Invite as manager</option>
+                                </select>
                                 <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
                                 <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Send invite</button>
                             </form>
+
+                            <div class="mt-6 border-t border-white/10 pt-6">
+                                <h3 class="text-lg font-semibold text-stone-100">Managers</h3>
+                                <div class="mt-4 space-y-3">
+                                    @foreach ($organization->members->whereIn('pivot.role', ['owner', 'manager']) as $member)
+                                        <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                            <div class="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <div class="font-semibold text-stone-100">{{ $member->name }}</div>
+                                                    <div class="mt-1 text-sm text-stone-400">{{ $member->email }}</div>
+                                                </div>
+                                                <div class="text-xs uppercase tracking-[0.2em] text-amber-300">{{ $member->pivot->role }}</div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            @if (auth()->user()->isOwnerOf($organization))
+                                <div class="mt-6 border-t border-white/10 pt-6">
+                                    <h3 class="text-lg font-semibold text-stone-100">Promote follower to manager</h3>
+                                    <div class="mt-4 space-y-3">
+                                        @forelse ($organization->members->where('pivot.role', 'follower') as $member)
+                                            <form method="POST" action="{{ route('organizations.members.promote', $organization) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                                                @csrf
+                                                <input type="hidden" name="user_id" value="{{ $member->id }}">
+                                                <div>
+                                                    <div class="font-semibold text-stone-100">{{ $member->name }}</div>
+                                                    <div class="mt-1 text-sm text-stone-400">{{ $member->email }}</div>
+                                                </div>
+                                                <button class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-stone-950">Make manager</button>
+                                            </form>
+                                        @empty
+                                            <p class="text-sm text-stone-400">No followers available to promote.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            @endif
                         @endif
                     @endauth
 
