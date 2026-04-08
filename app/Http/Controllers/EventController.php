@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventRsvp;
 use App\Models\Organization;
-use App\Support\ImageUploads;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -70,9 +69,7 @@ class EventController extends Controller
         $organization = Organization::findOrFail($validated['organization_id']);
         abort_unless($request->user()->isManagerOf($organization), 403);
 
-        $imagePath = $request->file('image')
-            ? ImageUploads::storeResized($request->file('image'), 'event-images', 1600, 900, 'cover')
-            : null;
+        $imagePath = $request->file('image')?->store('event-images', 'public');
 
         $event = Event::create([
             ...$validated,
