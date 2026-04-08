@@ -29,8 +29,20 @@
                     <div class="mt-6 grid gap-4 md:grid-cols-2">
                         @forelse ($managedOrganizations as $organization)
                             <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5 transition hover:-translate-y-1 hover:border-amber-300">
-                                <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $organization->pivot->role }}</p>
-                                <a href="{{ route('organizations.show', $organization) }}" class="mt-2 block text-xl font-bold text-stone-900">{{ $organization->name }}</a>
+                                <div class="flex items-start gap-4">
+                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-stone-900 text-lg font-black text-amber-200">
+                                        @if ($organization->avatar_path)
+                                            <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
+                                        @else
+                                            <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $organization->pivot->role }}</p>
+                                        <a href="{{ route('organizations.show', $organization) }}" class="mt-2 block text-xl font-bold text-stone-900">{{ $organization->name }}</a>
+                                    </div>
+                                </div>
                                 <p class="mt-2 text-sm text-stone-600">{{ $organization->summary }}</p>
                                 <div class="mt-4 flex gap-3">
                                     <a href="{{ route('organizations.show', $organization) }}" class="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700">View</a>
@@ -102,7 +114,7 @@
             <div class="space-y-6">
                 <section class="rounded-[2rem] bg-stone-950 p-6 text-stone-100 shadow-sm">
                     <h3 class="text-2xl font-bold">Create an organization</h3>
-                    <form method="POST" action="{{ route('organizations.store') }}" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('organizations.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
                         <div>
                             <label class="text-sm font-medium text-stone-300" for="org-name">Name</label>
@@ -124,6 +136,16 @@
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-url">Website</label>
                                 <input id="org-url" name="website_url" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                            </div>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="org-avatar">Logo / avatar</label>
+                                <input id="org-avatar" name="avatar" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="org-banner">Banner image</label>
+                                <input id="org-banner" name="banner" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                             </div>
                         </div>
                         <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">

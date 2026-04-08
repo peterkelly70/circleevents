@@ -65,6 +65,16 @@ class User extends Authenticatable
         return $this->hasMany(EventDiscussionPost::class);
     }
 
+    public function organizationPosts(): HasMany
+    {
+        return $this->hasMany(OrganizationPost::class);
+    }
+
+    public function organizationMessages(): HasMany
+    {
+        return $this->hasMany(OrganizationMessage::class);
+    }
+
     public function mailingLists(): BelongsToMany
     {
         return $this->belongsToMany(MailingList::class)
@@ -81,6 +91,17 @@ class User extends Authenticatable
         return $this->organizations()
             ->where('organization_id', $organization->id)
             ->wherePivotIn('role', ['owner', 'manager'])
+            ->exists();
+    }
+
+    public function isMemberOf(Organization $organization): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->organizations()
+            ->where('organization_id', $organization->id)
             ->exists();
     }
 }

@@ -12,11 +12,13 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Authentication with registration, login, password reset, and profile management
 - Public homepage highlighting featured events, organizations, and mailing lists
 - Public events index and event detail pages
+- Public organization pages with follower posts and member announcements
 - Organizer dashboard for:
   - creating organizations
   - creating events
   - creating mailing lists
 - Subscriber flow for joining mailing lists
+- Follower flow for joining organizations directly
 - RSVP flow for marking interest, going, or waitlist
 
 ## Data Model
@@ -25,9 +27,13 @@ Build a Laravel application that replaces the practical parts of Facebook Events
   - `city`
   - `bio`
 - `organizations`
-  - owner, name, slug, summary, description, city, website, visibility
+  - owner, name, slug, summary, description, city, website, avatar, banner, visibility
 - `organization_user`
-  - membership pivot with role
+  - membership pivot with role including owner, manager, and follower
+- `organization_posts`
+  - organization, user, body
+- `organization_messages`
+  - organization, sender, subject, body, emailed timestamp
 - `events`
   - organization, creator, title, slug, summary, description, venue, dates, timezone, capacity, visibility, published flag
 - `event_rsvps`

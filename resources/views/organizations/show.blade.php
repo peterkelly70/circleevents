@@ -14,8 +14,52 @@
     </x-slot>
 
     <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <section class="mb-6 overflow-hidden rounded-[2rem] border border-white/10 bg-stone-900/70 shadow-sm ring-1 ring-white/10">
+            <div class="relative h-56 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.16),_transparent_30%),linear-gradient(135deg,_#292524,_#0c0a09)] sm:h-72">
+                @if ($organization->banner_path)
+                    <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/25 to-transparent"></div>
+                @endif
+
+                <div class="absolute inset-x-0 bottom-0 flex items-end gap-5 px-6 pb-6 sm:px-8">
+                    <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 text-3xl font-black text-amber-200 shadow-xl sm:h-28 sm:w-28">
+                        @if ($organization->avatar_path)
+                            <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
+                        @else
+                            <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
+                        @endif
+                    </div>
+
+                    <div class="pb-1">
+                        <p class="text-xs uppercase tracking-[0.35em] text-amber-200/80">Community profile</p>
+                        <h2 class="mt-2 text-2xl font-black text-white sm:text-4xl">{{ $organization->name }}</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
             <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-8 shadow-sm ring-1 ring-white/10">
+                <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 text-sm text-stone-400">
+                        <span>{{ $organization->members->count() }} followers</span>
+                        <span>{{ $organization->events->count() }} published events</span>
+                    </div>
+
+                    @auth
+                        @if (! auth()->user()->isMemberOf($organization))
+                            <form method="POST" action="{{ route('organizations.follow', $organization) }}">
+                                @csrf
+                                <button class="rounded-full bg-emerald-300 px-5 py-3 text-sm font-semibold text-stone-950">Follow organization</button>
+                            </form>
+                        @else
+                            <span class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">Following</span>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-stone-200">Log in to follow</a>
+                    @endauth
+                </div>
+
                 <p class="text-lg leading-8 text-stone-300">{{ $organization->summary }}</p>
                 <div class="mt-8 grid gap-6 md:grid-cols-3">
                     <div>
@@ -39,9 +83,77 @@
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">About</h2>
                     <p class="mt-4 leading-7 text-stone-300">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>
                 </div>
+
+                <div class="mt-8 border-t border-white/10 pt-8">
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Community posts</h2>
+                        <span class="text-sm text-stone-500">{{ $organization->posts->count() }} posts</span>
+                    </div>
+
+                    @auth
+                        @if (auth()->user()->isMemberOf($organization))
+                            <form method="POST" action="{{ route('organizations.posts.store', $organization) }}" class="mt-4">
+                                @csrf
+                                <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('body') }}</textarea>
+                                <button class="mt-3 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Post to organization</button>
+                            </form>
+                        @else
+                            <p class="mt-4 text-sm text-stone-400">Follow this organization to join the conversation.</p>
+                        @endif
+                    @else
+                        <p class="mt-4 text-sm text-stone-400">Log in and follow this organization to post.</p>
+                    @endauth
+
+                    <div class="mt-6 space-y-4">
+                        @forelse ($organization->posts as $post)
+                            <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <p class="font-semibold text-stone-100">{{ $post->user->name }}</p>
+                                    <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $post->created_at->diffForHumans() }}</p>
+                                </div>
+                                <p class="mt-3 whitespace-pre-line text-stone-300">{{ $post->body }}</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-stone-400">No community posts yet.</p>
+                        @endforelse
+                    </div>
+                </div>
             </section>
 
             <section class="space-y-6">
+                <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
+                    <h2 class="text-2xl font-bold text-stone-100">Member messages</h2>
+                    <p class="mt-2 text-sm text-stone-400">Managers can write announcements here and email them to all followers and members.</p>
+
+                    @auth
+                        @if (auth()->user()->isManagerOf($organization))
+                            <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" class="mt-5 space-y-4">
+                                @csrf
+                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                                <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required></textarea>
+                                <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
+                            </form>
+                        @endif
+                    @endauth
+
+                    <div class="mt-6 space-y-4">
+                        @forelse ($organization->messages as $message)
+                            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div>
+                                        <h3 class="font-semibold text-stone-100">{{ $message->subject }}</h3>
+                                        <p class="mt-1 text-sm text-stone-400">From {{ $message->user->name }}</p>
+                                    </div>
+                                    <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $message->created_at->diffForHumans() }}</p>
+                                </div>
+                                <p class="mt-3 whitespace-pre-line text-stone-300">{{ $message->body }}</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-stone-400">No member messages yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                     <h2 class="text-2xl font-bold text-stone-100">Published events</h2>
                     <div class="mt-4 space-y-3">

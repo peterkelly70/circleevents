@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'owner_id',
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
     'description',
     'city',
     'website_url',
+    'avatar_path',
+    'banner_path',
     'visibility',
 ])]
 class Organization extends Model
@@ -45,5 +48,29 @@ class Organization extends Model
     public function mailingLists(): HasMany
     {
         return $this->hasMany(MailingList::class);
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(OrganizationPost::class)->latest();
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(OrganizationMessage::class)->latest();
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path
+            ? Storage::disk('public')->url($this->avatar_path)
+            : null;
+    }
+
+    public function bannerUrl(): ?string
+    {
+        return $this->banner_path
+            ? Storage::disk('public')->url($this->banner_path)
+            : null;
     }
 }

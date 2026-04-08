@@ -11,7 +11,7 @@
 
     <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-8 shadow-sm ring-1 ring-white/10">
-            <form method="POST" action="{{ route('organizations.update', $organization) }}" class="space-y-5">
+            <form method="POST" action="{{ route('organizations.update', $organization) }}" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 @method('PATCH')
 
@@ -43,6 +43,30 @@
                         <label class="text-sm font-medium text-stone-300" for="website_url">Website</label>
                         <input id="website_url" name="website_url" value="{{ old('website_url', $organization->website_url) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                         <x-input-error :messages="$errors->get('website_url')" class="mt-2" />
+                    </div>
+                </div>
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label class="text-sm font-medium text-stone-300" for="avatar">Logo / avatar</label>
+                        @if ($organization->avatar_path)
+                            <div class="mt-3">
+                                <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-24 w-24 rounded-[1.5rem] border border-white/10 object-cover">
+                            </div>
+                        @endif
+                        <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-stone-300" for="banner">Banner image</label>
+                        @if ($organization->banner_path)
+                            <div class="mt-3 overflow-hidden rounded-[1.5rem] border border-white/10">
+                                <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-24 w-full object-cover">
+                            </div>
+                        @endif
+                        <input id="banner" name="banner" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('banner')" class="mt-2" />
                     </div>
                 </div>
 
