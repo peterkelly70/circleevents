@@ -26,6 +26,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Each newly published event gets an automatic linked update mailing list that users can subscribe to from the event page
 - Organizers can create repeating daily, weekly, or monthly event series from the dashboard
 - Attendees with RSVP status `going` receive reminder emails before upcoming events
+- Event discussions, organization posts, and organization member messages support BBCode-style formatting and optional image attachments
 
 ## Data Model
 - `users`

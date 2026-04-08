@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Models\OrganizationPost;
+use App\Support\ImageUploads;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -15,12 +16,16 @@ class OrganizationPostController extends Controller
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:5000'],
+            'image' => ['nullable', 'image', 'max:12288'],
         ]);
 
         OrganizationPost::create([
             'organization_id' => $organization->id,
             'user_id' => $request->user()->id,
             'body' => $validated['body'],
+            'image_path' => $request->file('image')
+                ? ImageUploads::storeResizedPublicImage($request->file('image'), 'organization-post-images', 1600, 1600)
+                : null,
         ]);
 
         return redirect()

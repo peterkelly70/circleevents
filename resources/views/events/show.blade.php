@@ -44,9 +44,11 @@
                 </div>
 
                 @auth
-                    <form method="POST" action="{{ route('events.discussion.store', $event) }}" class="mt-4">
+                    <form method="POST" action="{{ route('events.discussion.store', $event) }}" enctype="multipart/form-data" class="mt-4">
                         @csrf
                         <textarea name="body" rows="4" placeholder="Ask a question, post an update, or coordinate with attendees." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('body') }}</textarea>
+                        <p class="mt-2 text-xs text-stone-500">Supports BBCode: `[b]bold[/b]`, `[i]italic[/i]`, `[quote]quote[/quote]`, `[url=https://...]link[/url]`.</p>
+                        <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                         <button class="mt-3 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Post comment</button>
                     </form>
                 @else
@@ -60,7 +62,10 @@
                                 <p class="font-semibold text-stone-100">{{ $post->user->name }}</p>
                                 <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $post->created_at->diffForHumans() }}</p>
                             </div>
-                            <p class="mt-3 whitespace-pre-line text-stone-300">{{ $post->body }}</p>
+                            <div class="mt-3 prose prose-invert max-w-none text-stone-300">{!! \App\Support\Bbcode::render($post->body) !!}</div>
+                            @if ($post->image_path)
+                                <img src="{{ $post->imageUrl() }}" alt="Discussion attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-stone-400">No discussion yet. Start the thread.</p>

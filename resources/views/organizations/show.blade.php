@@ -127,9 +127,11 @@
 
                     @auth
                         @if (auth()->user()->isMemberOf($organization))
-                            <form method="POST" action="{{ route('organizations.posts.store', $organization) }}" class="mt-4">
+                            <form method="POST" action="{{ route('organizations.posts.store', $organization) }}" enctype="multipart/form-data" class="mt-4">
                                 @csrf
                                 <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('body') }}</textarea>
+                                <p class="mt-2 text-xs text-stone-500">Supports BBCode: `[b]bold[/b]`, `[i]italic[/i]`, `[quote]quote[/quote]`, `[url=https://...]link[/url]`.</p>
+                                <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                                 <button class="mt-3 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Post to organization</button>
                             </form>
                         @else
@@ -167,7 +169,10 @@
                                     </div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>
-                                <p class="mt-3 whitespace-pre-line text-stone-300">{{ $post->body }}</p>
+                                <div class="mt-3 prose prose-invert max-w-none text-stone-300">{!! \App\Support\Bbcode::render($post->body) !!}</div>
+                                @if ($post->image_path)
+                                    <img src="{{ $post->imageUrl() }}" alt="Organization post attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
+                                @endif
                             </div>
                         @empty
                             <p class="text-sm text-stone-400">No community posts yet.</p>
@@ -183,10 +188,12 @@
 
                     @auth
                         @if (auth()->user()->isManagerOf($organization))
-                            <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" class="mt-5 space-y-4">
+                            <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                                 @csrf
                                 <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
                                 <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required></textarea>
+                                <p class="text-xs text-stone-500">Supports BBCode and an optional image attachment.</p>
+                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                                 <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
                             </form>
 
@@ -253,7 +260,10 @@
                                     </div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $message->created_at->diffForHumans() }}</p>
                                 </div>
-                                <p class="mt-3 whitespace-pre-line text-stone-300">{{ $message->body }}</p>
+                                <div class="mt-3 prose prose-invert max-w-none text-stone-300">{!! \App\Support\Bbcode::render($message->body) !!}</div>
+                                @if ($message->image_path)
+                                    <img src="{{ $message->imageUrl() }}" alt="Member message attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
+                                @endif
                             </div>
                         @empty
                             <p class="text-sm text-stone-400">No member messages yet.</p>
