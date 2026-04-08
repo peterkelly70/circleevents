@@ -6,6 +6,8 @@
                 <h2 class="text-3xl font-black leading-tight text-stone-900">{{ __('Run your event network') }}</h2>
             </div>
             <div class="flex items-center gap-3">
+                <a href="#new-event" class="rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-stone-950">New event</a>
+                <a href="#new-organization" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">New organization</a>
                 <a href="#new-mailing-list" class="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">New mailing list</a>
                 <p class="max-w-md text-sm text-stone-600">Create organizations, publish events, and manage audience subscriptions from one place.</p>
             </div>
@@ -21,7 +23,7 @@
                     </div>
                 @endif
 
-                <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
+                <section id="new-organization" class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <h3 class="text-2xl font-bold text-stone-100">Following feed</h3>
@@ -234,8 +236,14 @@
                     </form>
                 </section>
 
-                <section class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-stone-200">
-                    <h3 class="text-2xl font-bold text-stone-900">Publish an event</h3>
+                <section id="new-event" class="rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-6 shadow-sm ring-1 ring-emerald-100">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm uppercase tracking-[0.25em] text-emerald-700">Primary action</p>
+                            <h3 class="text-2xl font-bold text-stone-900">Publish an event</h3>
+                            <p class="mt-1 text-sm text-stone-600">Create the public event page and its automatic update mailing list in one step.</p>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
                         <select name="organization_id" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
