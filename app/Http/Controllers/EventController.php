@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EventPublishedMail;
 use App\Models\Event;
 use App\Models\EventRsvp;
 use App\Models\Organization;
 use App\Support\ImageUploads;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -82,9 +84,36 @@ class EventController extends Controller
             'image_path' => $imagePath,
         ]);
 
+        $this->notifyMailingListSubscribers($event);
+
         return redirect()
             ->route('events.show', $event)
             ->with('status', 'Event published.');
+    }
+
+    protected function notifyMailingListSubscribers(Event $event): void
+    {
+        if ($event->visibility === 'private') {
+            return;
+        }
+
+        $event->loadMissing('organization');
+
+        $subscribers = $event->organization
+            ->mailingLists()
+            ->with([
+                'subscribers' => fn ($query) => $query
+                    ->wherePivot('status', 'subscribed')
+                    ->select('users.id', 'users.name', 'users.email'),
+            ])
+            ->get()
+            ->flatMap->subscribers
+            ->unique('email')
+            ->values();
+
+        foreach ($subscribers as $subscriber) {
+            Mail::to($subscriber->email)->send(new EventPublishedMail($event, $subscriber));
+        }
     }
 
     public function rsvp(Request $request, Event $event): RedirectResponse
