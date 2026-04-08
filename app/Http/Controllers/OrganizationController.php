@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Support\ImageUploads;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -57,11 +58,23 @@ class OrganizationController extends Controller
         $validated = $this->validatedOrganizationData($request);
 
         if ($request->hasFile('avatar')) {
-            $validated['avatar_path'] = $request->file('avatar')->store('organization-avatars', 'public');
+            $validated['avatar_path'] = ImageUploads::storeResized(
+                $request->file('avatar'),
+                'organization-avatars',
+                512,
+                512,
+                'cover',
+            );
         }
 
         if ($request->hasFile('banner')) {
-            $validated['banner_path'] = $request->file('banner')->store('organization-banners', 'public');
+            $validated['banner_path'] = ImageUploads::storeResized(
+                $request->file('banner'),
+                'organization-banners',
+                1600,
+                480,
+                'cover',
+            );
         }
 
         $organization = Organization::create([
@@ -91,7 +104,13 @@ class OrganizationController extends Controller
                 Storage::disk('public')->delete($organization->avatar_path);
             }
 
-            $validated['avatar_path'] = $request->file('avatar')->store('organization-avatars', 'public');
+            $validated['avatar_path'] = ImageUploads::storeResized(
+                $request->file('avatar'),
+                'organization-avatars',
+                512,
+                512,
+                'cover',
+            );
         }
 
         if ($request->hasFile('banner')) {
@@ -99,7 +118,13 @@ class OrganizationController extends Controller
                 Storage::disk('public')->delete($organization->banner_path);
             }
 
-            $validated['banner_path'] = $request->file('banner')->store('organization-banners', 'public');
+            $validated['banner_path'] = ImageUploads::storeResized(
+                $request->file('banner'),
+                'organization-banners',
+                1600,
+                480,
+                'cover',
+            );
         }
 
         $organization->update($validated);
