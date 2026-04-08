@@ -72,7 +72,7 @@
         <aside class="space-y-6">
             <section class="rounded-[2rem] bg-stone-950 p-6 text-stone-100 shadow-sm">
                 <h2 class="text-2xl font-bold">RSVP</h2>
-                <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+                <div class="mt-5 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
                     <div class="rounded-2xl bg-white/5 p-3">
                         <div class="text-2xl font-black">{{ $rsvpCounts->get('going', 0) }}</div>
                         <div class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-400">Going</div>
@@ -84,6 +84,10 @@
                     <div class="rounded-2xl bg-white/5 p-3">
                         <div class="text-2xl font-black">{{ $rsvpCounts->get('waitlist', 0) }}</div>
                         <div class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-400">Waitlist</div>
+                    </div>
+                    <div class="rounded-2xl bg-white/5 p-3">
+                        <div class="text-2xl font-black">{{ $rsvpCounts->get('not-going', 0) }}</div>
+                        <div class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-400">Not going</div>
                     </div>
                 </div>
 
@@ -118,6 +122,7 @@
                             <option value="interested">Interested</option>
                             <option value="going">Going</option>
                             <option value="waitlist">Waitlist</option>
+                            <option value="not-going">Not going</option>
                         </select>
                         <textarea name="notes" rows="3" placeholder="Optional note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"></textarea>
                         <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Save RSVP</button>

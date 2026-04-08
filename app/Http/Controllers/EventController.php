@@ -179,7 +179,7 @@ class EventController extends Controller
     public function rsvp(Request $request, Event $event): RedirectResponse
     {
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['interested', 'going', 'waitlist'])],
+            'status' => ['required', Rule::in(['interested', 'going', 'waitlist', 'not-going'])],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
