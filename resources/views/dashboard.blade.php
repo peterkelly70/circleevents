@@ -156,45 +156,62 @@
             <div class="space-y-6">
                 <section class="rounded-[2rem] bg-stone-950 p-6 text-stone-100 shadow-sm">
                     <h3 class="text-2xl font-bold">Create an organization</h3>
+
+                    @if ($errors->any())
+                        <div class="mt-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                            Please fix the highlighted fields and try again.
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('organizations.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
                         <div>
                             <label class="text-sm font-medium text-stone-300" for="org-name">Name</label>
-                            <input id="org-name" name="name" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
+                            <input id="org-name" name="name" value="{{ old('name') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
                         <div>
                             <label class="text-sm font-medium text-stone-300" for="org-summary">Summary</label>
-                            <input id="org-summary" name="summary" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
+                            <input id="org-summary" name="summary" value="{{ old('summary') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
+                            <x-input-error :messages="$errors->get('summary')" class="mt-2" />
                         </div>
                         <div>
                             <label class="text-sm font-medium text-stone-300" for="org-description">Description</label>
-                            <textarea id="org-description" name="description" rows="4" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"></textarea>
+                            <textarea id="org-description" name="description" rows="4" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">{{ old('description') }}</textarea>
+                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-city">City</label>
-                                <input id="org-city" name="city" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <input id="org-city" name="city" value="{{ old('city') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('city')" class="mt-2" />
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-url">Website</label>
-                                <input id="org-url" name="website_url" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <input id="org-url" name="website_url" value="{{ old('website_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('website_url')" class="mt-2" />
                             </div>
                         </div>
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-avatar">Logo / avatar</label>
                                 <input id="org-avatar" name="avatar" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-banner">Banner image</label>
                                 <input id="org-banner" name="banner" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('banner')" class="mt-2" />
                             </div>
                         </div>
-                        <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                            <option value="public">Public</option>
-                            <option value="private">Private</option>
-                            <option value="unlisted">Unlisted</option>
-                        </select>
+                        <div>
+                            <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <option value="public" @selected(old('visibility', 'public') === 'public')>Public</option>
+                                <option value="private" @selected(old('visibility') === 'private')>Private</option>
+                                <option value="unlisted" @selected(old('visibility') === 'unlisted')>Unlisted</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('visibility')" class="mt-2" />
+                        </div>
                         <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Create organization</button>
                     </form>
                 </section>

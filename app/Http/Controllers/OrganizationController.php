@@ -15,6 +15,10 @@ class OrganizationController extends Controller
 {
     protected function validatedOrganizationData(Request $request): array
     {
+        $request->merge([
+            'website_url' => $this->normalizeWebsiteUrl($request->input('website_url')),
+        ]);
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'summary' => ['required', 'string', 'max:255'],
@@ -25,6 +29,21 @@ class OrganizationController extends Controller
             'banner' => ['nullable', 'image', 'max:6144'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
         ]);
+    }
+
+    protected function normalizeWebsiteUrl(?string $value): ?string
+    {
+        $value = $value !== null ? trim($value) : null;
+
+        if (! $value) {
+            return null;
+        }
+
+        if (! str_starts_with($value, 'http://') && ! str_starts_with($value, 'https://')) {
+            $value = 'https://'.$value;
+        }
+
+        return $value;
     }
 
     public function show(Organization $organization): View
