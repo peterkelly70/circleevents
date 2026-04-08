@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Mail\EventPublishedMail;
 use App\Models\Event;
 use App\Models\EventRsvp;
+use App\Models\MailingList;
 use App\Models\Organization;
 use App\Support\ImageUploads;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -35,6 +37,7 @@ class EventController extends Controller
 
         $event->load([
             'organization',
+            'mailingList.subscribers',
             'creator',
             'rsvps.user',
             'discussionPosts.user',
@@ -76,13 +79,24 @@ class EventController extends Controller
             ? ImageUploads::storeResizedPublicImage($request->file('image'), 'event-images', 1600, 900)
             : null;
 
-        $event = Event::create([
-            ...$validated,
-            'creator_id' => $request->user()->id,
-            'slug' => Str::slug($validated['title']).'-'.Str::lower(Str::random(6)),
-            'is_published' => true,
-            'image_path' => $imagePath,
-        ]);
+        $event = DB::transaction(function () use ($validated, $request, $organization, $imagePath) {
+            $mailingList = MailingList::create([
+                'organization_id' => $organization->id,
+                'name' => $validated['title'].' updates',
+                'slug' => Str::slug($validated['title'].' updates').'-'.Str::lower(Str::random(6)),
+                'description' => 'Automatic event update list for '.$validated['title'].'.',
+                'audience' => 'all-members',
+            ]);
+
+            return Event::create([
+                ...$validated,
+                'mailing_list_id' => $mailingList->id,
+                'creator_id' => $request->user()->id,
+                'slug' => Str::slug($validated['title']).'-'.Str::lower(Str::random(6)),
+                'is_published' => true,
+                'image_path' => $imagePath,
+            ]);
+        });
 
         $this->notifyMailingListSubscribers($event);
 

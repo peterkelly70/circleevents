@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
@@ -31,5 +32,10 @@ class MailingList extends Model
         return $this->belongsToMany(User::class)
             ->withPivot('status', 'subscribed_at')
             ->withTimestamps();
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
     }
 }

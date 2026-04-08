@@ -87,6 +87,30 @@
                     </div>
                 </div>
 
+                @if ($event->mailingList)
+                    <div class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.2em] text-stone-500">Event updates</p>
+                                <p class="mt-2 text-lg font-bold text-stone-100">{{ $event->mailingList->name }}</p>
+                                <p class="mt-2 text-sm text-stone-400">{{ $event->mailingList->subscribers->count() }} subscribers</p>
+                            </div>
+                            <a href="{{ route('mailing-lists.show', $event->mailingList) }}" class="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-stone-100">
+                                View list
+                            </a>
+                        </div>
+
+                        @auth
+                            <form method="POST" action="{{ route('mailing-lists.subscribe', $event->mailingList) }}" class="mt-4">
+                                @csrf
+                                <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Get event emails</button>
+                            </form>
+                        @else
+                            <p class="mt-4 text-sm text-stone-300">Log in to subscribe to this event’s update list.</p>
+                        @endauth
+                    </div>
+                @endif
+
                 @auth
                     <form method="POST" action="{{ route('events.rsvp', $event) }}" class="mt-6 space-y-4">
                         @csrf

@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'organization_id',
+    'mailing_list_id',
     'creator_id',
     'title',
     'slug',
@@ -46,6 +47,11 @@ class Event extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function mailingList(): BelongsTo
+    {
+        return $this->belongsTo(MailingList::class);
     }
 
     public function creator(): BelongsTo

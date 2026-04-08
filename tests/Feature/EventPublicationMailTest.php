@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\EventPublishedMail;
+use App\Models\Event;
 use App\Models\MailingList;
 use App\Models\Organization;
 use App\Models\User;
@@ -77,6 +78,46 @@ class EventPublicationMailTest extends TestCase
         Mail::assertSent(EventPublishedMail::class, function (EventPublishedMail $mail) use ($subscriber) {
             return $mail->hasTo($subscriber->email) && $mail->recipient->is($subscriber);
         });
+    }
+
+    public function test_publishing_an_event_creates_a_linked_event_update_mailing_list(): void
+    {
+        Mail::fake();
+
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Perth Creators',
+            'slug' => 'perth-creators',
+            'summary' => 'Creative community',
+            'description' => 'Workshops and meetups',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $this->actingAs($owner)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'title' => 'Open Studio Night',
+            'summary' => 'Show and tell',
+            'description' => 'Bring work in progress.',
+            'venue_name' => 'Studio 3',
+            'venue_address' => '45 Market Street',
+            'city' => 'Perth',
+            'starts_at' => now()->addWeek()->format('Y-m-d H:i:s'),
+            'ends_at' => now()->addWeek()->addHours(2)->format('Y-m-d H:i:s'),
+            'timezone' => 'Australia/Perth',
+            'capacity' => 25,
+            'visibility' => 'public',
+        ])->assertRedirect();
+
+        $event = Event::query()->with('mailingList')->firstOrFail();
+
+        $this->assertNotNull($event->mailing_list_id);
+        $this->assertNotNull($event->mailingList);
+        $this->assertSame('Open Studio Night updates', $event->mailingList->name);
+        $this->assertSame($organization->id, $event->mailingList->organization_id);
     }
 
     public function test_private_events_are_not_emailed_to_mailing_lists(): void

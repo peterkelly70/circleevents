@@ -5,7 +5,10 @@
                 <p class="text-sm uppercase tracking-[0.3em] text-amber-600">Organizer dashboard</p>
                 <h2 class="text-3xl font-black leading-tight text-stone-900">{{ __('Run your event network') }}</h2>
             </div>
-            <p class="max-w-md text-sm text-stone-600">Create organizations, publish events, and manage audience subscriptions from one place.</p>
+            <div class="flex items-center gap-3">
+                <a href="#new-mailing-list" class="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">New mailing list</a>
+                <p class="max-w-md text-sm text-stone-600">Create organizations, publish events, and manage audience subscriptions from one place.</p>
+            </div>
         </div>
     </x-slot>
 
@@ -255,8 +258,13 @@
                     </form>
                 </section>
 
-                <section class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-stone-200">
-                    <h3 class="text-2xl font-bold text-stone-900">Add a mailing list</h3>
+                <section id="new-mailing-list" class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-stone-200">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-900">Add a mailing list</h3>
+                            <p class="mt-1 text-sm text-stone-600">Manual lists still sit alongside the automatic event update lists.</p>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ route('mailing-lists.store') }}" class="mt-5 space-y-4">
                         @csrf
                         <select name="organization_id" class="w-full rounded-2xl border border-stone-200 px-4 py-3" required>
