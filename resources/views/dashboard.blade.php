@@ -73,25 +73,40 @@
                     </div>
                     <div class="mt-6 grid gap-4 md:grid-cols-2">
                         @forelse ($managedOrganizations as $organization)
-                            <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5 transition hover:-translate-y-1 hover:border-amber-300">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-stone-900 text-lg font-black text-amber-200">
-                                        @if ($organization->avatar_path)
-                                            <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
-                                        @else
-                                            <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
-                                        @endif
-                                    </div>
+                            <div class="overflow-hidden rounded-3xl border border-stone-200 bg-stone-50 transition hover:-translate-y-1 hover:border-amber-300">
+                                <div class="relative h-48 overflow-hidden bg-stone-900">
+                                    @if ($organization->banner_path)
+                                        <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-cover">
+                                    @elseif ($organization->avatar_path)
+                                        <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
+                                    @else
+                                        <div class="h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.28),_transparent_30%),linear-gradient(135deg,_#292524,_#0c0a09)]"></div>
+                                    @endif
 
-                                    <div class="min-w-0">
-                                        <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $organization->pivot->role }}</p>
-                                        <a href="{{ route('organizations.show', $organization) }}" class="mt-2 block text-xl font-bold text-stone-900">{{ $organization->name }}</a>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/10 to-transparent"></div>
+
+                                    <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                        <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-stone-950/80 text-lg font-black text-amber-200 shadow-lg">
+                                            @if ($organization->avatar_path)
+                                                <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
+                                            @else
+                                                <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="min-w-0 pb-1">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-amber-200/90">{{ $organization->pivot->role }}</p>
+                                            <a href="{{ route('organizations.show', $organization) }}" class="mt-1 block text-xl font-bold text-white">{{ $organization->name }}</a>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="mt-2 text-sm text-stone-600">{{ $organization->summary }}</p>
-                                <div class="mt-4 flex gap-3">
-                                    <a href="{{ route('organizations.show', $organization) }}" class="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700">View</a>
-                                    <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white">Edit</a>
+
+                                <div class="p-5">
+                                    <p class="text-sm text-stone-600">{{ $organization->summary }}</p>
+                                    <div class="mt-4 flex gap-3">
+                                        <a href="{{ route('organizations.show', $organization) }}" class="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700">View</a>
+                                        <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white">Edit</a>
+                                    </div>
                                 </div>
                             </div>
                         @empty
