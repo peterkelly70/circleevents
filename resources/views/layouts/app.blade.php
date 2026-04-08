@@ -4,9 +4,13 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="google-maps-api-key" content="{{ config('services.google_maps.key') }}">
 
         <title>{{ config('app.name', 'CircleEvents') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (config('services.google_maps.key'))
+            <script async src="https://maps.googleapis.com/maps/api/js?key={{ urlencode(config('services.google_maps.key')) }}&libraries=places&v=beta"></script>
+        @endif
     </head>
     <body class="antialiased">
         <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.14),_transparent_28%),radial-gradient(circle_at_80%_10%,_rgba(16,185,129,0.08),_transparent_24%),linear-gradient(180deg,_#1c1917,_#0c0a09)] text-stone-100">

@@ -288,6 +288,16 @@
                 @auth
                     @if (auth()->user()->isManagerOf($organization))
                         <div class="rounded-[2rem] border border-emerald-300/20 bg-stone-900/80 p-6 shadow-sm ring-1 ring-emerald-300/15">
+                            @php
+                                $timeOptions = collect(range(0, 47))->map(function (int $slot) {
+                                    $hour = intdiv($slot, 2);
+                                    $minute = $slot % 2 === 0 ? '00' : '30';
+                                    $value = sprintf('%02d:%s', $hour, $minute);
+                                    $label = \Carbon\CarbonImmutable::createFromTime($hour, (int) $minute)->format('g:i A');
+
+                                    return compact('value', 'label');
+                                });
+                            @endphp
                             <div class="flex items-center justify-between gap-4">
                                 <div>
                                     <p class="text-sm uppercase tracking-[0.25em] text-emerald-400">Primary action</p>
@@ -304,23 +314,47 @@
                                 <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
 
                                 <div class="grid gap-4 md:grid-cols-2">
-                                    <input name="venue_name" placeholder="Venue" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
-                                    <input name="venue_address" placeholder="Address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                                    <input name="venue_name" data-event-venue-name placeholder="Venue" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                                    <input name="venue_address" data-event-venue-address placeholder="Address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                 </div>
 
-                                <div class="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <label class="mb-2 block text-sm font-medium text-stone-300">Search place with Google Maps</label>
+                                    <div data-google-place-widget class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"></div>
+                                    <input type="hidden" name="google_place_id" data-event-place-id>
+                                    <input type="hidden" name="latitude" data-event-latitude>
+                                    <input type="hidden" name="longitude" data-event-longitude>
+                                </div>
+
+                                <div class="grid gap-4 md:grid-cols-4">
                                     <div>
-                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-starts-at">Starts</label>
-                                        <input id="org-event-starts-at" type="datetime-local" name="starts_at" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-start-date">Start date</label>
+                                        <input id="org-event-start-date" type="date" name="start_date" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                                     </div>
                                     <div>
-                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-ends-at">Ends</label>
-                                        <input id="org-event-ends-at" type="datetime-local" name="ends_at" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-start-time">Start time</label>
+                                        <select id="org-event-start-time" name="start_time" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                                            @foreach ($timeOptions as $option)
+                                                <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-end-date">End date</label>
+                                        <input id="org-event-end-date" type="date" name="end_date" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-end-time">End time</label>
+                                        <select id="org-event-end-time" name="end_time" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                                            @foreach ($timeOptions as $option)
+                                                <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-3">
-                                    <input name="city" placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                                    <input name="city" data-event-city placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                     <input name="timezone" value="Australia/Perth" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                                     <input name="capacity" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                 </div>
@@ -337,7 +371,15 @@
                                     </div>
                                     <div>
                                         <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-repeat-until">Repeat until</label>
-                                        <input id="org-event-repeat-until" type="datetime-local" name="repeat_until" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <input id="org-event-repeat-until" type="date" name="repeat_until_date" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                            <select name="repeat_until_time" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                                <option value="">Time</option>
+                                                @foreach ($timeOptions as $option)
+                                                    <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 

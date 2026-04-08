@@ -19,6 +19,33 @@ use Illuminate\View\View;
 
 class EventController extends Controller
 {
+    protected function mergeDateTimeFields(Request $request): void
+    {
+        $request->merge([
+            'starts_at' => $request->input('starts_at') ?: $this->combineDateAndTime(
+                $request->input('start_date'),
+                $request->input('start_time'),
+            ),
+            'ends_at' => $request->input('ends_at') ?: $this->combineDateAndTime(
+                $request->input('end_date'),
+                $request->input('end_time'),
+            ),
+            'repeat_until' => $request->input('repeat_until') ?: $this->combineDateAndTime(
+                $request->input('repeat_until_date'),
+                $request->input('repeat_until_time'),
+            ),
+        ]);
+    }
+
+    protected function combineDateAndTime(?string $date, ?string $time): ?string
+    {
+        if (! $date || ! $time) {
+            return null;
+        }
+
+        return trim($date).' '.trim($time).':00';
+    }
+
     public function index(): View
     {
         return view('events.index', [
@@ -57,6 +84,8 @@ class EventController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->mergeDateTimeFields($request);
+
         $validated = $request->validate([
             'organization_id' => ['required', 'exists:organizations,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -64,6 +93,9 @@ class EventController extends Controller
             'description' => ['nullable', 'string'],
             'venue_name' => ['required', 'string', 'max:255'],
             'venue_address' => ['nullable', 'string', 'max:255'],
+            'google_place_id' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'city' => ['nullable', 'string', 'max:120'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:starts_at'],

@@ -20,6 +20,9 @@ use Illuminate\Support\Str;
     'description',
     'venue_name',
     'venue_address',
+    'google_place_id',
+    'latitude',
+    'longitude',
     'city',
     'starts_at',
     'ends_at',
@@ -39,6 +42,8 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'repeat_until' => 'datetime',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'is_published' => 'boolean',
         ];
     }
