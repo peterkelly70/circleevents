@@ -192,6 +192,7 @@
                         </div>
                         <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                             <option value="public">Public</option>
+                            <option value="private">Private</option>
                             <option value="unlisted">Unlisted</option>
                         </select>
                         <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Create organization</button>
@@ -230,7 +231,8 @@
                         </div>
                         <select name="visibility" class="w-full rounded-2xl border border-stone-200 px-4 py-3">
                             <option value="public">Public</option>
-                            <option value="community">Community</option>
+                            <option value="private">Private</option>
+                            <option value="unlisted">Unlisted</option>
                         </select>
                         <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Publish event</button>
                     </form>

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'owner_id',
@@ -77,5 +78,19 @@ class Organization extends Model
         return $this->banner_path
             ? Storage::disk('public')->url($this->banner_path)
             : null;
+    }
+
+    public function isVisibleTo(?User $user): bool
+    {
+        return match ($this->visibility) {
+            'public', 'unlisted' => true,
+            'private' => $user?->isMemberOf($this) ?? false,
+            default => false,
+        };
+    }
+
+    public function visibilityLabel(): string
+    {
+        return Str::headline($this->visibility);
     }
 }

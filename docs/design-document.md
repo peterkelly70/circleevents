@@ -28,7 +28,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
   - `city`
   - `bio`
 - `organizations`
-  - owner, name, slug, summary, description, city, website, avatar, banner, visibility
+  - owner, name, slug, summary, description, city, website, avatar, banner, visibility (`public`, `private`, `unlisted`)
 - `organization_user`
   - membership pivot with role including owner, manager, and follower
 - `organization_posts`
@@ -38,7 +38,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - `organization_invitations`
   - organization, inviter, recipient email, token, accepted timestamp
 - `events`
-  - organization, creator, title, slug, summary, description, venue, dates, timezone, capacity, visibility, published flag
+  - organization, creator, title, slug, summary, description, venue, dates, timezone, capacity, visibility (`public`, `private`, `unlisted`), published flag
 - `event_rsvps`
   - event, user, status, notes
 - `mailing_lists`

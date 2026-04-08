@@ -20,6 +20,7 @@ class EventController extends Controller
             'events' => Event::query()
                 ->with('organization')
                 ->where('is_published', true)
+                ->where('visibility', 'public')
                 ->where('starts_at', '>=', now()->subDay())
                 ->orderBy('starts_at')
                 ->paginate(12),
@@ -28,6 +29,8 @@ class EventController extends Controller
 
     public function show(Event $event): View
     {
+        abort_unless($event->isVisibleTo(request()->user()), 403);
+
         $event->load([
             'organization',
             'creator',
@@ -60,7 +63,7 @@ class EventController extends Controller
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'timezone' => ['required', 'string', 'max:64'],
             'capacity' => ['nullable', 'integer', 'min:1'],
-            'visibility' => ['required', Rule::in(['public', 'community'])],
+            'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
             'image' => ['nullable', 'image', 'max:4096'],
         ]);
 

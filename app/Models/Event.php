@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'organization_id',
@@ -70,5 +71,19 @@ class Event extends Model
     public function imageUrl(): ?string
     {
         return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
+    }
+
+    public function isVisibleTo(?User $user): bool
+    {
+        return match ($this->visibility) {
+            'public', 'unlisted' => true,
+            'private' => $user?->isMemberOf($this->organization) ?? false,
+            default => false,
+        };
+    }
+
+    public function visibilityLabel(): string
+    {
+        return Str::headline($this->visibility);
     }
 }

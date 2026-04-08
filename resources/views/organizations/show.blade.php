@@ -44,6 +44,7 @@
                     <div class="flex items-center gap-4 text-sm text-stone-400">
                         <span>{{ $organization->members->count() }} followers</span>
                         <span>{{ $organization->events->count() }} published events</span>
+                        <span>{{ $organization->visibilityLabel() }}</span>
                     </div>
 
                     @auth

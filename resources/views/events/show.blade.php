@@ -14,7 +14,7 @@
                 <img src="{{ $event->imageUrl() }}" alt="{{ $event->title }}" class="mb-8 h-80 w-full rounded-[1.5rem] object-cover">
             @endif
 
-            <p class="text-sm uppercase tracking-[0.25em] text-amber-300">{{ $event->starts_at->format('l, d F Y · g:i A') }} to {{ $event->ends_at->format('g:i A') }} {{ $event->timezone }}</p>
+            <p class="text-sm uppercase tracking-[0.25em] text-amber-300">{{ $event->starts_at->format('l, d F Y · g:i A') }} to {{ $event->ends_at->format('g:i A') }} {{ $event->timezone }} · {{ $event->visibilityLabel() }}</p>
             <p class="mt-5 text-lg leading-8 text-stone-300">{{ $event->summary }}</p>
             <div class="mt-8 grid gap-6 md:grid-cols-2">
                 <div>

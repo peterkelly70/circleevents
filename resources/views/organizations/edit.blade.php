@@ -74,6 +74,7 @@
                     <label class="text-sm font-medium text-stone-300" for="visibility">Visibility</label>
                     <select id="visibility" name="visibility" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                         <option value="public" @selected(old('visibility', $organization->visibility) === 'public')>Public</option>
+                        <option value="private" @selected(old('visibility', $organization->visibility) === 'private')>Private</option>
                         <option value="unlisted" @selected(old('visibility', $organization->visibility) === 'unlisted')>Unlisted</option>
                     </select>
                     <x-input-error :messages="$errors->get('visibility')" class="mt-2" />

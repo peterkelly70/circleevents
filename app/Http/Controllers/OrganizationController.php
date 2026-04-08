@@ -23,12 +23,14 @@ class OrganizationController extends Controller
             'website_url' => ['nullable', 'url', 'max:255'],
             'avatar' => ['nullable', 'image', 'max:3072'],
             'banner' => ['nullable', 'image', 'max:6144'],
-            'visibility' => ['required', Rule::in(['public', 'unlisted'])],
+            'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
         ]);
     }
 
     public function show(Organization $organization): View
     {
+        abort_unless($organization->isVisibleTo(request()->user()), 403);
+
         $organization->load([
             'owner',
             'members',

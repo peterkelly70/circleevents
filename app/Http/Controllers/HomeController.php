@@ -15,12 +15,14 @@ class HomeController extends Controller
             'featuredEvents' => Event::query()
                 ->with('organization')
                 ->where('is_published', true)
+                ->where('visibility', 'public')
                 ->where('starts_at', '>=', now())
                 ->orderBy('starts_at')
                 ->take(6)
                 ->get(),
             'organizations' => Organization::query()
                 ->withCount(['events', 'mailingLists'])
+                ->where('visibility', 'public')
                 ->orderBy('name')
                 ->take(6)
                 ->get(),
