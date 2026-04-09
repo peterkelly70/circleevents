@@ -49,7 +49,7 @@
                     Share on X
                 </a>
                 <a
-                    href="mailto:?subject={{ rawurlencode($event->title) }}&body={{ rawurlencode($event->summary.\"\n\n\".route('events.show', $event)) }}"
+                    href="mailto:?subject={{ rawurlencode($event->title) }}&body={{ rawurlencode($event->summary . "\n\n" . route('events.show', $event)) }}"
                     class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
                 >
                     Share by email

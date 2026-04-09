@@ -379,7 +379,7 @@
                                         X
                                     </a>
                                     <a
-                                        href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ rawurlencode(trim(strip_tags($message->body)).\"\n\n\".route('organizations.show', $organization)) }}"
+                                        href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ rawurlencode(trim(strip_tags($message->body)) . "\n\n" . route('organizations.show', $organization)) }}"
                                         class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
                                     >
                                         Email
