@@ -32,6 +32,28 @@
                 >
                     Share event
                 </button>
+                <a
+                    href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('events.show', $event)) }}"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                >
+                    Share on Facebook
+                </a>
+                <a
+                    href="https://x.com/intent/tweet?text={{ urlencode($event->title.' - '.$event->summary) }}&url={{ urlencode(route('events.show', $event)) }}"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                >
+                    Share on X
+                </a>
+                <a
+                    href="mailto:?subject={{ rawurlencode($event->title) }}&body={{ rawurlencode($event->summary.\"\n\n\".route('events.show', $event)) }}"
+                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                >
+                    Share by email
+                </a>
                 <button
                     type="button"
                     data-copy-button

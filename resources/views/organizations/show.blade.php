@@ -362,6 +362,28 @@
                                     >
                                         Share
                                     </button>
+                                    <a
+                                        href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('organizations.show', $organization)) }}"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                    >
+                                        Facebook
+                                    </a>
+                                    <a
+                                        href="https://x.com/intent/tweet?text={{ urlencode($message->subject.' - '.\Illuminate\Support\Str::limit(strip_tags($message->body), 140)) }}&url={{ urlencode(route('organizations.show', $organization)) }}"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                    >
+                                        X
+                                    </a>
+                                    <a
+                                        href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ rawurlencode(trim(strip_tags($message->body)).\"\n\n\".route('organizations.show', $organization)) }}"
+                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                    >
+                                        Email
+                                    </a>
                                     <button
                                         type="button"
                                         data-copy-button
