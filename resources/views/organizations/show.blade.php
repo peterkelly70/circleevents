@@ -17,14 +17,16 @@
         <section class="mb-6 overflow-hidden rounded-[2rem] border border-white/10 bg-stone-900/70 shadow-sm ring-1 ring-white/10">
             <div class="relative h-56 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.16),_transparent_30%),linear-gradient(135deg,_#292524,_#0c0a09)] sm:h-72">
                 @if ($organization->banner_path)
-                    <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/25 to-transparent"></div>
+                    <div class="absolute inset-0 bg-black">
+                        <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-contain object-center">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent"></div>
                 @endif
 
                 <div class="absolute inset-x-0 bottom-0 flex items-end gap-5 px-6 pb-6 sm:px-8">
                     <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 text-3xl font-black text-amber-200 shadow-xl sm:h-28 sm:w-28">
                         @if ($organization->avatar_path)
-                            <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
+                            <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-contain object-center">
                         @else
                             <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
                         @endif
