@@ -16,6 +16,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Admins have a report-review queue plus suspend/restore controls for users and organizations
 - Public homepage acting as a real landing page with registration CTA, public events, and public organizations
 - Public install page for self-hosted packaging and server setup guidance
+- Helper scripts include scheduler, permission lockdown, certificate repair, and optional ClamAV install support for safer uploads
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
 - Invite-by-email flow for organizations with account creation/login handoff

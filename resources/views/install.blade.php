@@ -91,6 +91,10 @@ php artisan optimize:clear</code></pre>
                                     <p class="mt-2">Installs the Laravel scheduler cron entry for reminders and scheduled tasks.</p>
                                 </div>
                                 <div class="rounded-2xl bg-black/20 p-4">
+                                    <p class="font-semibold text-white"><code>tools/install-clamav.sh</code></p>
+                                    <p class="mt-2">Installs ClamAV, updates signatures, and writes <code>CLAMSCAN_BINARY</code> into the app <code>.env</code>.</p>
+                                </div>
+                                <div class="rounded-2xl bg-black/20 p-4">
                                     <p class="font-semibold text-white"><code>tools/fix-apache-and-letsencrypt.sh</code></p>
                                     <p class="mt-2">Helps repair Apache and certificate setup on servers that need a fast bootstrap path.</p>
                                 </div>
