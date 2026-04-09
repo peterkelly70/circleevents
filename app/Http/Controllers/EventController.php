@@ -53,6 +53,7 @@ class EventController extends Controller
         return view('events.index', [
             'events' => Event::query()
                 ->with('organization')
+                ->whereHas('organization', fn ($query) => $query->where('approval_status', 'approved'))
                 ->where('is_published', true)
                 ->where('visibility', 'public')
                 ->where('starts_at', '>=', now()->subDay())
@@ -108,6 +109,10 @@ class EventController extends Controller
 
         $organization = Organization::findOrFail($validated['organization_id']);
         abort_unless($request->user()->isManagerOf($organization), 403);
+
+        if (! $organization->isApproved() && ! $request->user()->is_admin) {
+            return back()->with('status', 'This organization is still waiting for admin approval before it can publish events.');
+        }
 
         $imagePath = $request->file('image')
             ? ImageUploads::storeResizedPublicImage($request->file('image'), 'event-images', 1600, 900)

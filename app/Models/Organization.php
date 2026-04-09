@@ -32,6 +32,9 @@ use Illuminate\Support\Str;
     'avatar_path',
     'banner_path',
     'visibility',
+    'approval_status',
+    'approved_at',
+    'approved_by_user_id',
 ])]
 class Organization extends Model
 {
@@ -42,6 +45,7 @@ class Organization extends Model
             'auto_post_discord_announcements' => 'boolean',
             'auto_post_facebook_events' => 'boolean',
             'auto_post_facebook_announcements' => 'boolean',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -113,11 +117,20 @@ class Organization extends Model
 
     public function isVisibleTo(?User $user): bool
     {
+        if ($this->approval_status !== 'approved') {
+            return $user?->isManagerOf($this) ?? false;
+        }
+
         return match ($this->visibility) {
             'public', 'unlisted' => true,
             'private' => $user?->isMemberOf($this) ?? false,
             default => false,
         };
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
     }
 
     public function visibilityLabel(): string

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDiscussionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventInvitationController;
@@ -53,6 +54,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{event:slug}/discussion', [EventDiscussionController::class, 'store'])->name('events.discussion.store');
     Route::post('/mailing-lists', [MailingListController::class, 'store'])->name('mailing-lists.store');
     Route::post('/mailing-lists/{mailingList:slug}/subscribe', [MailingListController::class, 'subscribe'])->name('mailing-lists.subscribe');
+    Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
+    Route::post('/admin/users/{user}/approve', [AdminController::class, 'approveUser'])->name('admin.users.approve');
+    Route::post('/admin/organizations/{organization}/approve', [AdminController::class, 'approveOrganization'])->name('admin.organizations.approve');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -23,6 +23,83 @@
                     </div>
                 @endif
 
+                @if (auth()->user()->is_admin)
+                    <section class="rounded-[2rem] border border-amber-300/20 bg-stone-900/75 p-6 shadow-sm ring-1 ring-amber-300/10">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-stone-100">Admin moderation</h3>
+                                <p class="mt-1 text-sm text-stone-400">Control whether people can register immediately or require approval first.</p>
+                            </div>
+                            <span class="rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-stone-950">Admin</span>
+                        </div>
+
+                        <form method="POST" action="{{ route('admin.settings.update') }}" class="mt-5 grid gap-4 md:grid-cols-2">
+                            @csrf
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="user-registration-mode">General user registration</label>
+                                <select id="user-registration-mode" name="user_registration_mode" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                    <option value="open" @selected($userRegistrationMode === 'open')>Open self-registration</option>
+                                    <option value="moderated" @selected($userRegistrationMode === 'moderated')>Moderated approval</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="organization-registration-mode">Organization creation</label>
+                                <select id="organization-registration-mode" name="organization_registration_mode" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                    <option value="open" @selected($organizationRegistrationMode === 'open')>Open self-service</option>
+                                    <option value="moderated" @selected($organizationRegistrationMode === 'moderated')>Require admin approval</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <button class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Save moderation settings</button>
+                            </div>
+                        </form>
+
+                        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                            <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <h4 class="text-lg font-semibold text-stone-100">Pending users</h4>
+                                    <span class="text-sm text-stone-400">{{ $pendingUsers->count() }}</span>
+                                </div>
+                                <div class="mt-4 space-y-3">
+                                    @forelse ($pendingUsers as $pendingUser)
+                                        <form method="POST" action="{{ route('admin.users.approve', $pendingUser) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            @csrf
+                                            <div>
+                                                <div class="font-semibold text-stone-100">{{ $pendingUser->name }}</div>
+                                                <div class="mt-1 text-sm text-stone-400">{{ $pendingUser->email }}</div>
+                                            </div>
+                                            <button class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-stone-950">Approve</button>
+                                        </form>
+                                    @empty
+                                        <p class="text-sm text-stone-400">No pending user accounts.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <h4 class="text-lg font-semibold text-stone-100">Pending organizations</h4>
+                                    <span class="text-sm text-stone-400">{{ $pendingOrganizations->count() }}</span>
+                                </div>
+                                <div class="mt-4 space-y-3">
+                                    @forelse ($pendingOrganizations as $pendingOrganization)
+                                        <form method="POST" action="{{ route('admin.organizations.approve', $pendingOrganization) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            @csrf
+                                            <div>
+                                                <div class="font-semibold text-stone-100">{{ $pendingOrganization->name }}</div>
+                                                <div class="mt-1 text-sm text-stone-400">Owner: {{ $pendingOrganization->owner?->name ?? 'Unknown' }}</div>
+                                            </div>
+                                            <button class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-stone-950">Approve</button>
+                                        </form>
+                                    @empty
+                                        <p class="text-sm text-stone-400">No pending organizations.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
                 <section id="new-organization" class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                     <div class="flex items-center justify-between gap-4">
                         <div>
@@ -99,6 +176,9 @@
                                         <div class="min-w-0 pb-1">
                                             <p class="text-xs uppercase tracking-[0.2em] text-amber-200/90">{{ $organization->pivot->role }}</p>
                                             <a href="{{ route('organizations.show', $organization) }}" class="mt-1 block text-xl font-bold text-white">{{ $organization->name }}</a>
+                                            @if ($organization->approval_status !== 'approved')
+                                                <p class="mt-1 text-xs uppercase tracking-[0.2em] text-amber-200">Pending admin approval</p>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -176,6 +256,9 @@
             <div class="space-y-6">
                 <section class="rounded-[2rem] bg-stone-950 p-6 text-stone-100 shadow-sm">
                     <h3 class="text-2xl font-bold">Create an organization</h3>
+                    @if ($organizationRegistrationMode === 'moderated' && ! auth()->user()->is_admin)
+                        <p class="mt-2 text-sm text-amber-200">New organizations currently need approval from a CircleEvents admin before they go public or can publish events.</p>
+                    @endif
 
                     @if ($errors->any())
                         <div class="mt-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">

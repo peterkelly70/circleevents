@@ -94,6 +94,10 @@ class Event extends Model
 
     public function isVisibleTo(?User $user): bool
     {
+        if (! $this->organization->isApproved() && ! ($user?->isManagerOf($this->organization) ?? false)) {
+            return false;
+        }
+
         return match ($this->visibility) {
             'public', 'unlisted' => true,
             'private' => $user?->isMemberOf($this->organization) ?? false,

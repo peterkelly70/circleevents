@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Organization;
 use App\Models\OrganizationMessage;
 use App\Models\OrganizationPost;
+use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -49,6 +50,14 @@ class DashboardController extends Controller
                 ->orderBy('starts_at')
                 ->take(10)
                 ->get(),
+            'userRegistrationMode' => SiteSetting::userRegistrationMode(),
+            'organizationRegistrationMode' => SiteSetting::organizationRegistrationMode(),
+            'pendingUsers' => $user->is_admin
+                ? User::query()->where('registration_status', 'pending')->latest()->get()
+                : collect(),
+            'pendingOrganizations' => $user->is_admin
+                ? Organization::query()->with('owner')->where('approval_status', 'pending')->latest()->get()
+                : collect(),
         ]);
     }
 

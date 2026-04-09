@@ -14,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['name', 'email', 'password', 'city', 'bio', 'is_admin'])]
+#[Fillable(['name', 'email', 'password', 'city', 'bio', 'is_admin', 'registration_status', 'approved_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -31,8 +31,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'is_admin' => 'boolean',
+            'approved_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->registration_status === 'active';
     }
 
     public function organizations(): BelongsToMany

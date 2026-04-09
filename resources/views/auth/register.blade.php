@@ -11,6 +11,12 @@
         </div>
     @endif
 
+    @if (($userRegistrationMode ?? 'open') === 'moderated')
+        <div class="mb-4 rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
+            New accounts are currently moderated. You can sign up here, but CircleEvents admins must approve the account before it can be used.
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 

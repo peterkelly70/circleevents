@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ConsumesEventInvitations;
 use App\Support\ConsumesOrganizationInvitations;
+use App\Models\SiteSetting;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class RegisteredUserController extends Controller
             'prefillEmail' => $request->query('email', session('invited_email')),
             'inviteEventTitle' => session('invited_event_title'),
             'inviteOrganizationName' => session('invited_organization_name'),
+            'userRegistrationMode' => SiteSetting::userRegistrationMode(),
         ]);
     }
 
@@ -43,13 +45,23 @@ class RegisteredUserController extends Controller
             'accepted_usage_terms' => ['accepted'],
         ]);
 
+        $registrationMode = SiteSetting::userRegistrationMode();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'registration_status' => $registrationMode === 'moderated' ? 'pending' : 'active',
+            'approved_at' => $registrationMode === 'moderated' ? null : now(),
         ]);
 
         event(new Registered($user));
+
+        if ($registrationMode === 'moderated') {
+            return redirect()
+                ->route('login')
+                ->with('status', 'Your account request has been submitted and is waiting for approval from CircleEvents admins.');
+        }
 
         Auth::login($user);
 

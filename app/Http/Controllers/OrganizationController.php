@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Support\ImageUploads;
 use App\Models\User;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -165,6 +166,9 @@ class OrganizationController extends Controller
             ...$validated,
             'owner_id' => $request->user()->id,
             'slug' => Str::slug($validated['name']).'-'.Str::lower(Str::random(6)),
+            'approval_status' => $request->user()->is_admin || SiteSetting::organizationRegistrationMode() === 'open' ? 'approved' : 'pending',
+            'approved_at' => $request->user()->is_admin || SiteSetting::organizationRegistrationMode() === 'open' ? now() : null,
+            'approved_by_user_id' => $request->user()->is_admin ? $request->user()->id : null,
         ]);
 
         $organization->members()->attach($request->user()->id, ['role' => 'owner']);
@@ -174,7 +178,9 @@ class OrganizationController extends Controller
 
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', 'Organization created.');
+            ->with('status', $organization->isApproved()
+                ? 'Organization created.'
+                : 'Organization submitted for review. It will stay hidden until a CircleEvents admin approves it.');
     }
 
     public function update(Request $request, Organization $organization): RedirectResponse
