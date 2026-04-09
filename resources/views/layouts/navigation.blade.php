@@ -16,27 +16,39 @@
                     <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">
                         {{ __('Events') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    @auth
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                    @endauth
                 </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:gap-3 sm:ms-6">
-                <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-stone-300">
-                    {{ Auth::user()->name }}
-                </span>
+                @auth
+                    <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-stone-300">
+                        {{ Auth::user()->name }}
+                    </span>
 
-                <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">
-                    {{ __('Profile') }}
-                </x-nav-link>
+                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">
+                        {{ __('Profile') }}
+                    </x-nav-link>
 
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-stone-400 transition duration-150 ease-in-out hover:border-stone-300 hover:text-stone-200 focus:outline-none focus:text-stone-200 focus:border-stone-300">
-                        {{ __('Log Out') }}
-                    </button>
-                </form>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-stone-400 transition duration-150 ease-in-out hover:border-stone-300 hover:text-stone-200 focus:outline-none focus:text-stone-200 focus:border-stone-300">
+                            {{ __('Log Out') }}
+                        </button>
+                    </form>
+                @else
+                    <x-nav-link :href="route('login')" :active="request()->routeIs('login')">
+                        {{ __('Log In') }}
+                    </x-nav-link>
+
+                    <a href="{{ route('register') }}" class="inline-flex items-center rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-stone-950">
+                        {{ __('Create account') }}
+                    </a>
+                @endauth
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
@@ -58,32 +70,46 @@
             <x-responsive-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">
                 {{ __('Events') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+            @auth
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+            @endauth
         </div>
 
         <div class="border-t border-white/10 pt-4 pb-1">
-            <div class="px-4">
-                <div class="text-base font-medium text-stone-100">{{ Auth::user()->name }}</div>
-                <div class="text-sm font-medium text-stone-400">{{ Auth::user()->email }}</div>
-            </div>
+            @auth
+                <div class="px-4">
+                    <div class="text-base font-medium text-stone-100">{{ Auth::user()->name }}</div>
+                    <div class="text-sm font-medium text-stone-400">{{ Auth::user()->email }}</div>
+                </div>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Profile') }}
                     </x-responsive-nav-link>
-                </form>
-            </div>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+
+                        <x-responsive-nav-link :href="route('logout')"
+                                onclick="event.preventDefault();
+                                            this.closest('form').submit();">
+                            {{ __('Log Out') }}
+                        </x-responsive-nav-link>
+                    </form>
+                </div>
+            @else
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('login')">
+                        {{ __('Log In') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('register')">
+                        {{ __('Create account') }}
+                    </x-responsive-nav-link>
+                </div>
+            @endauth
         </div>
     </div>
 </nav>
