@@ -557,10 +557,23 @@
                 <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                     <h2 class="text-2xl font-bold text-stone-100">Mailing lists</h2>
                     <div class="mt-4 space-y-3">
-                        @forelse ($organization->mailingLists as $list)
-                            <a href="{{ route('mailing-lists.show', $list) }}" class="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-emerald-300/40 hover:bg-black/30">
-                                <div class="font-semibold text-stone-100">{{ $list->name }}</div>
-                                <div class="mt-1 text-sm text-stone-400">{{ $list->audience }}</div>
+                        @forelse ($visibleMailingLists as $entry)
+                            <a href="{{ route('mailing-lists.show', $entry['list']) }}" class="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-emerald-300/40 hover:bg-black/30">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="font-semibold text-stone-100">{{ $entry['list']->name }}</div>
+                                        <div class="mt-1 text-sm text-stone-400">{{ $entry['list']->audience }}</div>
+                                    </div>
+                                    @if ($entry['kind'] === 'event')
+                                        <span class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200">Event updates</span>
+                                    @endif
+                                </div>
+
+                                @if ($entry['event'])
+                                    <div class="mt-3 text-sm text-stone-400">
+                                        Linked to <span class="font-medium text-stone-200">{{ $entry['event']->title }}</span>
+                                    </div>
+                                @endif
                             </a>
                         @empty
                             <p class="text-sm text-stone-400">No mailing lists yet.</p>

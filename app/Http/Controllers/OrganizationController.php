@@ -75,7 +75,10 @@ class OrganizationController extends Controller
             'posts.user',
             'messages.user',
             'invitations',
-            'events' => fn ($query) => $query->where('is_published', true)->orderBy('starts_at'),
+            'events' => fn ($query) => $query
+                ->where('is_published', true)
+                ->with('mailingList')
+                ->orderBy('starts_at'),
             'mailingLists',
         ]);
 
@@ -95,8 +98,27 @@ class OrganizationController extends Controller
             )->values());
         }
 
+        $visibleMailingLists = $organization->mailingLists
+            ->map(fn ($list) => [
+                'list' => $list,
+                'kind' => 'organization',
+                'event' => null,
+            ])
+            ->merge(
+                $organization->events
+                    ->filter(fn ($event) => $event->mailingList !== null)
+                    ->map(fn ($event) => [
+                        'list' => $event->mailingList,
+                        'kind' => 'event',
+                        'event' => $event,
+                    ])
+            )
+            ->unique(fn (array $entry) => $entry['list']->id)
+            ->values();
+
         return view('organizations.show', [
             'organization' => $organization,
+            'visibleMailingLists' => $visibleMailingLists,
             'pendingInvitations' => $organization->invitations
                 ->whereNotNull('email')
                 ->whereNull('accepted_at')
