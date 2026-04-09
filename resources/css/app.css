@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+    :root {
+        --font-theme-medieval-display: 'Cinzel Decorative', 'Georgia', serif;
+        --font-theme-medieval-body: 'Cormorant Garamond', 'Georgia', serif;
+        --font-theme-serif-display: 'Fraunces', 'Georgia', serif;
+        --font-theme-serif-body: 'Source Serif 4', 'Georgia', serif;
+        --font-theme-scifi-display: 'Orbitron', 'Figtree', sans-serif;
+        --font-theme-scifi-body: 'Space Grotesk', 'Figtree', sans-serif;
+    }
+
     html {
         color-scheme: dark;
     }
@@ -13,6 +22,31 @@
 
     ::selection {
         @apply bg-amber-300 text-stone-950;
+    }
+
+    .font-theme-medieval-display {
+        font-family: var(--font-theme-medieval-display);
+    }
+
+    .font-theme-medieval-body {
+        font-family: var(--font-theme-medieval-body);
+    }
+
+    .font-theme-serif-display {
+        font-family: var(--font-theme-serif-display);
+    }
+
+    .font-theme-serif-body {
+        font-family: var(--font-theme-serif-body);
+    }
+
+    .font-theme-scifi-display {
+        font-family: var(--font-theme-scifi-display);
+        letter-spacing: 0.04em;
+    }
+
+    .font-theme-scifi-body {
+        font-family: var(--font-theme-scifi-body);
     }
 }
 
@@ -107,10 +141,9 @@
     }
 
     .theme-picker-radio {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
+        height: 1rem;
+        width: 1rem;
+        accent-color: rgb(251 191 36);
     }
 
     .theme-preview {

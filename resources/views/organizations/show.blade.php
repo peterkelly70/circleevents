@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 {{ $theme['mode'] === 'light' ? 'text-stone-900' : 'text-stone-100' }}">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 {{ $theme['mode'] === 'light' ? 'text-stone-900' : 'text-stone-100' }} {{ $theme['page_backdrop'] }} {{ $theme['font_body'] }}">
         <section class="mb-6 overflow-hidden rounded-[2rem] border shadow-sm ring-1 {{ $theme['surface'] }}">
             <div class="relative h-56 {{ $theme['hero'] }} sm:h-72">
                 @if ($organization->banner_path)
@@ -38,7 +38,7 @@
 
                     <div class="pb-1">
                         <p class="text-xs uppercase tracking-[0.35em] {{ $theme['hero_eyebrow'] }}">Community profile</p>
-                        <h2 class="mt-2 text-2xl font-black sm:text-4xl {{ $theme['hero_heading'] }}">{{ $organization->name }}</h2>
+                        <h2 class="mt-2 text-2xl font-black sm:text-4xl {{ $theme['hero_heading'] }} {{ $theme['font_display'] }}">{{ $organization->name }}</h2>
                     </div>
                 </div>
             </div>
