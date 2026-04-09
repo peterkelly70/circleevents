@@ -23,10 +23,10 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public const FONT_SIZE_CLASSES = [
-        'small' => 'text-[15px] leading-6',
-        'medium' => 'text-base leading-7',
-        'large' => 'text-[17px] leading-8',
-        'x-large' => 'text-[19px] leading-9',
+        'small' => 'text-base leading-7',
+        'medium' => 'text-[17px] leading-7',
+        'large' => 'text-[19px] leading-8',
+        'x-large' => 'text-[21px] leading-9',
     ];
 
     /**
