@@ -5,7 +5,7 @@
 @layer base {
     :root {
         --font-theme-medieval-display: 'Cinzel Decorative', 'Georgia', serif;
-        --font-theme-medieval-body: 'Cormorant Garamond', 'Georgia', serif;
+        --font-theme-medieval-body: 'Source Serif 4', 'Georgia', serif;
         --font-theme-serif-display: 'Fraunces', 'Georgia', serif;
         --font-theme-serif-body: 'Source Serif 4', 'Georgia', serif;
         --font-theme-scifi-display: 'Orbitron', 'Figtree', sans-serif;
