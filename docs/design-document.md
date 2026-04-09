@@ -32,6 +32,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Events and organizations support both targeted email invites and reusable share invite codes with optional expiry
 - Organization profiles can include website, Discord, X/Twitter, and Facebook links
 - Organizations can connect a Discord webhook to auto-post newly published non-private events
+- Organization announcements can also be posted to Discord, with a per-message checkbox and an organization-level default
 
 ## Data Model
 - `users`

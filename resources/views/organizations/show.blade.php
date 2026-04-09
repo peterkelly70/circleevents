@@ -135,7 +135,13 @@
                         <div class="mt-8 border-t border-white/10 pt-8">
                             <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Discord publishing</h2>
                             <p class="mt-4 text-stone-300">
-                                {{ $organization->discord_webhook_url && $organization->auto_post_discord_events ? 'Connected and auto-posting published events.' : 'Not configured for automatic Discord event posts yet.' }}
+                                @if ($organization->discord_webhook_url)
+                                    Connected.
+                                    {{ $organization->auto_post_discord_events ? ' Events auto-post to Discord.' : ' Events do not auto-post yet.' }}
+                                    {{ $organization->auto_post_discord_announcements ? ' Announcements default to Discord posting.' : ' Announcements require manual Discord opt-in.' }}
+                                @else
+                                    Not configured for automatic Discord posts yet.
+                                @endif
                             </p>
                         </div>
                     @endif
@@ -220,6 +226,10 @@
                                 <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required></textarea>
                                 <p class="text-xs text-stone-500">Supports BBCode and an optional image attachment.</p>
                                 <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                <label class="flex items-center gap-3 text-sm text-stone-300">
+                                    <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                                    Send this announcement to Discord too
+                                </label>
                                 <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
                             </form>
 

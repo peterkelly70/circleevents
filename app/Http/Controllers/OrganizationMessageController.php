@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\OrganizationAnnouncementMail;
 use App\Models\Organization;
 use App\Models\OrganizationMessage;
+use App\Support\DiscordOrganizationMessagePublisher;
 use App\Support\ImageUploads;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class OrganizationMessageController extends Controller
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:10000'],
             'image' => ['nullable', 'image', 'max:12288'],
+            'post_to_discord' => ['nullable', 'boolean'],
         ]);
 
         $message = OrganizationMessage::create([
@@ -65,8 +67,16 @@ class OrganizationMessageController extends Controller
             Mail::to($member->email)->send(new OrganizationAnnouncementMail($message, $member, $membership->email_opt_out_token));
         }
 
+        $discordPosted = false;
+
+        if ($request->boolean('post_to_discord') || $organization->auto_post_discord_announcements) {
+            $discordPosted = DiscordOrganizationMessagePublisher::publish($message);
+        }
+
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', 'Message saved and emailed to organization members.');
+            ->with('status', $discordPosted
+                ? 'Message saved, emailed to members, and posted to Discord.'
+                : 'Message saved and emailed to organization members.');
     }
 }

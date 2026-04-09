@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
     'facebook_url',
     'discord_webhook_url',
     'auto_post_discord_events',
+    'auto_post_discord_announcements',
     'avatar_path',
     'banner_path',
     'visibility',
@@ -34,6 +35,7 @@ class Organization extends Model
     {
         return [
             'auto_post_discord_events' => 'boolean',
+            'auto_post_discord_announcements' => 'boolean',
         ];
     }
 

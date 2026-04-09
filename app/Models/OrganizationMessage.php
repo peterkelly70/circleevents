@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
     'body',
     'image_path',
     'emailed_at',
+    'discord_posted_at',
 ])]
 class OrganizationMessage extends Model
 {
@@ -21,6 +22,7 @@ class OrganizationMessage extends Model
     {
         return [
             'emailed_at' => 'datetime',
+            'discord_posted_at' => 'datetime',
         ];
     }
 

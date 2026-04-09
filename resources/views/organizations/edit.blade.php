@@ -76,6 +76,10 @@
                         <input type="checkbox" name="auto_post_discord_events" value="1" @checked(old('auto_post_discord_events', $organization->auto_post_discord_events)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
                         Automatically post newly published non-private events to Discord
                     </label>
+                    <label class="mt-4 flex items-center gap-3 text-sm text-stone-300">
+                        <input type="checkbox" name="auto_post_discord_announcements" value="1" @checked(old('auto_post_discord_announcements', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                        Post organization announcements to Discord by default
+                    </label>
                 </div>
 
                 <div class="grid gap-5 md:grid-cols-2">
