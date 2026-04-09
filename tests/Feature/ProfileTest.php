@@ -30,6 +30,8 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'font_size' => 'large',
+                'organization_theme_override' => 'starforge',
             ]);
 
         $response
@@ -40,6 +42,8 @@ class ProfileTest extends TestCase
 
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('large', $user->font_size);
+        $this->assertSame('starforge', $user->organization_theme_override);
         $this->assertNull($user->email_verified_at);
     }
 
@@ -52,6 +56,8 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
+                'font_size' => 'medium',
+                'organization_theme_override' => '',
             ]);
 
         $response

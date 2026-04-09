@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\OrganizationThemes;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,6 +29,8 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'city' => ['nullable', 'string', 'max:120'],
             'bio' => ['nullable', 'string', 'max:500'],
+            'font_size' => ['required', Rule::in(['small', 'medium', 'large', 'x-large'])],
+            'organization_theme_override' => ['nullable', Rule::in(OrganizationThemes::keys())],
         ];
     }
 }

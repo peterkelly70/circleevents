@@ -1,6 +1,6 @@
 <x-app-layout>
     @php
-        $theme = $organization->theme();
+        $theme = \App\Support\OrganizationThemes::get(auth()->user()?->resolvedOrganizationThemeKey($organization) ?? $organization->theme_key);
         $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
     @endphp
     <x-slot name="header">

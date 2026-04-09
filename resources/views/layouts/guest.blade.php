@@ -12,7 +12,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="antialiased">
-        <div class="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.2),_transparent_30%),linear-gradient(180deg,_#292524,_#0c0a09)] px-6 py-10 text-stone-100">
+        <div class="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.2),_transparent_30%),linear-gradient(180deg,_#292524,_#0c0a09)] px-6 py-10 text-stone-100 {{ auth()->user()?->fontSizeClass() ?? 'text-base leading-7' }}">
             <div>
                 <a href="/">
                     <x-application-logo class="h-20 w-20 fill-current text-amber-300" />

@@ -59,6 +59,30 @@
             <x-input-error class="mt-2" :messages="$errors->get('bio')" />
         </div>
 
+        <div>
+            <x-input-label for="font_size" :value="__('Reading size')" />
+            <p class="mt-1 text-sm text-stone-400">Increase this if the site text feels too small.</p>
+            <select id="font_size" name="font_size" class="mt-2 block w-full rounded-2xl border border-white/10 bg-white/5 text-stone-100 shadow-sm focus:border-amber-300 focus:ring-amber-300">
+                <option value="small" @selected(old('font_size', $user->font_size ?? 'medium') === 'small')>Small</option>
+                <option value="medium" @selected(old('font_size', $user->font_size ?? 'medium') === 'medium')>Medium</option>
+                <option value="large" @selected(old('font_size', $user->font_size ?? 'medium') === 'large')>Large</option>
+                <option value="x-large" @selected(old('font_size', $user->font_size ?? 'medium') === 'x-large')>Extra large</option>
+            </select>
+            <x-input-error class="mt-2" :messages="$errors->get('font_size')" />
+        </div>
+
+        <div>
+            <x-input-label for="organization_theme_override" :value="__('Organization theme preference')" />
+            <p class="mt-1 text-sm text-stone-400">Use this to override an organization’s chosen theme for your own reading comfort.</p>
+            <select id="organization_theme_override" name="organization_theme_override" class="mt-2 block w-full rounded-2xl border border-white/10 bg-white/5 text-stone-100 shadow-sm focus:border-amber-300 focus:ring-amber-300">
+                <option value="">Use organization default</option>
+                @foreach (\App\Support\OrganizationThemes::presets() as $themeKey => $themePreset)
+                    <option value="{{ $themeKey }}" @selected(old('organization_theme_override', $user->organization_theme_override) === $themeKey)>{{ $themePreset['name'] }}</option>
+                @endforeach
+            </select>
+            <x-input-error class="mt-2" :messages="$errors->get('organization_theme_override')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Support\OrganizationThemes;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -14,12 +15,19 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['name', 'email', 'password', 'city', 'bio', 'is_admin', 'registration_status', 'approved_at'])]
+#[Fillable(['name', 'email', 'password', 'city', 'bio', 'font_size', 'organization_theme_override', 'is_admin', 'registration_status', 'approved_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public const FONT_SIZE_CLASSES = [
+        'small' => 'text-[15px] leading-6',
+        'medium' => 'text-base leading-7',
+        'large' => 'text-[17px] leading-8',
+        'x-large' => 'text-[19px] leading-9',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -170,5 +178,19 @@ class User extends Authenticatable
             ->where('blockable_type', $target::class)
             ->where('blockable_id', $target->id)
             ->exists();
+    }
+
+    public function fontSizeClass(): string
+    {
+        return self::FONT_SIZE_CLASSES[$this->font_size] ?? self::FONT_SIZE_CLASSES['medium'];
+    }
+
+    public function resolvedOrganizationThemeKey(?Organization $organization = null): string
+    {
+        if ($this->organization_theme_override && in_array($this->organization_theme_override, OrganizationThemes::keys(), true)) {
+            return $this->organization_theme_override;
+        }
+
+        return $organization?->theme_key ?: OrganizationThemes::DEFAULT;
     }
 }
