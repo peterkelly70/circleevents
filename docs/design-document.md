@@ -19,7 +19,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Helper scripts include scheduler, permission lockdown, certificate repair, and optional ClamAV install support for safer uploads
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
-- Organizations can choose from nine full profile themes, including fantasy/medieval, light serif editorial, and dark sci-fi treatments with distinct typography
+- Organizations can choose from fourteen full profile themes, including fantasy/medieval, light serif editorial, dark sci-fi, royal-blue, multiple cosmic palettes, and bright iridescent treatments with distinct typography
 - Invite-by-email flow for organizations with account creation/login handoff
 - Manager assignment for organizations through promotion or manager-role invites
 - Organizer dashboard for:
@@ -87,7 +87,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Dashboard oriented around organizer actions instead of generic “you are logged in”
 - Organization uploads are normalized on save to a 512x512 avatar and a 1600x480 banner
 - Organization uploads accept larger originals before normalization so high-resolution source images can be converted server-side
-- Each organization can switch between nine distinct public themes rather than a single shared presentation
+- Each organization can switch between fourteen distinct public themes rather than a single shared presentation
 - Event image uploads are normalized on save to 1600x900
 
 ## Next Steps
