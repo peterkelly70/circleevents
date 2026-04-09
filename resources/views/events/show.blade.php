@@ -21,6 +21,27 @@
 
             <p class="text-sm uppercase tracking-[0.25em] text-amber-300">{{ $event->starts_at->format('l, d F Y · g:i A') }} to {{ $event->ends_at->format('g:i A') }} {{ $event->timezone }} · {{ $event->visibilityLabel() }}</p>
             <p class="mt-5 text-lg leading-8 text-stone-300">{{ $event->summary }}</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+                <button
+                    type="button"
+                    data-share-button
+                    data-share-title="{{ $event->title }}"
+                    data-share-text="{{ $event->summary }}"
+                    data-share-url="{{ route('events.show', $event) }}"
+                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                >
+                    Share event
+                </button>
+                <button
+                    type="button"
+                    data-copy-button
+                    data-copy-text="{{ route('events.show', $event) }}"
+                    data-copy-success="Event link copied"
+                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                >
+                    Copy link
+                </button>
+            </div>
             <div class="mt-8 grid gap-6 md:grid-cols-2">
                 <div>
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Venue</h2>

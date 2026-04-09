@@ -34,6 +34,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Organizations can connect a Discord webhook to auto-post newly published non-private events
 - Organization announcements can also be posted to Discord, with a per-message checkbox and an organization-level default
 - Organizations can connect Facebook Page credentials to post events and announcements to a Facebook Page
+- Event pages and organization announcements include lightweight copy/share actions as a low-friction alternative to deep social integrations
 
 ## Data Model
 - `users`

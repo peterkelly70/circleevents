@@ -351,6 +351,27 @@
                                 @if ($message->image_path)
                                     <img src="{{ $message->imageUrl() }}" alt="Member message attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
                                 @endif
+                                <div class="mt-4 flex flex-wrap gap-3">
+                                    <button
+                                        type="button"
+                                        data-share-button
+                                        data-share-title="{{ $message->subject }}"
+                                        data-share-text="{{ \Illuminate\Support\Str::limit(strip_tags($message->body), 180) }}"
+                                        data-share-url="{{ route('organizations.show', $organization) }}"
+                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                    >
+                                        Share
+                                    </button>
+                                    <button
+                                        type="button"
+                                        data-copy-button
+                                        data-copy-text="{{ $message->subject }}\n\n{{ trim(strip_tags($message->body)) }}\n\n{{ route('organizations.show', $organization) }}"
+                                        data-copy-success="Announcement copied"
+                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                    >
+                                        Copy text
+                                    </button>
+                                </div>
                             </div>
                         @empty
                             <p class="text-sm text-stone-400">No member messages yet.</p>

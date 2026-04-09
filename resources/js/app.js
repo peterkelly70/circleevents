@@ -181,6 +181,75 @@ const initEventMaps = async () => {
     });
 };
 
+const initShareButtons = () => {
+    document.querySelectorAll('[data-copy-button]').forEach((button) => {
+        if (button.dataset.copyReady === 'true') {
+            return;
+        }
+
+        button.addEventListener('click', async () => {
+            const text = button.dataset.copyText ?? '';
+
+            if (!text) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalLabel = button.textContent;
+                button.textContent = button.dataset.copySuccess ?? 'Copied';
+
+                window.setTimeout(() => {
+                    button.textContent = originalLabel;
+                }, 1800);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        button.dataset.copyReady = 'true';
+    });
+
+    document.querySelectorAll('[data-share-button]').forEach((button) => {
+        if (button.dataset.shareReady === 'true') {
+            return;
+        }
+
+        button.addEventListener('click', async () => {
+            const payload = {
+                title: button.dataset.shareTitle ?? document.title,
+                text: button.dataset.shareText ?? '',
+                url: button.dataset.shareUrl ?? window.location.href,
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(payload);
+                    return;
+                } catch (error) {
+                    if (error?.name === 'AbortError') {
+                        return;
+                    }
+                }
+            }
+
+            try {
+                await navigator.clipboard.writeText(payload.url);
+                const originalLabel = button.textContent;
+                button.textContent = 'Link copied';
+
+                window.setTimeout(() => {
+                    button.textContent = originalLabel;
+                }, 1800);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        button.dataset.shareReady = 'true';
+    });
+};
+
 initPlaceAutocomplete().catch((error) => {
     console.error(error);
 });
@@ -188,3 +257,5 @@ initPlaceAutocomplete().catch((error) => {
 initEventMaps().catch((error) => {
     console.error(error);
 });
+
+initShareButtons();
