@@ -125,48 +125,22 @@
                 </div>
                 @if ($organization->discord_url || $organization->twitter_url || $organization->facebook_url)
                     <div class="mt-6 border-t border-white/10 pt-6">
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Social links</h2>
-                        <div class="mt-4 flex flex-wrap gap-3">
-                            @if ($organization->discord_url)
-                                <a href="{{ $organization->discord_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Discord</a>
-                            @endif
-                            @if ($organization->twitter_url)
-                                <a href="{{ $organization->twitter_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">X / Twitter</a>
-                            @endif
-                            @if ($organization->facebook_url)
-                                <a href="{{ $organization->facebook_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Facebook</a>
-                            @endif
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Community links</h2>
+                            <div class="flex flex-wrap gap-2">
+                                @if ($organization->discord_url)
+                                    <a href="{{ $organization->discord_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Discord</a>
+                                @endif
+                                @if ($organization->twitter_url)
+                                    <a href="{{ $organization->twitter_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">X / Twitter</a>
+                                @endif
+                                @if ($organization->facebook_url)
+                                    <a href="{{ $organization->facebook_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Facebook</a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endif
-                @auth
-                    @if (auth()->user()->isManagerOf($organization))
-                        <div class="mt-6 border-t border-white/10 pt-6">
-                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Discord publishing</h2>
-                            <p class="mt-4 {{ $theme['body'] }}">
-                                @if ($organization->discord_webhook_url)
-                                    Connected.
-                                    {{ $organization->auto_post_discord_events ? ' Events auto-post to Discord.' : ' Events do not auto-post yet.' }}
-                                    {{ $organization->auto_post_discord_announcements ? ' Announcements default to Discord posting.' : ' Announcements require manual Discord opt-in.' }}
-                                @else
-                                    Not configured for automatic Discord posts yet.
-                                @endif
-                            </p>
-                        </div>
-                        <div class="mt-6 border-t border-white/10 pt-6">
-                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Facebook publishing</h2>
-                            <p class="mt-4 {{ $theme['body'] }}">
-                                @if ($organization->facebook_page_id && $organization->facebook_page_access_token)
-                                    Connected.
-                                    {{ $organization->auto_post_facebook_events ? ' Events auto-post to Facebook.' : ' Events do not auto-post yet.' }}
-                                    {{ $organization->auto_post_facebook_announcements ? ' Announcements default to Facebook posting.' : ' Announcements require manual Facebook opt-in.' }}
-                                @else
-                                    Not configured for Facebook Page publishing yet.
-                                @endif
-                            </p>
-                        </div>
-                    @endif
-                @endauth
                 <div class="mt-6 border-t border-white/10 pt-6">
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">About</h2>
                     <p class="mt-3 leading-7 {{ $theme['body'] }}">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>
@@ -235,6 +209,48 @@
             </section>
 
             <section class="space-y-5">
+                @auth
+                    @if (auth()->user()->isManagerOf($organization) && ($organization->discord_webhook_url || ($organization->facebook_page_id && $organization->facebook_page_access_token)))
+                        <div class="rounded-[2rem] border p-5 shadow-sm ring-1 lg:p-6 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm uppercase tracking-[0.25em] {{ $theme['muted'] }}">Publishing channels</p>
+                                    <h2 class="mt-1 text-xl font-bold {{ $theme['heading'] }}">Connected outbound posting</h2>
+                                </div>
+                                <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Manage</a>
+                            </div>
+
+                            <div class="mt-4 space-y-3">
+                                @if ($organization->discord_webhook_url)
+                                    <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <h3 class="font-semibold {{ $theme['heading'] }}">Discord</h3>
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['accent_badge'] }}">Connected</span>
+                                        </div>
+                                        <p class="mt-2 text-sm {{ $theme['body'] }}">
+                                            {{ $organization->auto_post_discord_events ? 'Events auto-post.' : 'Events are manual only.' }}
+                                            {{ $organization->auto_post_discord_announcements ? 'Announcements default on.' : 'Announcements require opt-in.' }}
+                                        </p>
+                                    </div>
+                                @endif
+
+                                @if ($organization->facebook_page_id && $organization->facebook_page_access_token)
+                                    <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <h3 class="font-semibold {{ $theme['heading'] }}">Facebook Page</h3>
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['accent_badge'] }}">Connected</span>
+                                        </div>
+                                        <p class="mt-2 text-sm {{ $theme['body'] }}">
+                                            {{ $organization->auto_post_facebook_events ? 'Events auto-post.' : 'Events are manual only.' }}
+                                            {{ $organization->auto_post_facebook_announcements ? 'Announcements default on.' : 'Announcements require opt-in.' }}
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                @endauth
+
                 <div class="rounded-[2rem] border p-5 shadow-sm ring-1 lg:p-6 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
                     <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Member messages</h2>
                     <p class="mt-2 text-sm {{ $theme['meta'] }}">Managers can write announcements here and email them to all followers and members.</p>
