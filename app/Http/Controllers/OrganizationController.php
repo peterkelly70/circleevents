@@ -157,8 +157,8 @@ class OrganizationController extends Controller
             $validated['banner_path'] = ImageUploads::storeResizedPublicImage(
                 $request->file('banner'),
                 'organization-banners',
-                1560,
-                1024,
+                1600,
+                480,
             );
         }
 
@@ -210,8 +210,8 @@ class OrganizationController extends Controller
             $validated['banner_path'] = ImageUploads::storeResizedPublicImage(
                 $request->file('banner'),
                 'organization-banners',
-                1560,
-                1024,
+                1600,
+                480,
             );
         }
 

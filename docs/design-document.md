@@ -84,7 +84,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Dark mode is the default visual theme across public, auth, and dashboard surfaces
 - Public-facing landing page with strong hierarchy and clear organizer CTA
 - Dashboard oriented around organizer actions instead of generic “you are logged in”
-- Organization uploads are normalized on save to a 512x512 avatar and a 1560x1024 banner
+- Organization uploads are normalized on save to a 512x512 avatar and a 1600x480 banner
 - Organization uploads accept larger originals before normalization so high-resolution source images can be converted server-side
 - Event image uploads are normalized on save to 1600x900
 
