@@ -133,31 +133,7 @@
                     </div>
                 </div>
 
-                <div>
-                    <p class="text-sm font-medium text-stone-300">Organization theme</p>
-                    <p class="mt-1 text-sm text-stone-500">Choose one of the six full page treatments for this organization profile.</p>
-                    <div class="theme-picker-grid mt-4">
-                        @foreach ($themePresets as $themeKey => $themePreset)
-                            <label class="theme-picker-card {{ $themePreset['mode'] === 'light' ? 'bg-white/95 text-stone-900' : 'bg-black/30 text-stone-100' }}" data-selected="{{ old('theme_key', $organization->theme_key) === $themeKey ? 'true' : 'false' }}">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p class="font-semibold {{ $themePreset['font_display'] }}">{{ $themePreset['name'] }}</p>
-                                        <p class="text-xs uppercase tracking-[0.25em] {{ $themePreset['mode'] === 'light' ? 'text-stone-500' : 'text-stone-400' }}">{{ $themePreset['mode'] }}</p>
-                                    </div>
-                                    <input class="theme-picker-radio mt-1 shrink-0" type="radio" name="theme_key" value="{{ $themeKey }}" @checked(old('theme_key', $organization->theme_key) === $themeKey)>
-                                </div>
-                                <div class="theme-preview mt-3 {{ $themePreset['hero'] }}"></div>
-                                <div class="mt-3">
-                                    <p class="text-sm {{ $themePreset['font_body'] }} {{ $themePreset['mode'] === 'light' ? 'text-stone-600' : 'text-stone-300' }}">{{ $themePreset['description'] }}</p>
-                                </div>
-                                <div class="mt-3 flex items-center justify-between gap-3">
-                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $themePreset['accent_button'] }}">{{ old('theme_key', $organization->theme_key) === $themeKey ? 'Selected' : 'Theme' }}</span>
-                                </div>
-                            </label>
-                        @endforeach
-                    </div>
-                    <x-input-error :messages="$errors->get('theme_key')" class="mt-2" />
-                </div>
+                @include('organizations.partials.theme-picker', ['selectedThemeKey' => old('theme_key', $organization->theme_key)])
 
                 <div>
                     <label class="text-sm font-medium text-stone-300" for="visibility">Visibility</label>

@@ -438,30 +438,7 @@
                                 <x-input-error :messages="$errors->get('banner')" class="mt-2" />
                             </div>
                         </div>
-                        <div>
-                            <p class="text-sm font-medium text-stone-300">Organization theme</p>
-                            <div class="theme-picker-grid mt-3">
-                                @foreach (\App\Support\OrganizationThemes::presets() as $themeKey => $themePreset)
-                                    <label class="theme-picker-card {{ $themePreset['mode'] === 'light' ? 'bg-white/95 text-stone-900' : 'bg-black/30 text-stone-100' }}" data-selected="{{ old('theme_key', 'embers') === $themeKey ? 'true' : 'false' }}">
-                                        <div class="flex items-start justify-between gap-3">
-                                            <div>
-                                                <p class="font-semibold {{ $themePreset['font_display'] }}">{{ $themePreset['name'] }}</p>
-                                                <p class="text-xs uppercase tracking-[0.25em] {{ $themePreset['mode'] === 'light' ? 'text-stone-500' : 'text-stone-400' }}">{{ $themePreset['mode'] }}</p>
-                                            </div>
-                                            <input class="theme-picker-radio mt-1 shrink-0" type="radio" name="theme_key" value="{{ $themeKey }}" @checked(old('theme_key', 'embers') === $themeKey)>
-                                        </div>
-                                        <div class="theme-preview mt-3 {{ $themePreset['hero'] }}"></div>
-                                        <div class="mt-3">
-                                            <p class="text-sm {{ $themePreset['font_body'] }} {{ $themePreset['mode'] === 'light' ? 'text-stone-600' : 'text-stone-300' }}">{{ $themePreset['description'] }}</p>
-                                        </div>
-                                        <div class="mt-3 flex items-center justify-between gap-3">
-                                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $themePreset['accent_button'] }}">{{ old('theme_key', 'embers') === $themeKey ? 'Selected' : 'Theme' }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <x-input-error :messages="$errors->get('theme_key')" class="mt-2" />
-                        </div>
+                        @include('organizations.partials.theme-picker', ['selectedThemeKey' => old('theme_key', 'embers')])
                         <div>
                             <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                                 <option value="public" @selected(old('visibility', 'public') === 'public')>Public</option>
