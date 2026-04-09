@@ -535,15 +535,15 @@
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-3">
-                                    <input name="city" data-event-city placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
-                                    <input name="timezone" value="Australia/Perth" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
-                                    <input name="capacity" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                                    <input name="city" data-event-city placeholder="City" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input name="timezone" value="Australia/Perth" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                    <input name="capacity" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-repeat-frequency">Repeats</label>
-                                        <select id="org-event-repeat-frequency" name="repeat_frequency" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                        <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-repeat-frequency">Repeats</label>
+                                        <select id="org-event-repeat-frequency" name="repeat_frequency" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                             <option value="none">Does not repeat</option>
                                             <option value="daily">Daily</option>
                                             <option value="weekly">Weekly</option>
@@ -551,10 +551,10 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-repeat-until">Repeat until</label>
+                                        <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-repeat-until">Repeat until</label>
                                         <div class="grid grid-cols-2 gap-3">
-                                            <input id="org-event-repeat-until" type="date" name="repeat_until_date" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
-                                            <select name="repeat_until_time" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                            <input id="org-event-repeat-until" type="date" name="repeat_until_date" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                            <select name="repeat_until_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                                 <option value="">Time</option>
                                                 @foreach ($timeOptions as $option)
                                                     <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
@@ -565,17 +565,17 @@
                                 </div>
 
                                 <div>
-                                    <label class="mb-2 block text-sm font-medium text-stone-300" for="org-event-image">Event image</label>
-                                    <input id="org-event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                    <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-image">Event image</label>
+                                    <input id="org-event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                 </div>
 
-                                <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                <select name="visibility" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                     <option value="public">Public</option>
                                     <option value="private">Private</option>
                                     <option value="unlisted">Unlisted</option>
                                 </select>
 
-                                <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Publish event</button>
+                                <button class="w-full rounded-full px-5 py-2.5 font-semibold {{ $theme['secondary_button'] }}">Publish event</button>
                             </form>
                         </div>
                     @endif
