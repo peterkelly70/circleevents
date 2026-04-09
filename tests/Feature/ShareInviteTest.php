@@ -53,6 +53,8 @@ class ShareInviteTest extends TestCase
         $this->assertTrue($firstGuest->fresh()->isMemberOf($organization));
         $this->assertTrue($secondGuest->fresh()->isMemberOf($organization));
         $this->assertNull($invitation->fresh()->accepted_at);
+        $this->assertSame(2, $invitation->fresh()->use_count);
+        $this->assertDatabaseCount('invitation_audits', 3);
     }
 
     public function test_expired_event_share_invites_are_rejected(): void
@@ -104,6 +106,89 @@ class ShareInviteTest extends TestCase
         $this->assertDatabaseMissing('event_rsvps', [
             'event_id' => $event->id,
             'user_id' => $guest->id,
+        ]);
+
+        $this->assertDatabaseHas('invitation_audits', [
+            'invitation_type' => EventInvitation::class,
+            'invitation_id' => $invitation->id,
+            'action' => 'blocked-expired',
+        ]);
+    }
+
+    public function test_share_event_invites_respect_max_uses_and_can_be_revoked(): void
+    {
+        $owner = User::factory()->create();
+        $firstGuest = User::factory()->create();
+        $secondGuest = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Trail Camp',
+            'slug' => 'trail-camp',
+            'summary' => 'Camp group',
+            'description' => 'Weekend camps',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $owner->id,
+            'title' => 'Bush Walk',
+            'slug' => 'bush-walk',
+            'summary' => 'Morning walk',
+            'description' => 'Bring water.',
+            'venue_name' => 'State forest',
+            'venue_address' => 'Somewhere',
+            'city' => 'Perth',
+            'starts_at' => now()->addWeek(),
+            'ends_at' => now()->addWeek()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+        ]);
+
+        $this->actingAs($owner)->post(route('events.invitations.store', $event), [
+            'delivery' => 'share',
+            'name' => 'Single use code',
+            'max_uses' => 1,
+        ])->assertRedirect(route('events.show', $event));
+
+        $invitation = EventInvitation::query()->firstOrFail();
+
+        $this->actingAs($firstGuest)
+            ->get(route('event-invitations.accept-code', $invitation->share_code))
+            ->assertRedirect(route('events.show', $event));
+
+        $this->actingAs($secondGuest)
+            ->get(route('event-invitations.accept-code', $invitation->share_code))
+            ->assertRedirect(route('events.show', $event));
+
+        $this->assertDatabaseHas('event_rsvps', [
+            'event_id' => $event->id,
+            'user_id' => $firstGuest->id,
+        ]);
+        $this->assertDatabaseMissing('event_rsvps', [
+            'event_id' => $event->id,
+            'user_id' => $secondGuest->id,
+        ]);
+        $this->assertSame(1, $invitation->fresh()->use_count);
+        $this->assertDatabaseHas('invitation_audits', [
+            'invitation_type' => EventInvitation::class,
+            'invitation_id' => $invitation->id,
+            'action' => 'blocked-max-uses',
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('events.invitations.revoke', [$event, $invitation]))
+            ->assertRedirect(route('events.show', $event));
+
+        $this->assertNotNull($invitation->fresh()->revoked_at);
+        $this->assertDatabaseHas('invitation_audits', [
+            'invitation_type' => EventInvitation::class,
+            'invitation_id' => $invitation->id,
+            'action' => 'revoked',
         ]);
     }
 }

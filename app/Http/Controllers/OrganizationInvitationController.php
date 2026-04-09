@@ -6,6 +6,7 @@ use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Support\ConsumesOrganizationInvitations;
+use App\Support\InvitationAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -25,6 +26,7 @@ class OrganizationInvitationController extends Controller
             'message' => ['nullable', 'string', 'max:1000'],
             'role' => ['required', Rule::in(['follower', 'manager'])],
             'expires_at' => ['nullable', 'date', 'after:now'],
+            'max_uses' => ['nullable', 'integer', 'min:1', 'max:10000'],
         ]);
 
         if ($validated['delivery'] === 'email') {
@@ -51,6 +53,10 @@ class OrganizationInvitationController extends Controller
             );
 
             Mail::to($invitation->email)->send(new OrganizationInvitationMail($invitation));
+            InvitationAuditLogger::log($invitation, 'created-email', $request, $request->user(), [
+                'organization_id' => $organization->id,
+                'role' => $invitation->role,
+            ]);
 
             return redirect()
                 ->route('organizations.show', $organization)
@@ -67,13 +73,39 @@ class OrganizationInvitationController extends Controller
             'token' => Str::random(48),
             'share_code' => $this->generateShareCode(),
             'expires_at' => $validated['expires_at'] ?? null,
+            'max_uses' => $validated['max_uses'] ?? null,
             'accepted_at' => null,
             'opted_out_at' => null,
+        ]);
+
+        InvitationAuditLogger::log($invitation, 'created-share', $request, $request->user(), [
+            'organization_id' => $organization->id,
+            'max_uses' => $invitation->max_uses,
+            'expires_at' => $invitation->expires_at?->toIso8601String(),
         ]);
 
         return redirect()
             ->route('organizations.show', $organization)
             ->with('status', 'Share invite created: '.$invitation->share_code);
+    }
+
+    public function revoke(Request $request, Organization $organization, OrganizationInvitation $invitation): RedirectResponse
+    {
+        abort_unless($request->user()->isManagerOf($organization), 403);
+        abort_unless($invitation->organization_id === $organization->id, 404);
+
+        $invitation->update([
+            'revoked_at' => now(),
+            'revoked_by_user_id' => $request->user()->id,
+        ]);
+
+        InvitationAuditLogger::log($invitation, 'revoked', $request, $request->user(), [
+            'organization_id' => $organization->id,
+        ]);
+
+        return redirect()
+            ->route('organizations.show', $organization)
+            ->with('status', 'Invite code revoked.');
     }
 
     public function accept(Request $request, string $token): RedirectResponse
@@ -99,9 +131,35 @@ class OrganizationInvitationController extends Controller
     protected function completeAcceptance(Request $request, OrganizationInvitation $invitation): RedirectResponse
     {
         if ($invitation->isExpired()) {
+            InvitationAuditLogger::log($invitation, 'blocked-expired', $request, $request->user(), [
+                'organization_id' => $invitation->organization_id,
+            ]);
+
             return redirect()
                 ->route('organizations.show', $invitation->organization)
                 ->with('status', 'This invitation link has expired.');
+        }
+
+        if ($invitation->isRevoked()) {
+            InvitationAuditLogger::log($invitation, 'blocked-revoked', $request, $request->user(), [
+                'organization_id' => $invitation->organization_id,
+            ]);
+
+            return redirect()
+                ->route('organizations.show', $invitation->organization)
+                ->with('status', 'This invitation link is no longer active.');
+        }
+
+        if ($invitation->isShareLink() && ! $invitation->hasRemainingUses()) {
+            InvitationAuditLogger::log($invitation, 'blocked-max-uses', $request, $request->user(), [
+                'organization_id' => $invitation->organization_id,
+                'use_count' => $invitation->use_count,
+                'max_uses' => $invitation->max_uses,
+            ]);
+
+            return redirect()
+                ->route('organizations.show', $invitation->organization)
+                ->with('status', 'This invitation link has reached its maximum uses.');
         }
 
         if (! $invitation->isShareLink() && $invitation->accepted_at) {

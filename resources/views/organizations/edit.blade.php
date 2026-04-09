@@ -46,6 +46,24 @@
                     </div>
                 </div>
 
+                <div class="grid gap-5 md:grid-cols-3">
+                    <div>
+                        <label class="text-sm font-medium text-stone-300" for="discord_url">Discord</label>
+                        <input id="discord_url" name="discord_url" value="{{ old('discord_url', $organization->discord_url) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('discord_url')" class="mt-2" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-stone-300" for="twitter_url">X / Twitter</label>
+                        <input id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $organization->twitter_url) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('twitter_url')" class="mt-2" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-stone-300" for="facebook_url">Facebook</label>
+                        <input id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $organization->facebook_url) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('facebook_url')" class="mt-2" />
+                    </div>
+                </div>
+
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="avatar">Logo / avatar</label>

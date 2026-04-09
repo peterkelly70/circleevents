@@ -30,6 +30,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Event creation uses separate date and time controls and supports Google Maps Places-powered location lookup when `GOOGLE_MAPS_API_KEY` is configured
 - Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
 - Events and organizations support both targeted email invites and reusable share invite codes with optional expiry
+- Organization profiles can include website, Discord, X/Twitter, and Facebook links
 
 ## Data Model
 - `users`

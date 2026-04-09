@@ -18,6 +18,9 @@ class OrganizationController extends Controller
     {
         $request->merge([
             'website_url' => $this->normalizeWebsiteUrl($request->input('website_url')),
+            'discord_url' => $this->normalizeWebsiteUrl($request->input('discord_url')),
+            'twitter_url' => $this->normalizeWebsiteUrl($request->input('twitter_url')),
+            'facebook_url' => $this->normalizeWebsiteUrl($request->input('facebook_url')),
         ]);
 
         return $request->validate([
@@ -26,6 +29,9 @@ class OrganizationController extends Controller
             'description' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:120'],
             'website_url' => ['nullable', 'url', 'max:255'],
+            'discord_url' => ['nullable', 'url', 'max:255'],
+            'twitter_url' => ['nullable', 'url', 'max:255'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
             'avatar' => ['nullable', 'image', 'max:12288'],
             'banner' => ['nullable', 'image', 'max:20480'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
@@ -85,7 +91,7 @@ class OrganizationController extends Controller
                 ->values(),
             'shareInvitations' => $organization->invitations
                 ->whereNull('email')
-                ->reject(fn ($invitation) => $invitation->isExpired())
+                ->reject(fn ($invitation) => $invitation->isExpired() || $invitation->isRevoked())
                 ->values(),
         ]);
     }

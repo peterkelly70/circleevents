@@ -183,6 +183,7 @@
                             <h3 class="text-lg font-semibold text-stone-100">Create share invite code</h3>
                             <input name="name" placeholder="Label (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                             <input name="expires_at" type="datetime-local" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                            <input name="max_uses" type="number" min="1" step="1" placeholder="Max uses (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                             <textarea name="message" rows="3" placeholder="Optional invitation message" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
                             <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Create share code</button>
                         </form>
@@ -195,7 +196,12 @@
                                         <div class="font-semibold text-stone-100">{{ $invitation->name ?: 'Share invite' }}</div>
                                         <div class="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-300">Code {{ $invitation->share_code }}</div>
                                         <div class="mt-2 text-stone-400">{{ $invitation->expires_at ? 'Expires '.$invitation->expires_at->diffForHumans() : 'No expiry' }}</div>
+                                        <div class="mt-1 text-stone-400">{{ $invitation->use_count }} uses{{ $invitation->max_uses ? ' of '.$invitation->max_uses : '' }}</div>
                                         <input readonly value="{{ route('event-invitations.accept-code', $invitation->share_code) }}" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+                                        <form method="POST" action="{{ route('events.invitations.revoke', [$event, $invitation]) }}" class="mt-3">
+                                            @csrf
+                                            <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-200">Revoke code</button>
+                                        </form>
                                     </div>
                                 @empty
                                     <p class="text-sm text-stone-400">No active share invites.</p>

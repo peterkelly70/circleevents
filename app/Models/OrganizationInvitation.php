@@ -16,6 +16,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'token',
     'share_code',
     'expires_at',
+    'max_uses',
+    'use_count',
+    'revoked_at',
+    'revoked_by_user_id',
     'accepted_at',
     'opted_out_at',
 ])]
@@ -25,6 +29,7 @@ class OrganizationInvitation extends Model
     {
         return [
             'expires_at' => 'datetime',
+            'revoked_at' => 'datetime',
             'accepted_at' => 'datetime',
             'opted_out_at' => 'datetime',
         ];
@@ -40,6 +45,16 @@ class OrganizationInvitation extends Model
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
+    public function isRevoked(): bool
+    {
+        return $this->revoked_at !== null;
+    }
+
+    public function hasRemainingUses(): bool
+    {
+        return $this->max_uses === null || $this->use_count < $this->max_uses;
+    }
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
@@ -48,5 +63,10 @@ class OrganizationInvitation extends Model
     public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by_user_id');
+    }
+
+    public function revokedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revoked_by_user_id');
     }
 }

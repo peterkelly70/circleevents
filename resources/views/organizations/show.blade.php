@@ -114,6 +114,22 @@
                         @endif
                     </div>
                 </div>
+                @if ($organization->discord_url || $organization->twitter_url || $organization->facebook_url)
+                    <div class="mt-8 border-t border-white/10 pt-8">
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Social links</h2>
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            @if ($organization->discord_url)
+                                <a href="{{ $organization->discord_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">Discord</a>
+                            @endif
+                            @if ($organization->twitter_url)
+                                <a href="{{ $organization->twitter_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">X / Twitter</a>
+                            @endif
+                            @if ($organization->facebook_url)
+                                <a href="{{ $organization->facebook_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">Facebook</a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
                 <div class="mt-8 border-t border-white/10 pt-8">
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">About</h2>
                     <p class="mt-4 leading-7 text-stone-300">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>
@@ -219,6 +235,7 @@
                                 <p class="text-sm text-stone-400">Share links join people as followers. Use email invites or promotion for managers.</p>
                                 <input name="name" placeholder="Label (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                 <input name="expires_at" type="datetime-local" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                                <input name="max_uses" type="number" min="1" step="1" placeholder="Max uses (optional)" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                                 <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500"></textarea>
                                 <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Create share code</button>
                             </form>
@@ -231,7 +248,12 @@
                                             <div class="font-semibold text-stone-100">{{ $invitation->name ?: 'Share invite' }}</div>
                                             <div class="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-300">Code {{ $invitation->share_code }}</div>
                                             <div class="mt-2 text-sm text-stone-400">{{ $invitation->expires_at ? 'Expires '.$invitation->expires_at->diffForHumans() : 'No expiry' }}</div>
+                                            <div class="mt-1 text-sm text-stone-400">{{ $invitation->use_count }} uses{{ $invitation->max_uses ? ' of '.$invitation->max_uses : '' }}</div>
                                             <input readonly value="{{ route('organizations.invitations.accept-code', $invitation->share_code) }}" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+                                            <form method="POST" action="{{ route('organizations.invitations.revoke', [$organization, $invitation]) }}" class="mt-3">
+                                                @csrf
+                                                <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-200">Revoke code</button>
+                                            </form>
                                         </div>
                                     @empty
                                         <p class="text-sm text-stone-400">No active share invites.</p>

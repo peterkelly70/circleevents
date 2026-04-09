@@ -34,6 +34,18 @@ class ConsumesEventInvitations
             return null;
         }
 
+        if ($invitation->isRevoked()) {
+            $request->session()->flash('status', 'This event invite is no longer active.');
+
+            return null;
+        }
+
+        if ($invitation->isShareLink() && ! $invitation->hasRemainingUses()) {
+            $request->session()->flash('status', 'This event invite has reached its maximum uses.');
+
+            return null;
+        }
+
         if ($invitation->email !== null && strtolower($invitation->email) !== strtolower($user->email)) {
             $request->session()->flash('status', 'Invitation email did not match this account.');
             return null;
@@ -45,7 +57,7 @@ class ConsumesEventInvitations
             ]);
         }
 
-        EventRsvp::firstOrCreate(
+        $rsvp = EventRsvp::firstOrCreate(
             [
                 'event_id' => $invitation->event_id,
                 'user_id' => $user->id,
@@ -54,6 +66,16 @@ class ConsumesEventInvitations
                 'status' => 'interested',
             ],
         );
+
+        if ($invitation->isShareLink() && $rsvp->wasRecentlyCreated) {
+            $invitation->increment('use_count');
+        }
+
+        InvitationAuditLogger::log($invitation, 'accepted', $request, $user, [
+            'event_id' => $invitation->event_id,
+            'new_rsvp' => $rsvp->wasRecentlyCreated,
+            'share_link' => $invitation->isShareLink(),
+        ]);
 
         $request->session()->flash('status', 'Invitation accepted. You have been added to the event as interested.');
 

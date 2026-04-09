@@ -35,6 +35,18 @@ class ConsumesOrganizationInvitations
             return null;
         }
 
+        if ($invitation->isRevoked()) {
+            $request->session()->flash('status', 'This organization invite is no longer active.');
+
+            return null;
+        }
+
+        if ($invitation->isShareLink() && ! $invitation->hasRemainingUses()) {
+            $request->session()->flash('status', 'This organization invite has reached its maximum uses.');
+
+            return null;
+        }
+
         if ($invitation->email !== null && strtolower($invitation->email) !== strtolower($user->email)) {
             $request->session()->flash('status', 'Invitation email did not match this account.');
 
@@ -52,11 +64,14 @@ class ConsumesOrganizationInvitations
             ->where('user_id', $user->id)
             ->exists();
 
+        $newMembership = false;
+
         if (! $existingMembership) {
             $user->organizations()->attach($invitation->organization_id, [
                 'role' => $invitation->role,
                 'email_opt_out_token' => Str::random(48),
             ]);
+            $newMembership = true;
         } else {
             $role = DB::table('organization_user')
                 ->where('organization_id', $invitation->organization_id)
@@ -73,6 +88,16 @@ class ConsumesOrganizationInvitations
                     'updated_at' => now(),
                 ]);
         }
+
+        if ($invitation->isShareLink() && $newMembership) {
+            $invitation->increment('use_count');
+        }
+
+        InvitationAuditLogger::log($invitation, 'accepted', $request, $user, [
+            'organization_id' => $invitation->organization_id,
+            'new_membership' => $newMembership,
+            'share_link' => $invitation->isShareLink(),
+        ]);
 
         $request->session()->flash('status', 'Invitation accepted. You are now following this organization.');
 

@@ -212,6 +212,23 @@
                                 <x-input-error :messages="$errors->get('website_url')" class="mt-2" />
                             </div>
                         </div>
+                        <div class="grid gap-4 md:grid-cols-3">
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="org-discord">Discord</label>
+                                <input id="org-discord" name="discord_url" value="{{ old('discord_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('discord_url')" class="mt-2" />
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="org-twitter">X / Twitter</label>
+                                <input id="org-twitter" name="twitter_url" value="{{ old('twitter_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('twitter_url')" class="mt-2" />
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-stone-300" for="org-facebook">Facebook</label>
+                                <input id="org-facebook" name="facebook_url" value="{{ old('facebook_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                                <x-input-error :messages="$errors->get('facebook_url')" class="mt-2" />
+                            </div>
+                        </div>
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-avatar">Logo / avatar</label>

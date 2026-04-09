@@ -84,7 +84,7 @@ class EventController extends Controller
                 ->values(),
             'shareInvitations' => $event->invitations
                 ->whereNull('email')
-                ->reject(fn ($invitation) => $invitation->isExpired())
+                ->reject(fn ($invitation) => $invitation->isExpired() || $invitation->isRevoked())
                 ->values(),
         ]);
     }
