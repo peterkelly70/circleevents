@@ -51,6 +51,35 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <div class="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
+            <label for="accepted_usage_terms" class="flex items-start gap-3">
+                <input
+                    id="accepted_usage_terms"
+                    name="accepted_usage_terms"
+                    type="checkbox"
+                    value="1"
+                    @checked(old('accepted_usage_terms'))
+                    class="mt-1 rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300"
+                    required
+                >
+                <span class="text-sm leading-6 text-stone-300">
+                    I have read and accept the
+                    <button
+                        type="button"
+                        x-on:click.prevent="$dispatch('open-modal', 'usage-conditions')"
+                        class="font-semibold text-amber-300 underline underline-offset-4"
+                    >
+                        usage conditions
+                    </button>
+                    for CircleEvents.
+                </span>
+            </label>
+            <p class="mt-3 text-xs leading-5 text-stone-400">
+                Short version: don’t be a dick, don’t break the law, don’t harass people, and don’t use CircleEvents to spam, scam, or endanger anyone.
+            </p>
+            <x-input-error :messages="$errors->get('accepted_usage_terms')" class="mt-2" />
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="rounded-md text-sm text-stone-400 underline hover:text-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 focus:ring-offset-stone-950" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
@@ -61,4 +90,50 @@
             </x-primary-button>
         </div>
     </form>
+
+    <x-modal name="usage-conditions" maxWidth="2xl" focusable>
+        <div class="p-6 sm:p-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-amber-300">CircleEvents</p>
+                    <h2 class="mt-2 text-2xl font-black text-stone-100">Usage Conditions</h2>
+                </div>
+                <button
+                    type="button"
+                    x-on:click="$dispatch('close-modal', 'usage-conditions')"
+                    class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-300"
+                >
+                    Close
+                </button>
+            </div>
+
+            <div class="mt-6 space-y-5 text-sm leading-7 text-stone-300">
+                <p>
+                    CircleEvents is for legitimate community organizing, event discovery, and member communication. Use it like a normal person in a shared space.
+                </p>
+                <div>
+                    <h3 class="font-semibold text-stone-100">You must not</h3>
+                    <ul class="mt-2 list-disc space-y-2 pl-5 text-stone-300">
+                        <li>use the platform for anything illegal, fraudulent, abusive, threatening, or deceptive</li>
+                        <li>harass, stalk, intimidate, or target other people or groups</li>
+                        <li>post spam, malware, scams, or misleading event information</li>
+                        <li>impersonate another person, organization, or CircleEvents staff</li>
+                        <li>use CircleEvents to organize harmful, dangerous, or rights-violating activity</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-stone-100">You are responsible for</h3>
+                    <ul class="mt-2 list-disc space-y-2 pl-5 text-stone-300">
+                        <li>keeping your event and organization information accurate</li>
+                        <li>only contacting people who should receive your messages</li>
+                        <li>respecting opt-outs, privacy, and community boundaries</li>
+                        <li>following applicable laws and platform rules where you operate</li>
+                    </ul>
+                </div>
+                <p>
+                    CircleEvents admins may remove content, restrict accounts, or take moderation action when these rules are ignored.
+                </p>
+            </div>
+        </div>
+    </x-modal>
 </x-guest-layout>

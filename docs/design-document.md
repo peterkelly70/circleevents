@@ -10,6 +10,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 
 ## MVP Scope
 - Authentication with registration, login, password reset, and profile management
+- Registration requires accepting a lightweight usage-conditions notice, viewable in a popup from the sign-up form
 - Public homepage highlighting featured events, organizations, and mailing lists
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
