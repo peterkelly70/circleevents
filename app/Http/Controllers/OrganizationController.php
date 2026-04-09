@@ -79,6 +79,14 @@ class OrganizationController extends Controller
 
         return view('organizations.show', [
             'organization' => $organization,
+            'pendingInvitations' => $organization->invitations
+                ->whereNotNull('email')
+                ->whereNull('accepted_at')
+                ->values(),
+            'shareInvitations' => $organization->invitations
+                ->whereNull('email')
+                ->reject(fn ($invitation) => $invitation->isExpired())
+                ->values(),
         ]);
     }
 

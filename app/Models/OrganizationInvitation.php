@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'message',
     'role',
     'token',
+    'share_code',
+    'expires_at',
     'accepted_at',
     'opted_out_at',
 ])]
@@ -22,9 +24,20 @@ class OrganizationInvitation extends Model
     protected function casts(): array
     {
         return [
+            'expires_at' => 'datetime',
             'accepted_at' => 'datetime',
             'opted_out_at' => 'datetime',
         ];
+    }
+
+    public function isShareLink(): bool
+    {
+        return $this->email === null;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
     public function organization(): BelongsTo

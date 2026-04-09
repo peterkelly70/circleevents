@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EventInvitationController extends Controller
 {
@@ -18,30 +19,56 @@ class EventInvitationController extends Controller
         abort_unless($request->user()->isManagerOf($event->organization), 403);
 
         $validated = $request->validate([
+            'delivery' => ['required', Rule::in(['email', 'share'])],
             'name' => ['nullable', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'message' => ['nullable', 'string', 'max:1000'],
+            'expires_at' => ['nullable', 'date', 'after:now'],
         ]);
 
-        $invitation = EventInvitation::updateOrCreate(
-            [
-                'event_id' => $event->id,
-                'email' => strtolower($validated['email']),
-            ],
-            [
-                'invited_by_user_id' => $request->user()->id,
-                'name' => $validated['name'] ?? null,
-                'message' => $validated['message'] ?? null,
-                'token' => Str::random(48),
-                'accepted_at' => null,
-            ],
-        );
+        if ($validated['delivery'] === 'email') {
+            $request->validate([
+                'email' => ['required', 'email', 'max:255'],
+            ]);
 
-        Mail::to($invitation->email)->send(new EventInvitationMail($invitation));
+            $invitation = EventInvitation::updateOrCreate(
+                [
+                    'event_id' => $event->id,
+                    'email' => strtolower($validated['email']),
+                ],
+                [
+                    'invited_by_user_id' => $request->user()->id,
+                    'name' => $validated['name'] ?? null,
+                    'message' => $validated['message'] ?? null,
+                    'token' => Str::random(48),
+                    'share_code' => null,
+                    'expires_at' => null,
+                    'accepted_at' => null,
+                ],
+            );
+
+            Mail::to($invitation->email)->send(new EventInvitationMail($invitation));
+
+            return redirect()
+                ->route('events.show', $event)
+                ->with('status', 'Invitation sent.');
+        }
+
+        $invitation = EventInvitation::create([
+            'event_id' => $event->id,
+            'invited_by_user_id' => $request->user()->id,
+            'name' => $validated['name'] ?? 'Shared invite',
+            'email' => null,
+            'message' => $validated['message'] ?? null,
+            'token' => Str::random(48),
+            'share_code' => $this->generateShareCode(),
+            'expires_at' => $validated['expires_at'] ?? null,
+            'accepted_at' => null,
+        ]);
 
         return redirect()
             ->route('events.show', $event)
-            ->with('status', 'Invitation sent.');
+            ->with('status', 'Share invite created: '.$invitation->share_code);
     }
 
     public function accept(Request $request, string $token): RedirectResponse
@@ -51,14 +78,39 @@ class EventInvitationController extends Controller
             ->where('token', $token)
             ->firstOrFail();
 
-        if ($invitation->accepted_at) {
+        return $this->completeAcceptance($request, $invitation);
+    }
+
+    public function acceptCode(Request $request, string $code): RedirectResponse
+    {
+        $invitation = EventInvitation::query()
+            ->with('event')
+            ->where('share_code', strtoupper($code))
+            ->firstOrFail();
+
+        return $this->completeAcceptance($request, $invitation);
+    }
+
+    protected function completeAcceptance(Request $request, EventInvitation $invitation): RedirectResponse
+    {
+        if ($invitation->isExpired()) {
+            return redirect()
+                ->route('events.show', $invitation->event)
+                ->with('status', 'This invitation link has expired.');
+        }
+
+        if (! $invitation->isShareLink() && $invitation->accepted_at) {
             return redirect()
                 ->route('events.show', $invitation->event)
                 ->with('status', 'This invitation has already been accepted.');
         }
 
         $request->session()->put('event_invitation_token', $invitation->token);
-        $request->session()->put('invited_email', $invitation->email);
+        if ($invitation->email) {
+            $request->session()->put('invited_email', $invitation->email);
+        } else {
+            $request->session()->forget('invited_email');
+        }
         $request->session()->put('invited_event_title', $invitation->event->title);
 
         if ($request->user()) {
@@ -67,8 +119,17 @@ class EventInvitationController extends Controller
             return redirect()->route('events.show', $event ?? $invitation->event);
         }
 
-        return redirect()->route('register', [
-            'email' => $invitation->email,
-        ]);
+        return $invitation->email
+            ? redirect()->route('register', ['email' => $invitation->email])
+            : redirect()->route('register');
+    }
+
+    protected function generateShareCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(8));
+        } while (EventInvitation::query()->where('share_code', $code)->exists());
+
+        return $code;
     }
 }

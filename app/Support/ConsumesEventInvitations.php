@@ -28,14 +28,22 @@ class ConsumesEventInvitations
             return null;
         }
 
-        if (strtolower($invitation->email) !== strtolower($user->email)) {
+        if ($invitation->isExpired()) {
+            $request->session()->flash('status', 'This event invite has expired.');
+
+            return null;
+        }
+
+        if ($invitation->email !== null && strtolower($invitation->email) !== strtolower($user->email)) {
             $request->session()->flash('status', 'Invitation email did not match this account.');
             return null;
         }
 
-        $invitation->update([
-            'accepted_at' => now(),
-        ]);
+        if (! $invitation->isShareLink()) {
+            $invitation->update([
+                'accepted_at' => now(),
+            ]);
+        }
 
         EventRsvp::firstOrCreate(
             [

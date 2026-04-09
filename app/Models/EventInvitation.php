@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
     'email',
     'message',
     'token',
+    'share_code',
+    'expires_at',
     'accepted_at',
 ])]
 class EventInvitation extends Model
@@ -20,8 +22,19 @@ class EventInvitation extends Model
     protected function casts(): array
     {
         return [
+            'expires_at' => 'datetime',
             'accepted_at' => 'datetime',
         ];
+    }
+
+    public function isShareLink(): bool
+    {
+        return $this->email === null;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
     public function event(): BelongsTo

@@ -21,8 +21,10 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
 Route::get('/event-invitations/{token}', [EventInvitationController::class, 'accept'])->name('event-invitations.accept');
+Route::get('/event-invitations/code/{code}', [EventInvitationController::class, 'acceptCode'])->name('event-invitations.accept-code');
 Route::get('/organizations/{organization:slug}', [OrganizationController::class, 'show'])->name('organizations.show');
 Route::get('/organization-invitations/{token}', [OrganizationInvitationController::class, 'accept'])->name('organizations.invitations.accept');
+Route::get('/organization-invitations/code/{code}', [OrganizationInvitationController::class, 'acceptCode'])->name('organizations.invitations.accept-code');
 Route::get('/organizations/{organization:slug}/email-preferences/{token}/opt-out', [OrganizationEmailPreferenceController::class, 'optOut'])->name('organizations.email-preferences.opt-out');
 Route::get('/mailing-lists/{mailingList:slug}', [MailingListController::class, 'show'])->name('mailing-lists.show');
 

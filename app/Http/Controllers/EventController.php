@@ -78,7 +78,14 @@ class EventController extends Controller
                 ->groupBy('status')
                 ->map->count(),
             'discussionPosts' => $event->discussionPosts,
-            'pendingInvitations' => $event->invitations->whereNull('accepted_at'),
+            'pendingInvitations' => $event->invitations
+                ->whereNotNull('email')
+                ->whereNull('accepted_at')
+                ->values(),
+            'shareInvitations' => $event->invitations
+                ->whereNull('email')
+                ->reject(fn ($invitation) => $invitation->isExpired())
+                ->values(),
         ]);
     }
 
