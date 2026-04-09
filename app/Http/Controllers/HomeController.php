@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use App\Models\MailingList;
 use App\Models\Organization;
 use Illuminate\View\View;
 
@@ -23,11 +22,6 @@ class HomeController extends Controller
             'organizations' => Organization::query()
                 ->withCount(['events', 'mailingLists'])
                 ->where('visibility', 'public')
-                ->orderBy('name')
-                ->take(6)
-                ->get(),
-            'lists' => MailingList::query()
-                ->with('organization')
                 ->orderBy('name')
                 ->take(6)
                 ->get(),
