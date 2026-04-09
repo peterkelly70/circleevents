@@ -22,6 +22,21 @@ class BlockController extends Controller
             ? User::findOrFail($validated['id'])
             : Organization::findOrFail($validated['id']);
 
+        if ($target instanceof User) {
+            $sharedOrganizationIds = $request->user()->organizations()->pluck('organizations.id');
+
+            if ($sharedOrganizationIds->isNotEmpty()) {
+                $isSharedOrgManager = $target->organizations()
+                    ->whereIn('organizations.id', $sharedOrganizationIds)
+                    ->wherePivotIn('role', ['owner', 'manager'])
+                    ->exists();
+
+                if ($isSharedOrgManager) {
+                    return back()->with('status', 'Leave the organization instead of blocking one of its managers.');
+                }
+            }
+        }
+
         Block::firstOrCreate([
             'user_id' => $request->user()->id,
             'blockable_type' => $target::class,

@@ -32,6 +32,6 @@ class ReportController extends Controller
             'details' => $validated['details'] ?? null,
         ]);
 
-        return back()->with('status', 'Report submitted.');
+        return back()->with('status', 'Report sent to CircleEvents admins.');
     }
 }

@@ -23,6 +23,35 @@ class OrganizationMemberController extends Controller
             ->with('status', 'You are now following this organization.');
     }
 
+    public function leave(Request $request, Organization $organization): RedirectResponse
+    {
+        $membership = $request->user()->organizations()
+            ->where('organization_id', $organization->id)
+            ->first();
+
+        if (! $membership) {
+            return redirect()
+                ->route('organizations.show', $organization)
+                ->with('status', 'You are not following this organization.');
+        }
+
+        if ($membership->pivot->role === 'owner') {
+            abort(403);
+        }
+
+        $request->user()->organizations()->detach($organization->id);
+
+        $mailingListIds = $organization->mailingLists()->pluck('mailing_lists.id');
+
+        if ($mailingListIds->isNotEmpty()) {
+            $request->user()->mailingLists()->detach($mailingListIds);
+        }
+
+        return redirect()
+            ->route('organizations.show', $organization)
+            ->with('status', 'You left this organization.');
+    }
+
     public function promote(Request $request, Organization $organization): RedirectResponse
     {
         abort_unless($request->user()->isOwnerOf($organization), 403);

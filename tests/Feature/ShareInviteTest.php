@@ -191,4 +191,28 @@ class ShareInviteTest extends TestCase
             'action' => 'revoked',
         ]);
     }
+
+    public function test_followers_can_leave_an_organization(): void
+    {
+        $owner = User::factory()->create();
+        $follower = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Boardgame Brigade',
+            'slug' => 'boardgame-brigade',
+            'summary' => 'Tables and tactics',
+            'description' => 'Weekly board games',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+        $organization->members()->attach($follower->id, ['role' => 'follower']);
+
+        $this->actingAs($follower)
+            ->delete(route('organizations.leave', $organization))
+            ->assertRedirect(route('organizations.show', $organization));
+
+        $this->assertFalse($follower->fresh()->isMemberOf($organization));
+    }
 }

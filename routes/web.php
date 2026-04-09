@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::patch('/organizations/{organization:slug}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{organization:slug}/follow', [OrganizationMemberController::class, 'follow'])->name('organizations.follow');
+    Route::delete('/organizations/{organization:slug}/leave', [OrganizationMemberController::class, 'leave'])->name('organizations.leave');
     Route::post('/organizations/{organization:slug}/members/promote', [OrganizationMemberController::class, 'promote'])->name('organizations.members.promote');
     Route::post('/organizations/{organization:slug}/invitations', [OrganizationInvitationController::class, 'store'])->middleware('throttle:12,1')->name('organizations.invitations.store');
     Route::post('/organizations/{organization:slug}/invitations/{invitation}/revoke', [OrganizationInvitationController::class, 'revoke'])->middleware('throttle:20,1')->name('organizations.invitations.revoke');

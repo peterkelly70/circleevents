@@ -55,22 +55,31 @@
                             </form>
                         @else
                             <span class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">Following</span>
+                            @if (! auth()->user()->isManagerOf($organization))
+                                <form method="POST" action="{{ route('organizations.leave', $organization) }}" class="inline-flex">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Leave organization</button>
+                                </form>
+                            @endif
                         @endif
 
                         <form method="POST" action="{{ route('reports.store') }}" class="inline-flex">
                             @csrf
                             <input type="hidden" name="type" value="organization">
                             <input type="hidden" name="id" value="{{ $organization->id }}">
-                            <input type="hidden" name="reason" value="organization concern">
-                            <button class="rounded-full border border-amber-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Report</button>
+                            <input type="hidden" name="reason" value="organization reported to CircleEvents admins">
+                            <button class="rounded-full border border-amber-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Report organization</button>
                         </form>
 
-                        <form method="POST" action="{{ route('blocks.store') }}" class="inline-flex">
-                            @csrf
-                            <input type="hidden" name="type" value="organization">
-                            <input type="hidden" name="id" value="{{ $organization->id }}">
-                            <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Block</button>
-                        </form>
+                        @if (! auth()->user()->isMemberOf($organization))
+                            <form method="POST" action="{{ route('blocks.store') }}" class="inline-flex">
+                                @csrf
+                                <input type="hidden" name="type" value="organization">
+                                <input type="hidden" name="id" value="{{ $organization->id }}">
+                                <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Block</button>
+                            </form>
+                        @endif
                     @else
                         <a href="{{ route('login') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-stone-200">Log in to follow</a>
                     @endauth
@@ -88,14 +97,8 @@
                                         @csrf
                                         <input type="hidden" name="type" value="user">
                                         <input type="hidden" name="id" value="{{ $organization->owner->id }}">
-                                        <input type="hidden" name="reason" value="user concern">
-                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report user</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('blocks.store') }}">
-                                        @csrf
-                                        <input type="hidden" name="type" value="user">
-                                        <input type="hidden" name="id" value="{{ $organization->owner->id }}">
-                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-300">Block user</button>
+                                        <input type="hidden" name="reason" value="organizer reported to CircleEvents admins">
+                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report organizer</button>
                                     </form>
                                 </div>
                             @endif
@@ -198,8 +201,8 @@
                                                         @csrf
                                                         <input type="hidden" name="type" value="user">
                                                         <input type="hidden" name="id" value="{{ $post->user->id }}">
-                                                        <input type="hidden" name="reason" value="community post concern">
-                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report</button>
+                                                        <input type="hidden" name="reason" value="community post reported to CircleEvents admins">
+                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report to admins</button>
                                                     </form>
                                                     <form method="POST" action="{{ route('blocks.store') }}">
                                                         @csrf
