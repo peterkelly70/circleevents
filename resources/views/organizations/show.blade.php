@@ -144,6 +144,18 @@
                                 @endif
                             </p>
                         </div>
+                        <div class="mt-8 border-t border-white/10 pt-8">
+                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Facebook publishing</h2>
+                            <p class="mt-4 text-stone-300">
+                                @if ($organization->facebook_page_id && $organization->facebook_page_access_token)
+                                    Connected.
+                                    {{ $organization->auto_post_facebook_events ? ' Events auto-post to Facebook.' : ' Events do not auto-post yet.' }}
+                                    {{ $organization->auto_post_facebook_announcements ? ' Announcements default to Facebook posting.' : ' Announcements require manual Facebook opt-in.' }}
+                                @else
+                                    Not configured for Facebook Page publishing yet.
+                                @endif
+                            </p>
+                        </div>
                     @endif
                 @endauth
                 <div class="mt-8 border-t border-white/10 pt-8">
@@ -229,6 +241,10 @@
                                 <label class="flex items-center gap-3 text-sm text-stone-300">
                                     <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
                                     Send this announcement to Discord too
+                                </label>
+                                <label class="flex items-center gap-3 text-sm text-stone-300">
+                                    <input type="checkbox" name="post_to_facebook" value="1" @checked(old('post_to_facebook', $organization->auto_post_facebook_announcements)) class="rounded border-white/10 bg-white/5 text-blue-400 focus:ring-blue-400">
+                                    Send this announcement to Facebook too
                                 </label>
                                 <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
                             </form>

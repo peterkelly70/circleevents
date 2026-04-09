@@ -22,6 +22,10 @@ use Illuminate\Support\Str;
     'discord_url',
     'twitter_url',
     'facebook_url',
+    'facebook_page_id',
+    'facebook_page_access_token',
+    'auto_post_facebook_events',
+    'auto_post_facebook_announcements',
     'discord_webhook_url',
     'auto_post_discord_events',
     'auto_post_discord_announcements',
@@ -36,6 +40,8 @@ class Organization extends Model
         return [
             'auto_post_discord_events' => 'boolean',
             'auto_post_discord_announcements' => 'boolean',
+            'auto_post_facebook_events' => 'boolean',
+            'auto_post_facebook_announcements' => 'boolean',
         ];
     }
 

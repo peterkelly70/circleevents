@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
     'is_published',
     'image_path',
     'discord_posted_at',
+    'facebook_posted_at',
 ])]
 class Event extends Model
 {
@@ -47,6 +48,7 @@ class Event extends Model
             'longitude' => 'decimal:7',
             'is_published' => 'boolean',
             'discord_posted_at' => 'datetime',
+            'facebook_posted_at' => 'datetime',
         ];
     }
 

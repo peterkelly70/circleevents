@@ -82,6 +82,31 @@
                     </label>
                 </div>
 
+                <div class="rounded-[1.5rem] border border-blue-300/20 bg-blue-400/5 p-5">
+                    <h2 class="text-lg font-semibold text-stone-100">Facebook publishing</h2>
+                    <p class="mt-1 text-sm text-stone-400">Connect a Facebook Page ID and Page access token to cross-post events and announcements to a Facebook Page.</p>
+                    <div class="mt-4 grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label class="text-sm font-medium text-stone-300" for="facebook_page_id">Facebook Page ID</label>
+                            <input id="facebook_page_id" name="facebook_page_id" value="{{ old('facebook_page_id', $organization->facebook_page_id) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                            <x-input-error :messages="$errors->get('facebook_page_id')" class="mt-2" />
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-stone-300" for="facebook_page_access_token">Facebook Page access token</label>
+                            <input id="facebook_page_access_token" name="facebook_page_access_token" value="{{ old('facebook_page_access_token', $organization->facebook_page_access_token) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                            <x-input-error :messages="$errors->get('facebook_page_access_token')" class="mt-2" />
+                        </div>
+                    </div>
+                    <label class="mt-4 flex items-center gap-3 text-sm text-stone-300">
+                        <input type="checkbox" name="auto_post_facebook_events" value="1" @checked(old('auto_post_facebook_events', $organization->auto_post_facebook_events)) class="rounded border-white/10 bg-white/5 text-blue-400 focus:ring-blue-400">
+                        Automatically post newly published non-private events to Facebook
+                    </label>
+                    <label class="mt-4 flex items-center gap-3 text-sm text-stone-300">
+                        <input type="checkbox" name="auto_post_facebook_announcements" value="1" @checked(old('auto_post_facebook_announcements', $organization->auto_post_facebook_announcements)) class="rounded border-white/10 bg-white/5 text-blue-400 focus:ring-blue-400">
+                        Post organization announcements to Facebook by default
+                    </label>
+                </div>
+
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="avatar">Logo / avatar</label>

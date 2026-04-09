@@ -8,6 +8,7 @@ use App\Models\EventRsvp;
 use App\Models\MailingList;
 use App\Models\Organization;
 use App\Support\DiscordEventPublisher;
+use App\Support\FacebookEventPublisher;
 use App\Support\ImageUploads;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -132,12 +133,17 @@ class EventController extends Controller
         });
 
         $discordPostedCount = 0;
+        $facebookPostedCount = 0;
 
-        $eventSeries->each(function (Event $event) use (&$discordPostedCount) {
+        $eventSeries->each(function (Event $event) use (&$discordPostedCount, &$facebookPostedCount) {
             $this->notifyMailingListSubscribers($event);
 
             if (DiscordEventPublisher::publish($event)) {
                 $discordPostedCount++;
+            }
+
+            if (FacebookEventPublisher::publish($event)) {
+                $facebookPostedCount++;
             }
         });
 
@@ -145,9 +151,12 @@ class EventController extends Controller
 
         return redirect()
             ->route('events.show', $event)
-            ->with('status', $discordPostedCount > 0
-                ? 'Event published and sent to Discord.'
-                : 'Event published.');
+            ->with('status', match (true) {
+                $discordPostedCount > 0 && $facebookPostedCount > 0 => 'Event published and sent to Discord and Facebook.',
+                $discordPostedCount > 0 => 'Event published and sent to Discord.',
+                $facebookPostedCount > 0 => 'Event published and sent to Facebook.',
+                default => 'Event published.',
+            });
     }
 
     public function update(Request $request, Event $event): RedirectResponse
