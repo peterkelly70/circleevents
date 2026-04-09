@@ -15,6 +15,15 @@ class OrganizationThemes
         'guildhall',
     ];
 
+    public const CATEGORIES = [
+        'basic' => ['embers', 'midnight', 'forest', 'paper', 'aurora', 'harbor'],
+        'fantasy' => ['guildhall', 'arcanelibrary', 'dragonember', 'enchantedforest', 'fairylantern'],
+        'refined' => ['folio', 'sapphire'],
+        'scifi' => ['starforge', 'kinetic'],
+        'nature' => ['evergreen', 'deepcurrent', 'aquanebula'],
+        'cosmic' => ['nebula', 'cosmos', 'moonlitsapphire', 'petalwave'],
+    ];
+
     public static function presets(): array
     {
         return [
@@ -799,6 +808,30 @@ class OrganizationThemes
     public static function featuredPresets(): array
     {
         return array_intersect_key(self::presets(), array_flip(self::FEATURED));
+    }
+
+    public static function categoryLabels(): array
+    {
+        return [
+            'basic' => 'Basic',
+            'fantasy' => 'Fantasy',
+            'refined' => 'Refined',
+            'scifi' => 'Sci-fi',
+            'nature' => 'Nature',
+            'cosmic' => 'Cosmic',
+        ];
+    }
+
+    public static function categorizedPresets(): array
+    {
+        $presets = self::presets();
+        $categorized = [];
+
+        foreach (self::CATEGORIES as $category => $keys) {
+            $categorized[$category] = array_intersect_key($presets, array_flip($keys));
+        }
+
+        return $categorized;
     }
 
     public static function keys(): array
