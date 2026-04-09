@@ -235,7 +235,7 @@
             </section>
 
             <section class="space-y-6">
-                <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface'] }}">
+                <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
                     <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Member messages</h2>
                     <p class="mt-2 text-sm {{ $theme['meta'] }}">Managers can write announcements here and email them to all followers and members.</p>
 
@@ -452,7 +452,7 @@
 
                 @auth
                     @if (auth()->user()->isManagerOf($organization))
-                        <div class="rounded-[2rem] border border-emerald-300/20 bg-stone-900/80 p-6 shadow-sm ring-1 ring-emerald-300/15">
+                        <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
                             @php
                                 $timeOptions = collect(range(0, 47))->map(function (int $slot) {
                                     $hour = intdiv($slot, 2);
@@ -565,28 +565,28 @@
                     @endif
                 @endauth
 
-                <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
-                    <h2 class="text-2xl font-bold text-stone-100">Published events</h2>
+                <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
+                    <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Published events</h2>
                     <div class="mt-4 space-y-3">
                         @forelse ($organization->events as $event)
-                            <a href="{{ route('events.show', $event) }}" class="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-amber-300/50 hover:bg-black/30">
-                                <div class="text-xs uppercase tracking-[0.2em] text-amber-300">{{ $event->starts_at->format('D d M') }}</div>
-                                <div class="mt-2 font-semibold text-stone-100">{{ $event->title }}</div>
+                            <a href="{{ route('events.show', $event) }}" class="block rounded-2xl border p-4 transition {{ $theme['panel'] }} hover:border-amber-300/50 hover:bg-black/5">
+                                <div class="text-xs uppercase tracking-[0.2em] {{ $theme['link'] }}">{{ $event->starts_at->format('D d M') }}</div>
+                                <div class="mt-2 font-semibold {{ $theme['heading'] }}">{{ $event->title }}</div>
                             </a>
                         @empty
-                            <p class="text-sm text-stone-400">No events published yet.</p>
+                            <p class="text-sm {{ $theme['meta'] }}">No events published yet.</p>
                         @endforelse
                     </div>
                 </div>
-                <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
-                    <h2 class="text-2xl font-bold text-stone-100">Mailing lists</h2>
+                <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
+                    <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Mailing lists</h2>
                     <div class="mt-4 space-y-3">
                         @forelse ($visibleMailingLists as $entry)
-                            <a href="{{ route('mailing-lists.show', $entry['list']) }}" class="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-emerald-300/40 hover:bg-black/30">
+                            <a href="{{ route('mailing-lists.show', $entry['list']) }}" class="block rounded-2xl border p-4 transition {{ $theme['panel'] }} hover:border-emerald-300/40 hover:bg-black/5">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <div class="font-semibold text-stone-100">{{ $entry['list']->name }}</div>
-                                        <div class="mt-1 text-sm text-stone-400">{{ $entry['list']->audience }}</div>
+                                        <div class="font-semibold {{ $theme['heading'] }}">{{ $entry['list']->name }}</div>
+                                        <div class="mt-1 text-sm {{ $theme['meta'] }}">{{ $entry['list']->audience }}</div>
                                     </div>
                                     @if ($entry['kind'] === 'event')
                                         <span class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200">Event updates</span>
@@ -594,13 +594,13 @@
                                 </div>
 
                                 @if ($entry['event'])
-                                    <div class="mt-3 text-sm text-stone-400">
-                                        Linked to <span class="font-medium text-stone-200">{{ $entry['event']->title }}</span>
+                                    <div class="mt-3 text-sm {{ $theme['meta'] }}">
+                                        Linked to <span class="font-medium {{ $theme['heading'] }}">{{ $entry['event']->title }}</span>
                                     </div>
                                 @endif
                             </a>
                         @empty
-                            <p class="text-sm text-stone-400">No mailing lists yet.</p>
+                            <p class="text-sm {{ $theme['meta'] }}">No mailing lists yet.</p>
                         @endforelse
                     </div>
                 </div>
