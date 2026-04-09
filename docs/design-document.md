@@ -12,6 +12,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Authentication with registration, login, password reset, and profile management
 - Registration requires accepting a lightweight usage-conditions notice, viewable in a popup from the sign-up form
 - Public homepage acting as a real landing page with registration CTA, public events, and public organizations
+- Public install page for self-hosted packaging and server setup guidance
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
 - Invite-by-email flow for organizations with account creation/login handoff

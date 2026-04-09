@@ -16,6 +16,7 @@
                     <nav class="flex items-center gap-3 text-sm">
                         <a href="{{ route('events.index') }}" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Browse events</a>
                         <a href="#organizations" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Organizations</a>
+                        <a href="{{ route('install') }}" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Install</a>
                         @auth
                             <a href="{{ route('dashboard') }}" class="rounded-full bg-amber-300 px-4 py-2 font-semibold text-stone-950">Dashboard</a>
                         @else
@@ -129,6 +130,7 @@
                                     <a href="{{ route('register') }}" class="rounded-full bg-emerald-300 px-5 py-3 font-semibold text-stone-950">Register now</a>
                                     <a href="{{ route('login') }}" class="rounded-full border border-white/20 px-5 py-3 font-semibold text-white">Log in</a>
                                 @endauth
+                                <a href="{{ route('install') }}" class="rounded-full border border-white/20 px-5 py-3 font-semibold text-white">Self-host CircleEvents</a>
                             </div>
                         </div>
                     </div>

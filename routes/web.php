@@ -18,6 +18,7 @@ use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/install', [HomeController::class, 'install'])->name('install');
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
 Route::get('/event-invitations/{token}', [EventInvitationController::class, 'accept'])->middleware('throttle:40,1')->name('event-invitations.accept');

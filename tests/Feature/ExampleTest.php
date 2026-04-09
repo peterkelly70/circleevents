@@ -17,4 +17,14 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertSee('CircleEvents');
     }
+
+    public function test_the_install_page_can_be_rendered(): void
+    {
+        $response = $this->get('/install');
+
+        $response
+            ->assertOk()
+            ->assertSee('Install CircleEvents')
+            ->assertSee('tools/lockdown.sh');
+    }
 }

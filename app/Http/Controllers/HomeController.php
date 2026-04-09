@@ -27,4 +27,9 @@ class HomeController extends Controller
                 ->get(),
         ]);
     }
+
+    public function install(): View
+    {
+        return view('install');
+    }
 }
