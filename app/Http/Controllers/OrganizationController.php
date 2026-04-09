@@ -21,6 +21,8 @@ class OrganizationController extends Controller
             'discord_url' => $this->normalizeWebsiteUrl($request->input('discord_url')),
             'twitter_url' => $this->normalizeWebsiteUrl($request->input('twitter_url')),
             'facebook_url' => $this->normalizeWebsiteUrl($request->input('facebook_url')),
+            'discord_webhook_url' => $this->normalizeWebsiteUrl($request->input('discord_webhook_url')),
+            'auto_post_discord_events' => $request->boolean('auto_post_discord_events'),
         ]);
 
         return $request->validate([
@@ -32,6 +34,8 @@ class OrganizationController extends Controller
             'discord_url' => ['nullable', 'url', 'max:255'],
             'twitter_url' => ['nullable', 'url', 'max:255'],
             'facebook_url' => ['nullable', 'url', 'max:255'],
+            'discord_webhook_url' => ['nullable', 'url', 'max:2000'],
+            'auto_post_discord_events' => ['nullable', 'boolean'],
             'avatar' => ['nullable', 'image', 'max:12288'],
             'banner' => ['nullable', 'image', 'max:20480'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],

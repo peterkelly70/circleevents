@@ -22,12 +22,21 @@ use Illuminate\Support\Str;
     'discord_url',
     'twitter_url',
     'facebook_url',
+    'discord_webhook_url',
+    'auto_post_discord_events',
     'avatar_path',
     'banner_path',
     'visibility',
 ])]
 class Organization extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'auto_post_discord_events' => 'boolean',
+        ];
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

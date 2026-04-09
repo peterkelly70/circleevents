@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventRsvp;
 use App\Models\MailingList;
 use App\Models\Organization;
+use App\Support\DiscordEventPublisher;
 use App\Support\ImageUploads;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -130,13 +131,23 @@ class EventController extends Controller
             });
         });
 
-        $eventSeries->each(fn (Event $event) => $this->notifyMailingListSubscribers($event));
+        $discordPostedCount = 0;
+
+        $eventSeries->each(function (Event $event) use (&$discordPostedCount) {
+            $this->notifyMailingListSubscribers($event);
+
+            if (DiscordEventPublisher::publish($event)) {
+                $discordPostedCount++;
+            }
+        });
 
         $event = $eventSeries->first();
 
         return redirect()
             ->route('events.show', $event)
-            ->with('status', 'Event published.');
+            ->with('status', $discordPostedCount > 0
+                ? 'Event published and sent to Discord.'
+                : 'Event published.');
     }
 
     public function update(Request $request, Event $event): RedirectResponse

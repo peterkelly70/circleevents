@@ -8,6 +8,7 @@ use App\Models\MailingList;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -208,5 +209,47 @@ class EventPublicationMailTest extends TestCase
         ])->assertRedirect();
 
         Mail::assertNothingSent();
+    }
+
+    public function test_publishing_an_event_can_post_to_discord_when_configured(): void
+    {
+        Mail::fake();
+        Http::fake([
+            'https://discord.example/webhook' => Http::response(['id' => '123'], 204),
+        ]);
+
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Perth Makers',
+            'slug' => 'perth-makers',
+            'summary' => 'Build nights',
+            'description' => 'Workshop community',
+            'visibility' => 'public',
+            'discord_webhook_url' => 'https://discord.example/webhook',
+            'auto_post_discord_events' => true,
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $this->actingAs($owner)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'title' => 'Laser Cutter Night',
+            'summary' => 'Open workshop session',
+            'description' => 'Bring material stock.',
+            'venue_name' => 'Maker Shed',
+            'venue_address' => '55 Foundry Lane',
+            'city' => 'Perth',
+            'starts_at' => now()->addWeek()->format('Y-m-d H:i:s'),
+            'ends_at' => now()->addWeek()->addHours(2)->format('Y-m-d H:i:s'),
+            'timezone' => 'Australia/Perth',
+            'capacity' => 20,
+            'visibility' => 'public',
+        ])->assertRedirect();
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.example/webhook');
+        $this->assertNotNull(Event::query()->firstOrFail()->discord_posted_at);
     }
 }

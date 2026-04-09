@@ -130,6 +130,16 @@
                         </div>
                     </div>
                 @endif
+                @auth
+                    @if (auth()->user()->isManagerOf($organization))
+                        <div class="mt-8 border-t border-white/10 pt-8">
+                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Discord publishing</h2>
+                            <p class="mt-4 text-stone-300">
+                                {{ $organization->discord_webhook_url && $organization->auto_post_discord_events ? 'Connected and auto-posting published events.' : 'Not configured for automatic Discord event posts yet.' }}
+                            </p>
+                        </div>
+                    @endif
+                @endauth
                 <div class="mt-8 border-t border-white/10 pt-8">
                     <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">About</h2>
                     <p class="mt-4 leading-7 text-stone-300">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>

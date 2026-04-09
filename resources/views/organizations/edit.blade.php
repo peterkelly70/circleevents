@@ -64,6 +64,20 @@
                     </div>
                 </div>
 
+                <div class="rounded-[1.5rem] border border-emerald-300/20 bg-emerald-400/5 p-5">
+                    <h2 class="text-lg font-semibold text-stone-100">Discord publishing</h2>
+                    <p class="mt-1 text-sm text-stone-400">Connect a Discord webhook if you want newly published events cross-posted automatically.</p>
+                    <div class="mt-4">
+                        <label class="text-sm font-medium text-stone-300" for="discord_webhook_url">Discord webhook URL</label>
+                        <input id="discord_webhook_url" name="discord_webhook_url" value="{{ old('discord_webhook_url', $organization->discord_webhook_url) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                        <x-input-error :messages="$errors->get('discord_webhook_url')" class="mt-2" />
+                    </div>
+                    <label class="mt-4 flex items-center gap-3 text-sm text-stone-300">
+                        <input type="checkbox" name="auto_post_discord_events" value="1" @checked(old('auto_post_discord_events', $organization->auto_post_discord_events)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                        Automatically post newly published non-private events to Discord
+                    </label>
+                </div>
+
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="avatar">Logo / avatar</label>

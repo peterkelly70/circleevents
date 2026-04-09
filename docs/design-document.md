@@ -31,6 +31,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
 - Events and organizations support both targeted email invites and reusable share invite codes with optional expiry
 - Organization profiles can include website, Discord, X/Twitter, and Facebook links
+- Organizations can connect a Discord webhook to auto-post newly published non-private events
 
 ## Data Model
 - `users`
