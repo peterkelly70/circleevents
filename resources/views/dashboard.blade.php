@@ -427,14 +427,35 @@
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-avatar">Logo / avatar</label>
+                                <p class="mt-1 text-xs text-stone-500">Best at 512 x 512. Square logos work best here.</p>
                                 <input id="org-avatar" name="avatar" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                                 <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-stone-300" for="org-banner">Banner image</label>
+                                <p class="mt-1 text-xs text-stone-500">Best at 1600 x 480. Keep important artwork in the center band.</p>
                                 <input id="org-banner" name="banner" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                                 <x-input-error :messages="$errors->get('banner')" class="mt-2" />
                             </div>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-stone-300">Organization theme</p>
+                            <div class="theme-picker-grid mt-3">
+                                @foreach (\App\Support\OrganizationThemes::presets() as $themeKey => $themePreset)
+                                    <label class="theme-picker-card {{ $themePreset['mode'] === 'light' ? 'bg-white/95 text-stone-900' : 'bg-black/30 text-stone-100' }}" data-selected="{{ old('theme_key', 'embers') === $themeKey ? 'true' : 'false' }}">
+                                        <input class="theme-picker-radio" type="radio" name="theme_key" value="{{ $themeKey }}" @checked(old('theme_key', 'embers') === $themeKey)>
+                                        <div class="theme-preview {{ $themePreset['hero'] }}"></div>
+                                        <div class="mt-3 flex items-center justify-between gap-3">
+                                            <div>
+                                                <p class="font-semibold">{{ $themePreset['name'] }}</p>
+                                                <p class="text-xs uppercase tracking-[0.25em] {{ $themePreset['mode'] === 'light' ? 'text-stone-500' : 'text-stone-400' }}">{{ $themePreset['mode'] }}</p>
+                                            </div>
+                                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $themePreset['accent_button'] }}">{{ old('theme_key', 'embers') === $themeKey ? 'Selected' : 'Theme' }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <x-input-error :messages="$errors->get('theme_key')" class="mt-2" />
                         </div>
                         <div>
                             <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">

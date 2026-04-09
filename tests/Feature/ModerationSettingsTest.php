@@ -91,6 +91,24 @@ class ModerationSettingsTest extends TestCase
         $this->get(route('organizations.show', $organization->fresh()))->assertOk();
     }
 
+    public function test_organization_creation_stores_the_selected_theme(): void
+    {
+        $owner = User::factory()->create();
+
+        $this->actingAs($owner)->post(route('organizations.store'), [
+            'name' => 'Theme Guild',
+            'summary' => 'Theme test',
+            'description' => 'Theme details',
+            'visibility' => 'public',
+            'theme_key' => 'midnight',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('organizations', [
+            'name' => 'Theme Guild',
+            'theme_key' => 'midnight',
+        ]);
+    }
+
     public function test_suspended_users_cannot_log_in(): void
     {
         $user = User::factory()->create([

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Support\ImageUploads;
+use App\Support\OrganizationThemes;
 use App\Models\User;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class OrganizationController extends Controller
             'auto_post_discord_announcements' => $request->boolean('auto_post_discord_announcements'),
             'auto_post_facebook_events' => $request->boolean('auto_post_facebook_events'),
             'auto_post_facebook_announcements' => $request->boolean('auto_post_facebook_announcements'),
+            'theme_key' => $request->input('theme_key', OrganizationThemes::DEFAULT),
         ]);
 
         return $request->validate([
@@ -47,6 +49,7 @@ class OrganizationController extends Controller
             'auto_post_facebook_announcements' => ['nullable', 'boolean'],
             'avatar' => ['nullable', 'image', 'max:12288'],
             'banner' => ['nullable', 'image', 'max:20480'],
+            'theme_key' => ['required', Rule::in(OrganizationThemes::keys())],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
         ]);
     }
@@ -137,6 +140,7 @@ class OrganizationController extends Controller
 
         return view('organizations.edit', [
             'organization' => $organization,
+            'themePresets' => OrganizationThemes::presets(),
         ]);
     }
 

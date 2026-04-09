@@ -80,4 +80,42 @@
         width: 2.1rem;
         font-size: 0.8rem;
     }
+
+    .theme-picker-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+
+    .theme-picker-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 1rem;
+        text-align: left;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .theme-picker-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .theme-picker-card[data-selected='true'] {
+        border-color: rgba(251, 191, 36, 0.55);
+        box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.25);
+    }
+
+    .theme-picker-radio {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .theme-preview {
+        height: 6rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 }

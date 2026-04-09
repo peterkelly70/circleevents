@@ -1,30 +1,34 @@
 <x-app-layout>
+    @php
+        $theme = $organization->theme();
+        $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
+    @endphp
     <x-slot name="header">
         <div class="flex items-end justify-between gap-4">
             <div>
-                <p class="text-sm uppercase tracking-[0.3em] text-amber-300">Organization</p>
-                <h1 class="text-3xl font-black text-stone-100">{{ $organization->name }}</h1>
+                <p class="text-sm uppercase tracking-[0.3em] {{ $theme['eyebrow'] }}">Organization</p>
+                <h1 class="text-3xl font-black {{ $theme['header_heading'] }}">{{ $organization->name }}</h1>
             </div>
             @auth
                 @if (auth()->user()->isManagerOf($organization))
-                    <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Edit organization</a>
+                    <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['header_button'] }}">Edit organization</a>
                 @endif
             @endauth
         </div>
     </x-slot>
 
-    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section class="mb-6 overflow-hidden rounded-[2rem] border border-white/10 bg-stone-900/70 shadow-sm ring-1 ring-white/10">
-            <div class="relative h-56 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.16),_transparent_30%),linear-gradient(135deg,_#292524,_#0c0a09)] sm:h-72">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 {{ $theme['mode'] === 'light' ? 'text-stone-900' : 'text-stone-100' }}">
+        <section class="mb-6 overflow-hidden rounded-[2rem] border shadow-sm ring-1 {{ $theme['surface'] }}">
+            <div class="relative h-56 {{ $theme['hero'] }} sm:h-72">
                 @if ($organization->banner_path)
                     <div class="absolute inset-0 bg-black">
                         <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-contain object-center">
                     </div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t {{ $theme['hero_overlay'] }} to-transparent"></div>
                 @endif
 
                 <div class="absolute inset-x-0 bottom-0 flex items-end gap-5 px-6 pb-6 sm:px-8">
-                    <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 text-3xl font-black text-amber-200 shadow-xl sm:h-28 sm:w-28">
+                    <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border text-3xl font-black shadow-xl sm:h-28 sm:w-28 {{ $theme['logo_shell'] }}">
                         @if ($organization->avatar_path)
                             <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-contain object-center">
                         @else
@@ -33,17 +37,17 @@
                     </div>
 
                     <div class="pb-1">
-                        <p class="text-xs uppercase tracking-[0.35em] text-amber-200/80">Community profile</p>
-                        <h2 class="mt-2 text-2xl font-black text-white sm:text-4xl">{{ $organization->name }}</h2>
+                        <p class="text-xs uppercase tracking-[0.35em] {{ $theme['hero_eyebrow'] }}">Community profile</p>
+                        <h2 class="mt-2 text-2xl font-black sm:text-4xl {{ $theme['hero_heading'] }}">{{ $organization->name }}</h2>
                     </div>
                 </div>
             </div>
         </section>
 
         <div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
-            <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-8 shadow-sm ring-1 ring-white/10">
+            <section class="rounded-[2rem] border p-8 shadow-sm ring-1 {{ $theme['surface'] }}">
                 <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 text-sm text-stone-400">
+                    <div class="flex items-center gap-4 text-sm {{ $theme['meta'] }}">
                         <span>{{ $organization->members->count() }} followers</span>
                         <span>{{ $organization->events->count() }} published events</span>
                         <span>{{ $organization->visibilityLabel() }}</span>
@@ -53,15 +57,15 @@
                         @if (! auth()->user()->isMemberOf($organization))
                             <form method="POST" action="{{ route('organizations.follow', $organization) }}">
                                 @csrf
-                                <button class="rounded-full bg-emerald-300 px-5 py-3 text-sm font-semibold text-stone-950">Follow organization</button>
+                                <button class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['accent_button'] }}">Follow organization</button>
                             </form>
                         @else
-                            <span class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">Following</span>
+                            <span class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['accent_badge'] }}">Following</span>
                             @if (! auth()->user()->isManagerOf($organization))
                                 <form method="POST" action="{{ route('organizations.leave', $organization) }}" class="inline-flex">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Leave organization</button>
+                                    <button class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['danger_button'] }}">Leave organization</button>
                                 </form>
                             @endif
                         @endif
@@ -71,7 +75,7 @@
                             <input type="hidden" name="type" value="organization">
                             <input type="hidden" name="id" value="{{ $organization->id }}">
                             <input type="hidden" name="reason" value="organization reported to CircleEvents admins">
-                            <button class="rounded-full border border-amber-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Report organization</button>
+                            <button class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['report_button'] }}">Report organization</button>
                         </form>
 
                         @if (! auth()->user()->isMemberOf($organization))
@@ -79,19 +83,19 @@
                                 @csrf
                                 <input type="hidden" name="type" value="organization">
                                 <input type="hidden" name="id" value="{{ $organization->id }}">
-                                <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Block</button>
+                                <button class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['danger_button'] }}">Block</button>
                             </form>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-stone-200">Log in to follow</a>
+                        <a href="{{ route('login') }}" class="rounded-full border px-5 py-3 text-sm font-semibold {{ $theme['soft_button'] }}">Log in to follow</a>
                     @endauth
                 </div>
 
-                <p class="text-lg leading-8 text-stone-300">{{ $organization->summary }}</p>
+                <p class="text-lg leading-8 {{ $theme['body'] }}">{{ $organization->summary }}</p>
                 <div class="mt-8 grid gap-6 md:grid-cols-3">
                     <div>
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Owner</h2>
-                        <p class="mt-2 text-lg font-bold text-stone-100">{{ $organization->owner->name }}</p>
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Owner</h2>
+                        <p class="mt-2 text-lg font-bold {{ $theme['heading'] }}">{{ $organization->owner->name }}</p>
                         @auth
                             @if (auth()->id() !== $organization->owner->id)
                                 <div class="mt-3 flex gap-2">
@@ -100,37 +104,37 @@
                                         <input type="hidden" name="type" value="user">
                                         <input type="hidden" name="id" value="{{ $organization->owner->id }}">
                                         <input type="hidden" name="reason" value="organizer reported to CircleEvents admins">
-                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report organizer</button>
+                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['link'] }}">Report organizer</button>
                                     </form>
                                 </div>
                             @endif
                         @endauth
                     </div>
                     <div>
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">City</h2>
-                        <p class="mt-2 text-lg font-bold text-stone-100">{{ $organization->city ?: 'TBA' }}</p>
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">City</h2>
+                        <p class="mt-2 text-lg font-bold {{ $theme['heading'] }}">{{ $organization->city ?: 'TBA' }}</p>
                     </div>
                     <div>
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Website</h2>
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Website</h2>
                         @if ($organization->website_url)
-                            <a href="{{ $organization->website_url }}" class="mt-2 inline-flex text-lg font-bold text-amber-300">{{ $organization->website_url }}</a>
+                            <a href="{{ $organization->website_url }}" class="mt-2 inline-flex text-lg font-bold {{ $theme['link'] }}">{{ $organization->website_url }}</a>
                         @else
-                            <p class="mt-2 text-lg font-bold text-stone-100">Not set</p>
+                            <p class="mt-2 text-lg font-bold {{ $theme['heading'] }}">Not set</p>
                         @endif
                     </div>
                 </div>
                 @if ($organization->discord_url || $organization->twitter_url || $organization->facebook_url)
                     <div class="mt-8 border-t border-white/10 pt-8">
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Social links</h2>
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Social links</h2>
                         <div class="mt-4 flex flex-wrap gap-3">
                             @if ($organization->discord_url)
-                                <a href="{{ $organization->discord_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">Discord</a>
+                                <a href="{{ $organization->discord_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Discord</a>
                             @endif
                             @if ($organization->twitter_url)
-                                <a href="{{ $organization->twitter_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">X / Twitter</a>
+                                <a href="{{ $organization->twitter_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">X / Twitter</a>
                             @endif
                             @if ($organization->facebook_url)
-                                <a href="{{ $organization->facebook_url }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100">Facebook</a>
+                                <a href="{{ $organization->facebook_url }}" target="_blank" rel="noreferrer" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Facebook</a>
                             @endif
                         </div>
                     </div>
@@ -138,8 +142,8 @@
                 @auth
                     @if (auth()->user()->isManagerOf($organization))
                         <div class="mt-8 border-t border-white/10 pt-8">
-                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Discord publishing</h2>
-                            <p class="mt-4 text-stone-300">
+                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Discord publishing</h2>
+                            <p class="mt-4 {{ $theme['body'] }}">
                                 @if ($organization->discord_webhook_url)
                                     Connected.
                                     {{ $organization->auto_post_discord_events ? ' Events auto-post to Discord.' : ' Events do not auto-post yet.' }}
@@ -150,8 +154,8 @@
                             </p>
                         </div>
                         <div class="mt-8 border-t border-white/10 pt-8">
-                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Facebook publishing</h2>
-                            <p class="mt-4 text-stone-300">
+                            <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Facebook publishing</h2>
+                            <p class="mt-4 {{ $theme['body'] }}">
                                 @if ($organization->facebook_page_id && $organization->facebook_page_access_token)
                                     Connected.
                                     {{ $organization->auto_post_facebook_events ? ' Events auto-post to Facebook.' : ' Events do not auto-post yet.' }}
@@ -164,38 +168,38 @@
                     @endif
                 @endauth
                 <div class="mt-8 border-t border-white/10 pt-8">
-                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">About</h2>
-                    <p class="mt-4 leading-7 text-stone-300">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">About</h2>
+                    <p class="mt-4 leading-7 {{ $theme['body'] }}">{{ $organization->description ?: 'No long-form description has been added yet.' }}</p>
                 </div>
 
                 <div class="mt-8 border-t border-white/10 pt-8">
                     <div class="flex items-center justify-between gap-4">
-                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Community posts</h2>
-                        <span class="text-sm text-stone-500">{{ $organization->posts->count() }} posts</span>
+                        <h2 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Community posts</h2>
+                        <span class="text-sm {{ $theme['muted'] }}">{{ $organization->posts->count() }} posts</span>
                     </div>
 
                     @auth
                         @if (auth()->user()->isMemberOf($organization))
                             <form method="POST" action="{{ route('organizations.posts.store', $organization) }}" enctype="multipart/form-data" class="mt-4">
                                 @csrf
-                                <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('body') }}</textarea>
-                                <p class="mt-2 text-xs text-stone-500">Supports BBCode: `[b]bold[/b]`, `[i]italic[/i]`, `[quote]quote[/quote]`, `[url=https://...]link[/url]`.</p>
-                                <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
-                                <button class="mt-3 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Post to organization</button>
+                                <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}">{{ old('body') }}</textarea>
+                                <p class="mt-2 text-xs {{ $theme['muted'] }}">Supports BBCode: `[b]bold[/b]`, `[i]italic[/i]`, `[quote]quote[/quote]`, `[url=https://...]link[/url]`.</p>
+                                <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}">
+                                <button class="mt-3 rounded-full px-5 py-3 text-sm font-semibold {{ $theme['primary_button'] }}">Post to organization</button>
                             </form>
                         @else
-                            <p class="mt-4 text-sm text-stone-400">Follow this organization to join the conversation.</p>
+                            <p class="mt-4 text-sm {{ $theme['meta'] }}">Follow this organization to join the conversation.</p>
                         @endif
                     @else
-                        <p class="mt-4 text-sm text-stone-400">Log in and follow this organization to post.</p>
+                        <p class="mt-4 text-sm {{ $theme['meta'] }}">Log in and follow this organization to post.</p>
                     @endauth
 
                     <div class="mt-6 space-y-4">
                         @forelse ($organization->posts as $post)
-                            <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
+                            <div class="rounded-2xl border p-5 {{ $theme['panel'] }}">
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
-                                        <p class="font-semibold text-stone-100">{{ $post->user->name }}</p>
+                                        <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
                                         @auth
                                             @if (auth()->id() !== $post->user->id)
                                                 <div class="mt-1 flex gap-2">
@@ -204,7 +208,7 @@
                                                         <input type="hidden" name="type" value="user">
                                                         <input type="hidden" name="id" value="{{ $post->user->id }}">
                                                         <input type="hidden" name="reason" value="community post reported to CircleEvents admins">
-                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Report to admins</button>
+                                                        <button class="text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['link'] }}">Report to admins</button>
                                                     </form>
                                                     <form method="POST" action="{{ route('blocks.store') }}">
                                                         @csrf
@@ -216,42 +220,46 @@
                                             @endif
                                         @endauth
                                     </div>
-                                    <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $post->created_at->diffForHumans() }}</p>
+                                    <p class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>
-                                <div class="mt-3 prose prose-invert max-w-none text-stone-300">{!! \App\Support\Bbcode::render($post->body) !!}</div>
+                                <div class="mt-3 max-w-none {{ $theme['body'] }} {{ $themeProseClass }}">{!! \App\Support\Bbcode::render($post->body) !!}</div>
                                 @if ($post->image_path)
                                     <img src="{{ $post->imageUrl() }}" alt="Organization post attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
                                 @endif
                             </div>
                         @empty
-                            <p class="text-sm text-stone-400">No community posts yet.</p>
+                            <p class="text-sm {{ $theme['meta'] }}">No community posts yet.</p>
                         @endforelse
                     </div>
                 </div>
             </section>
 
             <section class="space-y-6">
-                <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
-                    <h2 class="text-2xl font-bold text-stone-100">Member messages</h2>
-                    <p class="mt-2 text-sm text-stone-400">Managers can write announcements here and email them to all followers and members.</p>
+                <div class="rounded-[2rem] border p-6 shadow-sm ring-1 {{ $theme['surface'] }}">
+                    <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Member messages</h2>
+                    <p class="mt-2 text-sm {{ $theme['meta'] }}">Managers can write announcements here and email them to all followers and members.</p>
 
                     @auth
                         @if (auth()->user()->isManagerOf($organization))
+                            @php
+                                $managerMembers = $organization->members->whereIn('pivot.role', ['owner', 'manager']);
+                                $followerMembers = $organization->members->where('pivot.role', 'follower');
+                            @endphp
                             <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                                 @csrf
-                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
-                                <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required></textarea>
-                                <p class="text-xs text-stone-500">Supports BBCode and an optional image attachment.</p>
-                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
-                                <label class="flex items-center gap-3 text-sm text-stone-300">
-                                    <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}" required>
+                                <textarea name="body" rows="5" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}" required></textarea>
+                                <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional image attachment.</p>
+                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}">
+                                <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                    <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
                                     Send this announcement to Discord too
                                 </label>
-                                <label class="flex items-center gap-3 text-sm text-stone-300">
-                                    <input type="checkbox" name="post_to_facebook" value="1" @checked(old('post_to_facebook', $organization->auto_post_facebook_announcements)) class="rounded border-white/10 bg-white/5 text-blue-400 focus:ring-blue-400">
+                                <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                    <input type="checkbox" name="post_to_facebook" value="1" @checked(old('post_to_facebook', $organization->auto_post_facebook_announcements)) class="rounded border-white/10 bg-white/5 {{ $theme['facebook_checkbox'] }}">
                                     Send this announcement to Facebook too
                                 </label>
-                                <button class="w-full rounded-full bg-emerald-400 px-5 py-3 font-semibold text-stone-950">Send to members</button>
+                                <button class="w-full rounded-full px-5 py-3 font-semibold {{ $theme['secondary_button'] }}">Send to members</button>
                             </form>
 
                             <form method="POST" action="{{ route('organizations.invitations.store', $organization) }}" class="mt-5 space-y-4 border-t border-white/10 pt-5">
@@ -285,13 +293,17 @@
                                 <h3 class="text-lg font-semibold text-stone-100">Active share invites</h3>
                                 <div class="mt-4 space-y-3">
                                     @forelse ($shareInvitations as $invitation)
+                                        @php
+                                            $shareAcceptUrl = route('organizations.invitations.accept-code', $invitation->share_code);
+                                            $shareRevokeUrl = route('organizations.invitations.revoke', [$organization, $invitation]);
+                                        @endphp
                                         <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
                                             <div class="font-semibold text-stone-100">{{ $invitation->name ?: 'Share invite' }}</div>
                                             <div class="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-300">Code {{ $invitation->share_code }}</div>
                                             <div class="mt-2 text-sm text-stone-400">{{ $invitation->expires_at ? 'Expires '.$invitation->expires_at->diffForHumans() : 'No expiry' }}</div>
                                             <div class="mt-1 text-sm text-stone-400">{{ $invitation->use_count }} uses{{ $invitation->max_uses ? ' of '.$invitation->max_uses : '' }}</div>
-                                            <input readonly value="{{ route('organizations.invitations.accept-code', $invitation->share_code) }}" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
-                                            <form method="POST" action="{{ route('organizations.invitations.revoke', [$organization, $invitation]) }}" class="mt-3">
+                                            <input readonly value="{{ $shareAcceptUrl }}" class="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+                                            <form method="POST" action="{{ $shareRevokeUrl }}" class="mt-3">
                                                 @csrf
                                                 <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-200">Revoke code</button>
                                             </form>
@@ -305,7 +317,7 @@
                             <div class="mt-6 border-t border-white/10 pt-6">
                                 <h3 class="text-lg font-semibold text-stone-100">Managers</h3>
                                 <div class="mt-4 space-y-3">
-                                    @foreach ($organization->members->whereIn('pivot.role', ['owner', 'manager']) as $member)
+                                    @foreach ($managerMembers as $member)
                                         <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
                                             <div class="flex items-center justify-between gap-4">
                                                 <div>
@@ -323,7 +335,7 @@
                                 <div class="mt-6 border-t border-white/10 pt-6">
                                     <h3 class="text-lg font-semibold text-stone-100">Promote follower to manager</h3>
                                     <div class="mt-4 space-y-3">
-                                        @forelse ($organization->members->where('pivot.role', 'follower') as $member)
+                                        @forelse ($followerMembers as $member)
                                             <form method="POST" action="{{ route('organizations.members.promote', $organization) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
                                                 @csrf
                                                 <input type="hidden" name="user_id" value="{{ $member->id }}">
@@ -344,6 +356,13 @@
 
                     <div class="mt-6 space-y-4">
                         @forelse ($organization->messages as $message)
+                            @php
+                                $organizationUrl = route('organizations.show', $organization);
+                                $messagePreview = \Illuminate\Support\Str::limit(strip_tags($message->body), 140);
+                                $messagePlain = trim(strip_tags($message->body));
+                                $emailBody = rawurlencode($messagePlain."\n\n".$organizationUrl);
+                                $copyPayload = $message->subject."\n\n".$messagePlain."\n\n".$organizationUrl;
+                            @endphp
                             <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
@@ -352,7 +371,7 @@
                                     </div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $message->created_at->diffForHumans() }}</p>
                                 </div>
-                                <div class="mt-3 prose prose-invert max-w-none text-stone-300">{!! \App\Support\Bbcode::render($message->body) !!}</div>
+                                <div class="mt-3 max-w-none {{ $theme['body'] }} {{ $themeProseClass }}">{!! \App\Support\Bbcode::render($message->body) !!}</div>
                                 @if ($message->image_path)
                                     <img src="{{ $message->imageUrl() }}" alt="Member message attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
                                 @endif
@@ -371,7 +390,7 @@
                                         <span aria-hidden="true">↗</span>
                                     </button>
                                     <a
-                                        href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('organizations.show', $organization)) }}"
+                                        href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($organizationUrl) }}"
                                         target="_blank"
                                         rel="noreferrer"
                                         title="Share on Facebook"
@@ -381,7 +400,7 @@
                                         <span aria-hidden="true">f</span>
                                     </a>
                                     <a
-                                        href="https://x.com/intent/tweet?text={{ urlencode($message->subject.' - '.\Illuminate\Support\Str::limit(strip_tags($message->body), 140)) }}&url={{ urlencode(route('organizations.show', $organization)) }}"
+                                        href="https://x.com/intent/tweet?text={{ urlencode($message->subject.' - '.$messagePreview) }}&url={{ urlencode($organizationUrl) }}"
                                         target="_blank"
                                         rel="noreferrer"
                                         title="Share on X"
@@ -391,7 +410,7 @@
                                         <span aria-hidden="true">x</span>
                                     </a>
                                     <a
-                                        href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ rawurlencode(trim(strip_tags($message->body)) . "\n\n" . route('organizations.show', $organization)) }}"
+                                        href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ $emailBody }}"
                                         title="Share by email"
                                         aria-label="Share by email"
                                         class="share-icon-button share-icon-button-sm"
@@ -401,7 +420,7 @@
                                     <button
                                         type="button"
                                         data-copy-button
-                                        data-copy-text="{{ $message->subject }}\n\n{{ trim(strip_tags($message->body)) }}\n\n{{ route('organizations.show', $organization) }}"
+                                        data-copy-text="{{ $copyPayload }}"
                                         data-copy-success="Announcement copied"
                                         title="Copy text"
                                         aria-label="Copy text"

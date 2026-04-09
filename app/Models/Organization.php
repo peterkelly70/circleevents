@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\OrganizationThemes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,6 +32,7 @@ use Illuminate\Support\Str;
     'auto_post_discord_announcements',
     'avatar_path',
     'banner_path',
+    'theme_key',
     'visibility',
     'approval_status',
     'approved_at',
@@ -141,5 +143,10 @@ class Organization extends Model
     public function visibilityLabel(): string
     {
         return Str::headline($this->visibility);
+    }
+
+    public function theme(): array
+    {
+        return OrganizationThemes::get($this->theme_key);
     }
 }
