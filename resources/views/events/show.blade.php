@@ -21,47 +21,58 @@
 
             <p class="text-sm uppercase tracking-[0.25em] text-amber-300">{{ $event->starts_at->format('l, d F Y · g:i A') }} to {{ $event->ends_at->format('g:i A') }} {{ $event->timezone }} · {{ $event->visibilityLabel() }}</p>
             <p class="mt-5 text-lg leading-8 text-stone-300">{{ $event->summary }}</p>
-            <div class="mt-5 flex flex-wrap gap-3">
+            <div class="mt-5 flex flex-wrap items-center gap-3">
+                <span class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Share</span>
                 <button
                     type="button"
                     data-share-button
                     data-share-title="{{ $event->title }}"
                     data-share-text="{{ $event->summary }}"
                     data-share-url="{{ route('events.show', $event) }}"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                    title="Share"
+                    aria-label="Share"
+                    class="share-icon-button"
                 >
-                    Share event
+                    <span aria-hidden="true">↗</span>
                 </button>
                 <a
                     href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('events.show', $event)) }}"
                     target="_blank"
                     rel="noreferrer"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                    class="share-icon-button"
                 >
-                    Share on Facebook
+                    <span aria-hidden="true">f</span>
                 </a>
                 <a
                     href="https://x.com/intent/tweet?text={{ urlencode($event->title.' - '.$event->summary) }}&url={{ urlencode(route('events.show', $event)) }}"
                     target="_blank"
                     rel="noreferrer"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                    title="Share on X"
+                    aria-label="Share on X"
+                    class="share-icon-button"
                 >
-                    Share on X
+                    <span aria-hidden="true">x</span>
                 </a>
                 <a
                     href="mailto:?subject={{ rawurlencode($event->title) }}&body={{ rawurlencode($event->summary . "\n\n" . route('events.show', $event)) }}"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                    title="Share by email"
+                    aria-label="Share by email"
+                    class="share-icon-button"
                 >
-                    Share by email
+                    <span aria-hidden="true">✉</span>
                 </a>
                 <button
                     type="button"
                     data-copy-button
                     data-copy-text="{{ route('events.show', $event) }}"
                     data-copy-success="Event link copied"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100"
+                    title="Copy link"
+                    aria-label="Copy link"
+                    class="share-icon-button"
                 >
-                    Copy link
+                    <span aria-hidden="true">⧉</span>
                 </button>
             </div>
             <div class="mt-8 grid gap-6 md:grid-cols-2">

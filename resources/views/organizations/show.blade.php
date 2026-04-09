@@ -351,47 +351,58 @@
                                 @if ($message->image_path)
                                     <img src="{{ $message->imageUrl() }}" alt="Member message attachment" class="mt-4 max-h-[28rem] w-full rounded-2xl object-cover">
                                 @endif
-                                <div class="mt-4 flex flex-wrap gap-3">
+                                <div class="mt-4 flex flex-wrap items-center gap-3">
+                                    <span class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Share</span>
                                     <button
                                         type="button"
                                         data-share-button
                                         data-share-title="{{ $message->subject }}"
                                         data-share-text="{{ \Illuminate\Support\Str::limit(strip_tags($message->body), 180) }}"
                                         data-share-url="{{ route('organizations.show', $organization) }}"
-                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                        title="Share"
+                                        aria-label="Share"
+                                        class="share-icon-button share-icon-button-sm"
                                     >
-                                        Share
+                                        <span aria-hidden="true">↗</span>
                                     </button>
                                     <a
                                         href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('organizations.show', $organization)) }}"
                                         target="_blank"
                                         rel="noreferrer"
-                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                        title="Share on Facebook"
+                                        aria-label="Share on Facebook"
+                                        class="share-icon-button share-icon-button-sm"
                                     >
-                                        Facebook
+                                        <span aria-hidden="true">f</span>
                                     </a>
                                     <a
                                         href="https://x.com/intent/tweet?text={{ urlencode($message->subject.' - '.\Illuminate\Support\Str::limit(strip_tags($message->body), 140)) }}&url={{ urlencode(route('organizations.show', $organization)) }}"
                                         target="_blank"
                                         rel="noreferrer"
-                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                        title="Share on X"
+                                        aria-label="Share on X"
+                                        class="share-icon-button share-icon-button-sm"
                                     >
-                                        X
+                                        <span aria-hidden="true">x</span>
                                     </a>
                                     <a
                                         href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ rawurlencode(trim(strip_tags($message->body)) . "\n\n" . route('organizations.show', $organization)) }}"
-                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                        title="Share by email"
+                                        aria-label="Share by email"
+                                        class="share-icon-button share-icon-button-sm"
                                     >
-                                        Email
+                                        <span aria-hidden="true">✉</span>
                                     </a>
                                     <button
                                         type="button"
                                         data-copy-button
                                         data-copy-text="{{ $message->subject }}\n\n{{ trim(strip_tags($message->body)) }}\n\n{{ route('organizations.show', $organization) }}"
                                         data-copy-success="Announcement copied"
-                                        class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-100"
+                                        title="Copy text"
+                                        aria-label="Copy text"
+                                        class="share-icon-button share-icon-button-sm"
                                     >
-                                        Copy text
+                                        <span aria-hidden="true">⧉</span>
                                     </button>
                                 </div>
                             </div>
