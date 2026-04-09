@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Organization;
 use App\Models\OrganizationMessage;
 use App\Models\OrganizationPost;
+use App\Models\Report;
 use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -57,6 +58,15 @@ class DashboardController extends Controller
                 : collect(),
             'pendingOrganizations' => $user->is_admin
                 ? Organization::query()->with('owner')->where('approval_status', 'pending')->latest()->get()
+                : collect(),
+            'openReports' => $user->is_admin
+                ? Report::query()->with(['reporter', 'reportable'])->whereIn('status', ['open', 'reviewing'])->latest()->take(25)->get()
+                : collect(),
+            'suspendedUsers' => $user->is_admin
+                ? User::query()->where('registration_status', 'suspended')->latest()->get()
+                : collect(),
+            'suspendedOrganizations' => $user->is_admin
+                ? Organization::query()->with('owner')->where('approval_status', 'suspended')->latest()->get()
                 : collect(),
         ]);
     }

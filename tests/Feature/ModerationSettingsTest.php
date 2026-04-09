@@ -90,4 +90,40 @@ class ModerationSettingsTest extends TestCase
 
         $this->get(route('organizations.show', $organization->fresh()))->assertOk();
     }
+
+    public function test_suspended_users_cannot_log_in(): void
+    {
+        $user = User::factory()->create([
+            'registration_status' => 'suspended',
+            'approved_at' => null,
+        ]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_suspended_organizations_are_hidden_from_public_view(): void
+    {
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Suspended Org',
+            'slug' => 'suspended-org',
+            'summary' => 'No longer public',
+            'description' => 'Hidden after moderation',
+            'visibility' => 'public',
+            'approval_status' => 'suspended',
+            'approved_at' => null,
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $this->get(route('organizations.show', $organization))->assertForbidden();
+        $this->actingAs($owner)->get(route('organizations.show', $organization))->assertOk();
+    }
 }

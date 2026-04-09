@@ -97,6 +97,118 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="mt-6 rounded-3xl border border-white/10 bg-black/20 p-5">
+                            <div class="flex items-center justify-between gap-4">
+                                <h4 class="text-lg font-semibold text-stone-100">Reports queue</h4>
+                                <span class="text-sm text-stone-400">{{ $openReports->count() }}</span>
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                @forelse ($openReports as $report)
+                                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div>
+                                                <div class="font-semibold text-stone-100">
+                                                    {{ class_basename($report->reportable_type) }} report
+                                                </div>
+                                                <div class="mt-1 text-sm text-stone-400">
+                                                    {{ $report->reason }}
+                                                </div>
+                                                <div class="mt-1 text-sm text-stone-400">
+                                                    Reporter: {{ $report->reporter?->email ?? 'Unknown' }}
+                                                </div>
+                                                @if ($report->reportable)
+                                                    <div class="mt-1 text-sm text-stone-400">
+                                                        Target:
+                                                        @if ($report->reportable instanceof \App\Models\User)
+                                                            {{ $report->reportable->name }} ({{ $report->reportable->email }})
+                                                        @else
+                                                            {{ $report->reportable->name }}
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <span class="text-xs uppercase tracking-[0.2em] text-amber-200">{{ $report->status }}</span>
+                                        </div>
+                                        <div class="mt-4 flex flex-wrap gap-3">
+                                            <form method="POST" action="{{ route('admin.reports.update', $report) }}">
+                                                @csrf
+                                                <input type="hidden" name="status" value="reviewing">
+                                                <button class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-200">Mark reviewing</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.reports.update', $report) }}">
+                                                @csrf
+                                                <input type="hidden" name="status" value="resolved">
+                                                <button class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">Resolve</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.reports.update', $report) }}">
+                                                @csrf
+                                                <input type="hidden" name="status" value="dismissed">
+                                                <button class="rounded-full border border-stone-300/20 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-300">Dismiss</button>
+                                            </form>
+                                            @if ($report->reportable instanceof \App\Models\User && ! $report->reportable->is_admin)
+                                                <form method="POST" action="{{ route('admin.users.suspend', $report->reportable) }}">
+                                                    @csrf
+                                                    <button class="rounded-full border border-rose-300/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200">Suspend user</button>
+                                                </form>
+                                            @endif
+                                            @if ($report->reportable instanceof \App\Models\Organization)
+                                                <form method="POST" action="{{ route('admin.organizations.suspend', $report->reportable) }}">
+                                                    @csrf
+                                                    <button class="rounded-full border border-rose-300/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200">Suspend organization</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-stone-400">No open reports.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                            <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <h4 class="text-lg font-semibold text-stone-100">Suspended users</h4>
+                                    <span class="text-sm text-stone-400">{{ $suspendedUsers->count() }}</span>
+                                </div>
+                                <div class="mt-4 space-y-3">
+                                    @forelse ($suspendedUsers as $suspendedUser)
+                                        <form method="POST" action="{{ route('admin.users.restore', $suspendedUser) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            @csrf
+                                            <div>
+                                                <div class="font-semibold text-stone-100">{{ $suspendedUser->name }}</div>
+                                                <div class="mt-1 text-sm text-stone-400">{{ $suspendedUser->email }}</div>
+                                            </div>
+                                            <button class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-stone-950">Restore</button>
+                                        </form>
+                                    @empty
+                                        <p class="text-sm text-stone-400">No suspended users.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <h4 class="text-lg font-semibold text-stone-100">Suspended organizations</h4>
+                                    <span class="text-sm text-stone-400">{{ $suspendedOrganizations->count() }}</span>
+                                </div>
+                                <div class="mt-4 space-y-3">
+                                    @forelse ($suspendedOrganizations as $suspendedOrganization)
+                                        <form method="POST" action="{{ route('admin.organizations.restore', $suspendedOrganization) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            @csrf
+                                            <div>
+                                                <div class="font-semibold text-stone-100">{{ $suspendedOrganization->name }}</div>
+                                                <div class="mt-1 text-sm text-stone-400">Owner: {{ $suspendedOrganization->owner?->name ?? 'Unknown' }}</div>
+                                            </div>
+                                            <button class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-stone-950">Restore</button>
+                                        </form>
+                                    @empty
+                                        <p class="text-sm text-stone-400">No suspended organizations.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
                     </section>
                 @endif
 

@@ -56,7 +56,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/mailing-lists/{mailingList:slug}/subscribe', [MailingListController::class, 'subscribe'])->name('mailing-lists.subscribe');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/users/{user}/approve', [AdminController::class, 'approveUser'])->name('admin.users.approve');
+    Route::post('/admin/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.users.suspend');
+    Route::post('/admin/users/{user}/restore', [AdminController::class, 'restoreUser'])->name('admin.users.restore');
     Route::post('/admin/organizations/{organization}/approve', [AdminController::class, 'approveOrganization'])->name('admin.organizations.approve');
+    Route::post('/admin/organizations/{organization}/suspend', [AdminController::class, 'suspendOrganization'])->name('admin.organizations.suspend');
+    Route::post('/admin/organizations/{organization}/restore', [AdminController::class, 'restoreOrganization'])->name('admin.organizations.restore');
+    Route::post('/admin/reports/{report}/status', [AdminController::class, 'updateReportStatus'])->name('admin.reports.update');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

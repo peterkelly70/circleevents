@@ -54,6 +54,15 @@ class LoginRequest extends FormRequest
         /** @var User $user */
         $user = Auth::user();
 
+        if ($user->isSuspended()) {
+            Auth::logout();
+            RateLimiter::clear($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'This account has been suspended by CircleEvents admins.',
+            ]);
+        }
+
         if (! $user->isApproved()) {
             Auth::logout();
             RateLimiter::clear($this->throttleKey());

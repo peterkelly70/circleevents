@@ -41,6 +41,11 @@ class User extends Authenticatable
         return $this->registration_status === 'active';
     }
 
+    public function isSuspended(): bool
+    {
+        return $this->registration_status === 'suspended';
+    }
+
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)

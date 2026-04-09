@@ -133,6 +133,11 @@ class Organization extends Model
         return $this->approval_status === 'approved';
     }
 
+    public function isSuspended(): bool
+    {
+        return $this->approval_status === 'suspended';
+    }
+
     public function visibilityLabel(): string
     {
         return Str::headline($this->visibility);

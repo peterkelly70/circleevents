@@ -39,4 +39,8 @@ return [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    'security' => [
+        'clamscan_binary' => env('CLAMSCAN_BINARY'),
+    ],
+
 ];

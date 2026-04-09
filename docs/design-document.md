@@ -12,6 +12,8 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Authentication with registration, login, password reset, and profile management
 - Registration requires accepting a lightweight usage-conditions notice, viewable in a popup from the sign-up form
 - Site admins can switch both user registration and organization creation between open and moderated approval modes
+- Uploaded images are re-encoded, MIME-checked, size-checked, and can optionally be scanned with ClamAV when configured
+- Admins have a report-review queue plus suspend/restore controls for users and organizations
 - Public homepage acting as a real landing page with registration CTA, public events, and public organizations
 - Public install page for self-hosted packaging and server setup guidance
 - Public events index and event detail pages
