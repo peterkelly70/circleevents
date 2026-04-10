@@ -97,6 +97,14 @@
                                                         @endif
                                                     </dd>
                                                 </div>
+                                                @if ($event->is_online && $event->online_url)
+                                                    <div>
+                                                        <dt class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">Join</dt>
+                                                        <dd class="mt-2">
+                                                            <a href="{{ $event->online_url }}" target="_blank" rel="noreferrer" class="inline-flex rounded-full px-4 py-2 text-sm font-semibold {{ $theme['secondary_button'] }}">Open event link</a>
+                                                        </dd>
+                                                    </div>
+                                                @endif
                                                 @if ($event->description)
                                                     <div>
                                                         <dt class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">Description</dt>

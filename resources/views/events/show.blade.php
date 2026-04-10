@@ -99,7 +99,7 @@
                         <p class="mt-2 text-xl font-bold text-stone-100">Online event</p>
                         <p class="mt-2 text-stone-400">No physical location is stored for this event.</p>
                         @if ($event->online_url)
-                            <a href="{{ $event->online_url }}" target="_blank" rel="noreferrer" class="mt-3 inline-flex text-sm font-semibold text-emerald-400">Open meeting link</a>
+                            <a href="{{ $event->online_url }}" target="_blank" rel="noreferrer" class="mt-4 inline-flex rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-stone-950 transition hover:bg-emerald-300">Open event link</a>
                         @endif
                     @else
                         <p class="mt-2 text-xl font-bold text-stone-100">{{ $event->venue_name }}</p>
