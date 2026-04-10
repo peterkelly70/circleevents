@@ -94,18 +94,28 @@ class OrganizationInvitationController extends Controller
         abort_unless($request->user()->isManagerOf($organization), 403);
         abort_unless($invitation->organization_id === $organization->id, 404);
 
+        $validated = $request->validate([
+            'revoked_reason' => ['required', 'string', 'max:500'],
+        ]);
+
         $invitation->update([
             'revoked_at' => now(),
             'revoked_by_user_id' => $request->user()->id,
+            'revoked_reason' => $validated['revoked_reason'],
         ]);
 
         InvitationAuditLogger::log($invitation, 'revoked', $request, $request->user(), [
             'organization_id' => $organization->id,
+            'reason' => $validated['revoked_reason'],
         ]);
+
+        $status = $invitation->isShareLink()
+            ? 'Invite code revoked.'
+            : 'Invitation canceled.';
 
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', 'Invite code revoked.');
+            ->with('status', $status);
     }
 
     public function accept(Request $request, string $token): RedirectResponse
@@ -143,11 +153,12 @@ class OrganizationInvitationController extends Controller
         if ($invitation->isRevoked()) {
             InvitationAuditLogger::log($invitation, 'blocked-revoked', $request, $request->user(), [
                 'organization_id' => $invitation->organization_id,
+                'reason' => $invitation->revoked_reason,
             ]);
 
             return redirect()
                 ->route('organizations.show', $invitation->organization)
-                ->with('status', 'This invitation link is no longer active.');
+                ->with('status', $invitation->revokedMessage());
         }
 
         if ($invitation->isShareLink() && ! $invitation->hasRemainingUses()) {

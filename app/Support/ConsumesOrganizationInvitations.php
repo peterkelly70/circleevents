@@ -36,7 +36,7 @@ class ConsumesOrganizationInvitations
         }
 
         if ($invitation->isRevoked()) {
-            $request->session()->flash('status', 'This organization invite is no longer active.');
+            $request->session()->flash('status', $invitation->revokedMessage());
 
             return null;
         }

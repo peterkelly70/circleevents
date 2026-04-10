@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'use_count',
     'revoked_at',
     'revoked_by_user_id',
+    'revoked_reason',
     'accepted_at',
     'opted_out_at',
 ])]
@@ -48,6 +49,13 @@ class OrganizationInvitation extends Model
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
+    }
+
+    public function revokedMessage(): string
+    {
+        return $this->revoked_reason
+            ? 'This invitation was canceled. Reason: '.$this->revoked_reason
+            : 'This invitation was canceled.';
     }
 
     public function hasRemainingUses(): bool

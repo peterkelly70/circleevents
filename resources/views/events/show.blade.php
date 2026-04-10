@@ -265,9 +265,23 @@
 
                         <div class="mt-6 space-y-3 border-t border-white/10 pt-6">
                             @forelse ($pendingInvitations as $invitation)
-                                <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm">
-                                    <div class="font-semibold text-stone-100">{{ $invitation->name ?: $invitation->email }}</div>
-                                    <div class="mt-1 text-stone-400">{{ $invitation->email }}</div>
+                                <div x-data="{ cancelling: false }" class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div>
+                                            <div class="font-semibold text-stone-100">{{ $invitation->name ?: $invitation->email }}</div>
+                                            <div class="mt-1 text-stone-400">{{ $invitation->email }}</div>
+                                        </div>
+                                        <button type="button" @click="cancelling = ! cancelling" class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-200">Cancel invite</button>
+                                    </div>
+                                    <form x-show="cancelling" x-cloak method="POST" action="{{ route('events.invitations.revoke', [$event, $invitation]) }}" class="mt-4 space-y-3">
+                                        @csrf
+                                        <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Reason shown if they use the invite</label>
+                                        <textarea name="revoked_reason" rows="3" maxlength="500" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" placeholder="Example: We changed the guest list for this event." required></textarea>
+                                        <div class="flex gap-3">
+                                            <button class="rounded-full border border-rose-300/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-200">Confirm cancelation</button>
+                                            <button type="button" @click="cancelling = false" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-200">Keep invite</button>
+                                        </div>
+                                    </form>
                                 </div>
                             @empty
                                 <p class="text-sm text-stone-400">No pending invites.</p>

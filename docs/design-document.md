@@ -19,6 +19,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Helper scripts include scheduler, permission lockdown, certificate repair, and optional ClamAV install support for safer uploads
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
+- Organization pages lead with published events and recent member messages, and published events can expand inline to show event discussion previews
 - Organizations can choose from twenty-two full profile themes, including fantasy/medieval, light serif editorial, dark sci-fi, royal-blue, cosmic, woodland, marine, bright iridescent, and fantasy-palette treatments with distinct typography
 - Invite-by-email flow for organizations with account creation/login handoff
 - Manager assignment for organizations through promotion or manager-role invites
@@ -37,6 +38,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Event creation uses separate date and time controls and supports Google Maps Places-powered location lookup when `GOOGLE_MAPS_API_KEY` is configured
 - Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
 - Events and organizations support both targeted email invites and reusable share invite codes with optional expiry
+- Managers can cancel pending event and organization email invites with a required cancellation reason that is shown if someone later tries to use the revoked invite
 - Organization profiles can include website, Discord, X/Twitter, and Facebook links
 - Organizations can connect a Discord webhook to auto-post newly published non-private events
 - Organization announcements can also be posted to Discord, with a per-message checkbox and an organization-level default

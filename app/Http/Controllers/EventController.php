@@ -84,6 +84,7 @@ class EventController extends Controller
             'pendingInvitations' => $event->invitations
                 ->whereNotNull('email')
                 ->whereNull('accepted_at')
+                ->reject(fn ($invitation) => $invitation->isRevoked())
                 ->values(),
             'shareInvitations' => $event->invitations
                 ->whereNull('email')

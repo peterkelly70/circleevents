@@ -81,7 +81,7 @@ class OrganizationController extends Controller
             'invitations',
             'events' => fn ($query) => $query
                 ->where('is_published', true)
-                ->with('mailingList')
+                ->with(['mailingList', 'discussionPosts.user'])
                 ->orderBy('starts_at'),
             'mailingLists',
         ]);
@@ -126,6 +126,7 @@ class OrganizationController extends Controller
             'pendingInvitations' => $organization->invitations
                 ->whereNotNull('email')
                 ->whereNull('accepted_at')
+                ->reject(fn ($invitation) => $invitation->isRevoked())
                 ->values(),
             'shareInvitations' => $organization->invitations
                 ->whereNull('email')

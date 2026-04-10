@@ -35,7 +35,7 @@ class ConsumesEventInvitations
         }
 
         if ($invitation->isRevoked()) {
-            $request->session()->flash('status', 'This event invite is no longer active.');
+            $request->session()->flash('status', $invitation->revokedMessage());
 
             return null;
         }

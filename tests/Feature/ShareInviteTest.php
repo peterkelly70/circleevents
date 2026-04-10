@@ -181,7 +181,9 @@ class ShareInviteTest extends TestCase
         ]);
 
         $this->actingAs($owner)
-            ->post(route('events.invitations.revoke', [$event, $invitation]))
+            ->post(route('events.invitations.revoke', [$event, $invitation]), [
+                'revoked_reason' => 'This share code is no longer active.',
+            ])
             ->assertRedirect(route('events.show', $event));
 
         $this->assertNotNull($invitation->fresh()->revoked_at);
@@ -190,6 +192,122 @@ class ShareInviteTest extends TestCase
             'invitation_id' => $invitation->id,
             'action' => 'revoked',
         ]);
+    }
+
+    public function test_pending_organization_email_invites_can_be_canceled(): void
+    {
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Lantern Circle',
+            'slug' => 'lantern-circle',
+            'summary' => 'Evening arts',
+            'description' => 'Stories and gatherings',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $this->actingAs($owner)->post(route('organizations.invitations.store', $organization), [
+            'delivery' => 'email',
+            'role' => 'follower',
+            'email' => 'guest@example.com',
+            'name' => 'Guest',
+        ])->assertRedirect(route('organizations.show', $organization));
+
+        $invitation = OrganizationInvitation::query()->firstOrFail();
+
+        $this->actingAs($owner)
+            ->post(route('organizations.invitations.revoke', [$organization, $invitation]))
+            ->assertSessionHasErrors('revoked_reason');
+
+        $this->actingAs($owner)
+            ->post(route('organizations.invitations.revoke', [$organization, $invitation]), [
+                'revoked_reason' => 'This invitation was sent in error.',
+            ])
+            ->assertRedirect(route('organizations.show', $organization))
+            ->assertSessionHas('status', 'Invitation canceled.');
+
+        $this->assertNotNull($invitation->fresh()->revoked_at);
+        $this->assertSame('This invitation was sent in error.', $invitation->fresh()->revoked_reason);
+        $this->assertDatabaseHas('invitation_audits', [
+            'invitation_type' => OrganizationInvitation::class,
+            'invitation_id' => $invitation->id,
+            'action' => 'revoked',
+        ]);
+
+        $guest = User::factory()->create();
+        $this->actingAs($guest)
+            ->get(route('organizations.invitations.accept', $invitation->token))
+            ->assertRedirect(route('organizations.show', $organization))
+            ->assertSessionHas('status', 'This invitation was canceled. Reason: This invitation was sent in error.');
+    }
+
+    public function test_pending_event_email_invites_can_be_canceled(): void
+    {
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Skyline Club',
+            'slug' => 'skyline-club',
+            'summary' => 'Night meetups',
+            'description' => 'Late city walks',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $owner->id,
+            'title' => 'City Lights',
+            'slug' => 'city-lights',
+            'summary' => 'Harbour meetup',
+            'description' => 'Bring a jacket.',
+            'venue_name' => 'Lookout point',
+            'venue_address' => 'Perth',
+            'city' => 'Perth',
+            'starts_at' => now()->addWeek(),
+            'ends_at' => now()->addWeek()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+        ]);
+
+        $this->actingAs($owner)->post(route('events.invitations.store', $event), [
+            'delivery' => 'email',
+            'email' => 'guest@example.com',
+            'name' => 'Guest',
+        ])->assertRedirect(route('events.show', $event));
+
+        $invitation = EventInvitation::query()->firstOrFail();
+
+        $this->actingAs($owner)
+            ->post(route('events.invitations.revoke', [$event, $invitation]))
+            ->assertSessionHasErrors('revoked_reason');
+
+        $this->actingAs($owner)
+            ->post(route('events.invitations.revoke', [$event, $invitation]), [
+                'revoked_reason' => 'The guest list changed for this event.',
+            ])
+            ->assertRedirect(route('events.show', $event))
+            ->assertSessionHas('status', 'Invitation canceled.');
+
+        $this->assertNotNull($invitation->fresh()->revoked_at);
+        $this->assertSame('The guest list changed for this event.', $invitation->fresh()->revoked_reason);
+        $this->assertDatabaseHas('invitation_audits', [
+            'invitation_type' => EventInvitation::class,
+            'invitation_id' => $invitation->id,
+            'action' => 'revoked',
+        ]);
+
+        $guest = User::factory()->create();
+        $this->actingAs($guest)
+            ->get(route('event-invitations.accept', $invitation->token))
+            ->assertRedirect(route('events.show', $event))
+            ->assertSessionHas('status', 'This invitation was canceled. Reason: The guest list changed for this event.');
     }
 
     public function test_followers_can_leave_an_organization(): void
