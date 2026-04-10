@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrganizationController extends Controller
 {
@@ -71,7 +72,7 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization): View
     {
-        abort_unless($organization->isVisibleTo(request()->user()), 403);
+        $this->authorizeVisibleOrganization($organization, request());
 
         $organization->load([
             'owner',
@@ -133,6 +134,19 @@ class OrganizationController extends Controller
                 ->reject(fn ($invitation) => $invitation->isExpired() || $invitation->isRevoked())
                 ->values(),
         ]);
+    }
+
+    protected function authorizeVisibleOrganization(Organization $organization, Request $request): void
+    {
+        if ($organization->isVisibleTo($request->user())) {
+            return;
+        }
+
+        if (! $request->user()) {
+            abort(redirect()->guest(route('login')));
+        }
+
+        abort(Response::HTTP_FORBIDDEN);
     }
 
     public function edit(Request $request, Organization $organization): View

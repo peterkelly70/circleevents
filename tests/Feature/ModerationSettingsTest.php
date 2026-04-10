@@ -141,7 +141,7 @@ class ModerationSettingsTest extends TestCase
 
         $organization->members()->attach($owner->id, ['role' => 'owner']);
 
-        $this->get(route('organizations.show', $organization))->assertForbidden();
+        $this->get(route('organizations.show', $organization))->assertRedirect(route('login'));
         $this->actingAs($owner)->get(route('organizations.show', $organization))->assertOk();
     }
 }

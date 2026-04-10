@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class EventController extends Controller
 {
@@ -66,7 +67,7 @@ class EventController extends Controller
 
     public function show(Event $event): View
     {
-        abort_unless($event->isVisibleTo(request()->user()), 403);
+        $this->authorizeVisibleEvent($event, request());
 
         $event->load([
             'organization',
@@ -100,7 +101,7 @@ class EventController extends Controller
 
     public function calendar(Event $event)
     {
-        abort_unless($event->isVisibleTo(request()->user()), 403);
+        $this->authorizeVisibleEvent($event, request());
 
         $timestamp = now()->utc()->format('Ymd\THis\Z');
         $description = $this->escapeIcsText($event->calendarDescription());
@@ -131,6 +132,19 @@ class EventController extends Controller
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$event->slug.'.ics"',
         ]);
+    }
+
+    protected function authorizeVisibleEvent(Event $event, Request $request): void
+    {
+        if ($event->isVisibleTo($request->user())) {
+            return;
+        }
+
+        if (! $request->user()) {
+            abort(redirect()->guest(route('login')));
+        }
+
+        abort(Response::HTTP_FORBIDDEN);
     }
 
     public function edit(Request $request, Event $event): View
