@@ -22,6 +22,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/install', [HomeController::class, 'install'])->name('install');
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/{event:slug}/calendar.ics', [EventController::class, 'calendar'])->name('events.calendar');
 Route::get('/event-invitations/{token}', [EventInvitationController::class, 'accept'])->middleware('throttle:40,1')->name('event-invitations.accept');
 Route::get('/event-invitations/code/{code}', [EventInvitationController::class, 'acceptCode'])->middleware('throttle:40,1')->name('event-invitations.accept-code');
 Route::get('/organizations/{organization:slug}', [OrganizationController::class, 'show'])->name('organizations.show');

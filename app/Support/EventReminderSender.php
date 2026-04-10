@@ -60,7 +60,7 @@ class EventReminderSender
     protected function sendFollowerRemindersForSlot(string $slot, array $config): int
     {
         $events = Event::query()
-            ->with(['organization.members', 'organization.mailingLists.subscribers', 'mailingList.subscribers'])
+            ->with(['organization.members', 'organization.mailingLists.subscribers', 'mailingList.subscribers', 'rsvps.user'])
             ->where('is_published', true)
             ->where($config['event_toggle'], true)
             ->whereNull($config['event_sent_at'])
@@ -134,9 +134,25 @@ class EventReminderSender
 
     protected function followerRecipients(Event $event): Collection
     {
+        $goingAttendeeEmails = $event->rsvps
+            ->where('status', 'going')
+            ->map(fn (EventRsvp $rsvp) => $rsvp->user?->email)
+            ->filter()
+            ->map(fn (string $email) => Str::lower($email));
+
+        $goingAttendeeIds = $event->rsvps
+            ->where('status', 'going')
+            ->pluck('user_id')
+            ->filter();
+
         $memberRecipients = $event->organization->members
+            ->filter(fn (User $member) => $member->pivot->role === 'follower')
             ->filter(fn (User $member) => blank($member->pivot->email_opt_out_at))
-            ->map(fn (User $member) => ['key' => Str::lower($member->email), 'user' => $member]);
+            ->map(fn (User $member) => [
+                'key' => Str::lower($member->email),
+                'user_id' => $member->id,
+                'user' => $member,
+            ]);
 
         $mailingListRecipients = collect();
 
@@ -145,11 +161,17 @@ class EventReminderSender
                 ->flatMap->subscribers
                 ->merge($event->mailingList?->subscribers ?? collect())
                 ->filter(fn (User $subscriber) => $subscriber->pivot->status === 'subscribed')
-                ->map(fn (User $subscriber) => ['key' => Str::lower($subscriber->email), 'user' => $subscriber]);
+                ->map(fn (User $subscriber) => [
+                    'key' => Str::lower($subscriber->email),
+                    'user_id' => $subscriber->id,
+                    'user' => $subscriber,
+                ]);
         }
 
         return $memberRecipients
             ->merge($mailingListRecipients)
+            ->reject(fn (array $recipient) => ($recipient['user_id'] && $goingAttendeeIds->contains($recipient['user_id']))
+                || $goingAttendeeEmails->contains($recipient['key']))
             ->unique('key')
             ->pluck('user')
             ->values();

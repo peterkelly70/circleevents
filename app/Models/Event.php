@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Carbon\CarbonInterface;
 
 #[Fillable([
     'organization_id',
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
     'slug',
     'summary',
     'description',
+    'is_online',
+    'online_url',
     'venue_name',
     'venue_address',
     'google_place_id',
@@ -50,6 +53,7 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'repeat_until' => 'datetime',
+            'is_online' => 'boolean',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'is_published' => 'boolean',
@@ -129,6 +133,10 @@ class Event extends Model
 
     public function googleMapsUrl(): ?string
     {
+        if ($this->is_online) {
+            return null;
+        }
+
         if ($this->hasCoordinates()) {
             return 'https://www.google.com/maps/search/?api=1&query=' . $this->latitude . ',' . $this->longitude;
         }
@@ -138,5 +146,52 @@ class Event extends Model
         }
 
         return null;
+    }
+
+    public function calendarDescription(): string
+    {
+        $parts = array_filter([
+            $this->summary,
+            $this->description,
+            $this->is_online
+                ? ('Online event'.($this->online_url ? ': '.$this->online_url : '.'))
+                : null,
+            'Event page: '.route('events.show', $this),
+        ]);
+
+        return implode("\n\n", $parts);
+    }
+
+    public function googleCalendarUrl(): string
+    {
+        return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+            .'&text='.rawurlencode($this->title)
+            .'&dates='.rawurlencode($this->calendarTimestamp($this->starts_at).'/'.$this->calendarTimestamp($this->ends_at))
+            .'&details='.rawurlencode($this->calendarDescription())
+            .'&location='.rawurlencode($this->calendarLocation());
+    }
+
+    public function outlookCalendarUrl(): string
+    {
+        return 'https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent'
+            .'&subject='.rawurlencode($this->title)
+            .'&startdt='.rawurlencode($this->starts_at->clone()->utc()->format('Y-m-d\TH:i:s\Z'))
+            .'&enddt='.rawurlencode($this->ends_at->clone()->utc()->format('Y-m-d\TH:i:s\Z'))
+            .'&body='.rawurlencode($this->calendarDescription())
+            .'&location='.rawurlencode($this->calendarLocation());
+    }
+
+    protected function calendarTimestamp(CarbonInterface $timestamp): string
+    {
+        return $timestamp->clone()->utc()->format('Ymd\THis\Z');
+    }
+
+    public function calendarLocation(): string
+    {
+        if ($this->is_online) {
+            return $this->online_url ?: 'Online event';
+        }
+
+        return trim(($this->venue_name ?? '').' '.($this->venue_address ?? ''));
     }
 }

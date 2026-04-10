@@ -20,6 +20,10 @@
         @apply bg-stone-950 text-stone-100;
     }
 
+    [x-cloak] {
+        display: none !important;
+    }
+
     ::selection {
         @apply bg-amber-300 text-stone-950;
     }
@@ -85,6 +89,17 @@
         overflow: hidden;
         border-radius: 1.5rem;
         border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .select-readable {
+        color-scheme: dark;
+        background: rgb(28 25 23);
+        color: rgb(245 245 244);
+    }
+
+    .select-readable option {
+        color: rgb(245 245 244);
+        background: rgb(28 25 23);
     }
 
     .share-icon-button {

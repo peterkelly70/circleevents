@@ -213,4 +213,58 @@ class EventReminderCommandTest extends TestCase
 
         $this->assertNotNull($rsvp->fresh()->reminder_one_hour_sent_at);
     }
+
+    public function test_reminder_command_does_not_double_email_someone_who_is_both_follower_and_attendee(): void
+    {
+        Mail::fake();
+
+        $organizer = User::factory()->create();
+        $attendeeFollower = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $organizer->id,
+            'name' => 'Harbor Circle',
+            'slug' => 'harbor-circle',
+            'summary' => 'Waterfront events',
+            'description' => 'Harbor meetups',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($organizer->id, ['role' => 'owner']);
+        $organization->members()->attach($attendeeFollower->id, ['role' => 'follower']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $organizer->id,
+            'title' => 'Harbor Walk',
+            'slug' => 'harbor-walk',
+            'summary' => 'Tomorrow evening',
+            'description' => 'Meet by the pier.',
+            'venue_name' => 'Pier entrance',
+            'venue_address' => 'Perth',
+            'city' => 'Perth',
+            'starts_at' => now()->addDay(),
+            'ends_at' => now()->addDay()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+            'notify_followers_one_day_before' => true,
+        ]);
+
+        EventRsvp::create([
+            'event_id' => $event->id,
+            'user_id' => $attendeeFollower->id,
+            'status' => 'going',
+            'remind_one_day_before' => true,
+        ]);
+
+        Artisan::call('events:send-reminders');
+
+        Mail::assertSent(EventReminderMail::class, 1);
+        Mail::assertSent(EventReminderMail::class, function (EventReminderMail $mail) use ($attendeeFollower) {
+            return $mail->hasTo($attendeeFollower->email)
+                && $mail->recipient->is($attendeeFollower)
+                && $mail->intro === 'This is your reminder for an event you marked as going.';
+        });
+    }
 }

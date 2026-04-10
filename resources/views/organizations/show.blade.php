@@ -63,7 +63,9 @@
                                         <h3 class="mt-2 text-xl font-semibold {{ $theme['heading'] }}">{{ $event->title }}</h3>
                                         <p class="mt-2 text-sm leading-6 {{ $theme['body'] }}">{{ $event->summary }}</p>
                                         <div class="mt-3 flex flex-wrap gap-3 text-sm {{ $theme['meta'] }}">
-                                            @if ($event->venue_name)
+                                            @if ($event->is_online)
+                                                <span>Online</span>
+                                            @elseif ($event->venue_name)
                                                 <span>{{ $event->venue_name }}</span>
                                             @endif
                                             <span>{{ $event->visibilityLabel() }}</span>
@@ -87,7 +89,13 @@
                                                 </div>
                                                 <div>
                                                     <dt class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">Where</dt>
-                                                    <dd class="mt-1">{{ $event->venue_name ?: 'Venue not set' }}@if ($event->venue_address), {{ $event->venue_address }}@endif</dd>
+                                                    <dd class="mt-1">
+                                                        @if ($event->is_online)
+                                                            Online event
+                                                        @else
+                                                            {{ $event->venue_name ?: 'Venue not set' }}@if ($event->venue_address), {{ $event->venue_address }}@endif
+                                                        @endif
+                                                    </dd>
                                                 </div>
                                                 @if ($event->description)
                                                     <div>
@@ -433,19 +441,27 @@
                                 </div>
                             @endif
 
-                            <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-4 space-y-3.5">
+                            <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-4 space-y-3.5" x-data="{ isOnline: {{ old('is_online') ? 'true' : 'false' }} }">
                                 @csrf
                                 <input type="hidden" name="organization_id" value="{{ $organization->id }}">
                                 <input name="title" value="{{ old('title') }}" placeholder="Event title" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
                                 <input name="summary" value="{{ old('summary') }}" placeholder="Short summary" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
                                 <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">{{ old('description') }}</textarea>
 
-                                <div class="grid gap-4 md:grid-cols-2">
-                                    <input name="venue_name" value="{{ old('venue_name') }}" data-event-venue-name placeholder="Venue" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                    <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                        <input type="checkbox" name="is_online" value="1" x-model="isOnline" class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
+                                        This is an online event
+                                    </label>
+                                    <input x-show="isOnline" x-cloak name="online_url" value="{{ old('online_url') }}" placeholder="Optional meeting link" class="mt-3 w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                </div>
+
+                                <div x-show="!isOnline" x-cloak class="grid gap-4 md:grid-cols-2">
+                                    <input name="venue_name" value="{{ old('venue_name') }}" data-event-venue-name placeholder="Venue" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" x-bind:required="!isOnline">
                                     <input name="venue_address" value="{{ old('venue_address') }}" data-event-venue-address placeholder="Address" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                 </div>
 
-                                <div>
+                                <div x-show="!isOnline" x-cloak>
                                     <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}">Search place with Google Maps</label>
                                     <div data-google-place-widget class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"></div>
                                     <input type="hidden" name="google_place_id" value="{{ old('google_place_id') }}" data-event-place-id>
@@ -481,7 +497,7 @@
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-3">
-                                    <input name="city" value="{{ old('city') }}" data-event-city placeholder="City" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input x-show="!isOnline" x-cloak name="city" value="{{ old('city') }}" data-event-city placeholder="City" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                     <input name="timezone" value="{{ old('timezone', 'Australia/Perth') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
                                     <input name="capacity" value="{{ old('capacity') }}" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
                                 </div>

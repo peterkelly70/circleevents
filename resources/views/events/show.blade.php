@@ -86,13 +86,27 @@
                     <span aria-hidden="true">⧉</span>
                 </button>
             </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <span class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Save</span>
+                <a href="{{ $event->googleCalendarUrl() }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:border-amber-300/40 hover:bg-white/10">Google Calendar</a>
+                <a href="{{ $event->outlookCalendarUrl() }}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:border-amber-300/40 hover:bg-white/10">Outlook</a>
+                <a href="{{ route('events.calendar', $event) }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:border-amber-300/40 hover:bg-white/10">Download .ics</a>
+            </div>
             <div class="mt-8 grid gap-6 md:grid-cols-2">
                 <div>
-                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Venue</h2>
-                    <p class="mt-2 text-xl font-bold text-stone-100">{{ $event->venue_name }}</p>
-                    <p class="mt-2 text-stone-400">{{ $event->venue_address }}</p>
-                    <p class="text-stone-400">{{ $event->city }}</p>
-                    @if ($event->googleMapsUrl())
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">{{ $event->is_online ? 'Format' : 'Venue' }}</h2>
+                    @if ($event->is_online)
+                        <p class="mt-2 text-xl font-bold text-stone-100">Online event</p>
+                        <p class="mt-2 text-stone-400">No physical location is stored for this event.</p>
+                        @if ($event->online_url)
+                            <a href="{{ $event->online_url }}" target="_blank" rel="noreferrer" class="mt-3 inline-flex text-sm font-semibold text-emerald-400">Open meeting link</a>
+                        @endif
+                    @else
+                        <p class="mt-2 text-xl font-bold text-stone-100">{{ $event->venue_name }}</p>
+                        <p class="mt-2 text-stone-400">{{ $event->venue_address }}</p>
+                        <p class="text-stone-400">{{ $event->city }}</p>
+                    @endif
+                    @if (! $event->is_online && $event->googleMapsUrl())
                         <a href="{{ $event->googleMapsUrl() }}" target="_blank" rel="noreferrer" class="mt-3 inline-flex text-sm font-semibold text-emerald-400">Open in Google Maps</a>
                     @endif
                 </div>
@@ -104,7 +118,7 @@
                 </div>
             </div>
 
-            @if ($event->hasCoordinates())
+            @if (! $event->is_online && $event->hasCoordinates())
                 <div class="mt-8 border-t border-white/10 pt-8">
                     <div class="flex items-center justify-between gap-4">
                         <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">Map</h2>
@@ -214,7 +228,7 @@
                 @auth
                     <form method="POST" action="{{ route('events.rsvp', $event) }}" class="mt-6 space-y-4">
                         @csrf
-                        <select name="status" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+                        <select name="status" class="select-readable w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
                             <option value="interested" @selected(old('status', $currentRsvp?->status) === 'interested')>Interested</option>
                             <option value="going" @selected(old('status', $currentRsvp?->status) === 'going')>Going</option>
                             <option value="waitlist" @selected(old('status', $currentRsvp?->status) === 'waitlist')>Waitlist</option>

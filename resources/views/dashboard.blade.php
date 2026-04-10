@@ -330,7 +330,7 @@
                                 <div>
                                     <p class="text-xs uppercase tracking-[0.2em] text-amber-700">{{ $event->starts_at->format('D d M, g:i A') }}</p>
                                     <h4 class="mt-2 text-xl font-bold text-stone-900">{{ $event->title }}</h4>
-                                    <p class="mt-2 text-sm text-stone-600">{{ $event->organization?->name ?? 'Unknown organization' }} · {{ $event->venue_name }}</p>
+                                    <p class="mt-2 text-sm text-stone-600">{{ $event->organization?->name ?? 'Unknown organization' }} · {{ $event->is_online ? 'Online event' : ($event->venue_name ?: 'Venue TBA') }}</p>
                                 </div>
                                 <div class="text-sm font-medium text-stone-500">{{ $event->timezone }}</div>
                             </a>
@@ -477,7 +477,7 @@
                             <p class="mt-1 text-sm text-stone-400">Create the public event page, optional repeating schedule, and automatic update mailing list in one step.</p>
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-5 space-y-4" x-data="{ isOnline: {{ old('is_online') ? 'true' : 'false' }} }">
                         @csrf
                         <select name="organization_id" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                             <option value="">Select organization</option>
@@ -488,11 +488,18 @@
                         <input name="title" value="{{ old('title') }}" placeholder="Event title" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
                         <input name="summary" value="{{ old('summary') }}" placeholder="Short summary" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
                         <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">{{ old('description') }}</textarea>
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <input name="venue_name" data-event-venue-name value="{{ old('venue_name') }}" placeholder="Venue" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" required>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <label class="flex items-center gap-3 text-sm text-stone-200">
+                                <input type="checkbox" name="is_online" value="1" x-model="isOnline" class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                                This is an online event
+                            </label>
+                            <input x-show="isOnline" x-cloak name="online_url" value="{{ old('online_url') }}" placeholder="Optional meeting link" class="mt-3 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                        </div>
+                        <div x-show="!isOnline" x-cloak class="grid gap-4 md:grid-cols-2">
+                            <input name="venue_name" data-event-venue-name value="{{ old('venue_name') }}" placeholder="Venue" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500" x-bind:required="!isOnline">
                             <input name="venue_address" data-event-venue-address value="{{ old('venue_address') }}" placeholder="Address" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                         </div>
-                        <div>
+                        <div x-show="!isOnline" x-cloak>
                             <label class="mb-2 block text-sm font-medium text-stone-300">Search place with Google Maps</label>
                             <div data-google-place-widget class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"></div>
                             <input type="hidden" name="google_place_id" data-event-place-id value="{{ old('google_place_id') }}">
@@ -526,7 +533,7 @@
                             </div>
                         </div>
                         <div class="grid gap-4 md:grid-cols-3">
-                            <input name="city" data-event-city value="{{ old('city') }}" placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
+                            <input x-show="!isOnline" x-cloak name="city" data-event-city value="{{ old('city') }}" placeholder="City" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                             <input name="timezone" value="{{ old('timezone', 'Australia/Perth') }}" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
                             <input name="capacity" type="number" min="1" value="{{ old('capacity') }}" placeholder="Capacity" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100 placeholder:text-stone-500">
                         </div>

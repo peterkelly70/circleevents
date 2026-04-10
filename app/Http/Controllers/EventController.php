@@ -98,6 +98,41 @@ class EventController extends Controller
         ]);
     }
 
+    public function calendar(Event $event)
+    {
+        abort_unless($event->isVisibleTo(request()->user()), 403);
+
+        $timestamp = now()->utc()->format('Ymd\THis\Z');
+        $description = $this->escapeIcsText($event->calendarDescription());
+        $location = $this->escapeIcsText($event->calendarLocation());
+        $title = $this->escapeIcsText($event->title);
+        $url = route('events.show', $event);
+
+        $ics = implode("\r\n", [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//CircleEvents//Event//EN',
+            'CALSCALE:GREGORIAN',
+            'BEGIN:VEVENT',
+            'UID:event-'.$event->id.'@circleevents',
+            'DTSTAMP:'.$timestamp,
+            'DTSTART:'.$event->starts_at->clone()->utc()->format('Ymd\THis\Z'),
+            'DTEND:'.$event->ends_at->clone()->utc()->format('Ymd\THis\Z'),
+            'SUMMARY:'.$title,
+            'DESCRIPTION:'.$description,
+            'LOCATION:'.$location,
+            'URL:'.$url,
+            'END:VEVENT',
+            'END:VCALENDAR',
+            '',
+        ]);
+
+        return response($ics, 200, [
+            'Content-Type' => 'text/calendar; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$event->slug.'.ics"',
+        ]);
+    }
+
     public function edit(Request $request, Event $event): View
     {
         abort_unless($request->user()->isManagerOf($event->organization), 403);
@@ -113,6 +148,7 @@ class EventController extends Controller
         $this->mergeEventBooleanFields($request);
 
         $validated = $this->validatedEventData($request);
+        $validated = $this->normalizeLocationFields($validated);
 
         $organization = Organization::findOrFail($validated['organization_id']);
         abort_unless($request->user()->isManagerOf($organization), 403);
@@ -179,6 +215,7 @@ class EventController extends Controller
         $this->mergeEventBooleanFields($request);
 
         $validated = $this->validatedEventData($request, false);
+        $validated = $this->normalizeLocationFields($validated);
 
         if ($request->hasFile('image')) {
             $validated['image_path'] = ImageUploads::storeResizedPublicImage(
@@ -244,7 +281,9 @@ class EventController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'venue_name' => ['required', 'string', 'max:255'],
+            'is_online' => ['nullable', 'boolean'],
+            'online_url' => ['nullable', 'url', 'max:255'],
+            'venue_name' => ['required_if:is_online,false', 'nullable', 'string', 'max:255'],
             'venue_address' => ['nullable', 'string', 'max:255'],
             'google_place_id' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
@@ -310,11 +349,40 @@ class EventController extends Controller
     protected function mergeEventBooleanFields(Request $request): void
     {
         $request->merge([
+            'is_online' => $request->boolean('is_online'),
             'notify_followers_one_week_before' => $request->boolean('notify_followers_one_week_before'),
             'notify_followers_one_day_before' => $request->boolean('notify_followers_one_day_before'),
             'notify_followers_one_hour_before' => $request->boolean('notify_followers_one_hour_before'),
             'announce_update' => $request->boolean('announce_update'),
         ]);
+    }
+
+    protected function normalizeLocationFields(array $validated): array
+    {
+        if (! ($validated['is_online'] ?? false)) {
+            $validated['online_url'] = null;
+
+            return $validated;
+        }
+
+        return [
+            ...$validated,
+            'venue_name' => null,
+            'venue_address' => null,
+            'google_place_id' => null,
+            'latitude' => null,
+            'longitude' => null,
+            'city' => null,
+        ];
+    }
+
+    protected function escapeIcsText(string $value): string
+    {
+        return str_replace(
+            ["\\", ";", ",", "\r\n", "\n", "\r"],
+            ["\\\\", '\;', '\,', '\n', '\n', '\n'],
+            $value,
+        );
     }
 
     protected function announceEvent(Event $event, bool $isUpdate = false): array

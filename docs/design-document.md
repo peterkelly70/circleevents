@@ -35,10 +35,13 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Organizers can create repeating daily, weekly, or monthly event series from the dashboard
 - Event editors can optionally re-announce updates by email and connected outbound channels, and managers can manually re-announce an event from the event page
 - Organizers can choose follower reminder timings per event for one week, one day, and one hour before the start time
+- Follower reminder sends exclude owners/managers and avoid double-emailing people who are also marked as going
 - Attendees with RSVP status `going` can set their own one-week, one-day, and one-hour reminder preferences on each event page
 - Event discussions, organization posts, and organization member messages support BBCode-style formatting and optional image attachments
 - Event creation uses separate date and time controls and supports Google Maps Places-powered location lookup when `GOOGLE_MAPS_API_KEY` is configured
+- Events can be marked as online, with an optional meeting URL instead of a physical venue
 - Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
+- Event pages support Google Calendar, Outlook, and `.ics` save/export actions
 - Events and organizations support both targeted email invites and reusable share invite codes with optional expiry
 - Managers can cancel pending event and organization email invites with a required cancellation reason that is shown if someone later tries to use the revoked invite
 - Organization profiles can include website, Discord, X/Twitter, and Facebook links

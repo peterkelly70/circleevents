@@ -22,7 +22,7 @@
         @endphp
 
         <div class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-8 shadow-sm ring-1 ring-white/10">
-            <form method="POST" action="{{ route('events.update', $event) }}" enctype="multipart/form-data" class="space-y-5">
+            <form method="POST" action="{{ route('events.update', $event) }}" enctype="multipart/form-data" class="space-y-5" x-data="{ isOnline: {{ old('is_online', $event->is_online) ? 'true' : 'false' }} }">
                 @csrf
                 @method('PATCH')
 
@@ -46,10 +46,18 @@
                     <textarea id="description" name="description" rows="6" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">{{ old('description', $event->description) }}</textarea>
                 </div>
 
-                <div class="grid gap-5 md:grid-cols-2">
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <label class="flex items-center gap-3 text-sm text-stone-200">
+                        <input type="checkbox" name="is_online" value="1" x-model="isOnline" class="rounded border-white/10 bg-white/5 text-emerald-400 focus:ring-emerald-400">
+                        This is an online event
+                    </label>
+                    <input x-show="isOnline" x-cloak id="online_url" name="online_url" value="{{ old('online_url', $event->online_url) }}" placeholder="Optional meeting link" class="mt-3 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-stone-100">
+                </div>
+
+                <div x-show="!isOnline" x-cloak class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="venue_name">Venue</label>
-                        <input id="venue_name" data-event-venue-name name="venue_name" value="{{ old('venue_name', $event->venue_name) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" required>
+                        <input id="venue_name" data-event-venue-name name="venue_name" value="{{ old('venue_name', $event->venue_name) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100" x-bind:required="!isOnline">
                     </div>
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="venue_address">Address</label>
@@ -57,7 +65,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div x-show="!isOnline" x-cloak>
                     <label class="text-sm font-medium text-stone-300">Search place with Google Maps</label>
                     <div data-google-place-widget class="mt-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2"></div>
                 </div>
@@ -90,7 +98,7 @@
                 </div>
 
                 <div class="grid gap-5 md:grid-cols-3">
-                    <div>
+                    <div x-show="!isOnline" x-cloak>
                         <label class="text-sm font-medium text-stone-300" for="city">City</label>
                         <input id="city" data-event-city name="city" value="{{ old('city', $event->city) }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
                     </div>
