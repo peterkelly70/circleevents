@@ -89,18 +89,18 @@ class EventInvitationController extends Controller
         abort_unless($invitation->event_id === $event->id, 404);
 
         $validated = $request->validate([
-            'revoked_reason' => ['required', 'string', 'max:500'],
+            'revoked_reason' => [$invitation->isShareLink() ? 'nullable' : 'required', 'string', 'max:500'],
         ]);
 
         $invitation->update([
             'revoked_at' => now(),
             'revoked_by_user_id' => $request->user()->id,
-            'revoked_reason' => $validated['revoked_reason'],
+            'revoked_reason' => $validated['revoked_reason'] ?? null,
         ]);
 
         InvitationAuditLogger::log($invitation, 'revoked', $request, $request->user(), [
             'event_id' => $event->id,
-            'reason' => $validated['revoked_reason'],
+            'reason' => $validated['revoked_reason'] ?? null,
         ]);
 
         $status = $invitation->isShareLink()

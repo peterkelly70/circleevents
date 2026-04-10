@@ -7,7 +7,13 @@
             </div>
             @auth
                 @if (auth()->user()->isManagerOf($event->organization))
-                    <a href="{{ route('events.edit', $event) }}" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Edit event</a>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <form method="POST" action="{{ route('events.announce', $event) }}">
+                            @csrf
+                            <button class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-5 py-3 text-sm font-semibold text-emerald-100">Re-announce event</button>
+                        </form>
+                        <a href="{{ route('events.edit', $event) }}" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Edit event</a>
+                    </div>
                 @endif
             @endauth
         </div>
@@ -29,6 +35,7 @@
                     data-share-title="{{ $event->title }}"
                     data-share-text="{{ $event->summary }}"
                     data-share-url="{{ route('events.show', $event) }}"
+                    data-tooltip="Share"
                     title="Share"
                     aria-label="Share"
                     class="share-icon-button"
@@ -39,6 +46,7 @@
                     href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('events.show', $event)) }}"
                     target="_blank"
                     rel="noreferrer"
+                    data-tooltip="Share on Facebook"
                     title="Share on Facebook"
                     aria-label="Share on Facebook"
                     class="share-icon-button"
@@ -49,6 +57,7 @@
                     href="https://x.com/intent/tweet?text={{ urlencode($event->title.' - '.$event->summary) }}&url={{ urlencode(route('events.show', $event)) }}"
                     target="_blank"
                     rel="noreferrer"
+                    data-tooltip="Share on X"
                     title="Share on X"
                     aria-label="Share on X"
                     class="share-icon-button"
@@ -57,6 +66,7 @@
                 </a>
                 <a
                     href="mailto:?subject={{ rawurlencode($event->title) }}&body={{ rawurlencode($event->summary . "\n\n" . route('events.show', $event)) }}"
+                    data-tooltip="Share by email"
                     title="Share by email"
                     aria-label="Share by email"
                     class="share-icon-button"
@@ -68,6 +78,7 @@
                     data-copy-button
                     data-copy-text="{{ route('events.show', $event) }}"
                     data-copy-success="Event link copied"
+                    data-tooltip="Copy link"
                     title="Copy link"
                     aria-label="Copy link"
                     class="share-icon-button"
@@ -204,12 +215,30 @@
                     <form method="POST" action="{{ route('events.rsvp', $event) }}" class="mt-6 space-y-4">
                         @csrf
                         <select name="status" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                            <option value="interested">Interested</option>
-                            <option value="going">Going</option>
-                            <option value="waitlist">Waitlist</option>
-                            <option value="not-going">Not going</option>
+                            <option value="interested" @selected(old('status', $currentRsvp?->status) === 'interested')>Interested</option>
+                            <option value="going" @selected(old('status', $currentRsvp?->status) === 'going')>Going</option>
+                            <option value="waitlist" @selected(old('status', $currentRsvp?->status) === 'waitlist')>Waitlist</option>
+                            <option value="not-going" @selected(old('status', $currentRsvp?->status) === 'not-going')>Not going</option>
                         </select>
-                        <textarea name="notes" rows="3" placeholder="Optional note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"></textarea>
+                        <textarea name="notes" rows="3" placeholder="Optional note" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">{{ old('notes', $currentRsvp?->notes) }}</textarea>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p class="text-sm font-semibold text-stone-100">Your reminders</p>
+                            <p class="mt-1 text-xs leading-5 text-stone-400">These reminders apply when you mark yourself as going. You can tick any combination.</p>
+                            <div class="mt-3 space-y-3">
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="remind_one_week_before" value="1" @checked(old('remind_one_week_before', $currentRsvp?->remind_one_week_before)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind me 1 week before
+                                </label>
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="remind_one_day_before" value="1" @checked(old('remind_one_day_before', $currentRsvp?->remind_one_day_before ?? true)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind me 1 day before
+                                </label>
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="remind_one_hour_before" value="1" @checked(old('remind_one_hour_before', $currentRsvp?->remind_one_hour_before)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind me 1 hour before
+                                </label>
+                            </div>
+                        </div>
                         <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Save RSVP</button>
                     </form>
                 @else

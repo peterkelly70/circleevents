@@ -1,6 +1,6 @@
 <div style="font-family: Arial, sans-serif; color: #1c1917;">
     <p>Hello {{ $recipient->name }},</p>
-    <p>{{ $event->organization->name }} published a new event on CircleEvents.</p>
+    <p>{{ $event->organization->name }} {{ $isUpdate ? 'updated an event' : 'published a new event' }} on CircleEvents.</p>
     <h2>{{ $event->title }}</h2>
     <p>{{ $event->summary }}</p>
     <p><strong>When:</strong> {{ $event->starts_at->format('l, d F Y g:i A') }} {{ $event->timezone }}</p>

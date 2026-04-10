@@ -88,6 +88,7 @@
     }
 
     .share-icon-button {
+        position: relative;
         display: inline-flex;
         height: 2.5rem;
         width: 2.5rem;
@@ -107,6 +108,33 @@
         border-color: rgba(251, 191, 36, 0.35);
         background: rgba(251, 191, 36, 0.12);
         transform: translateY(-1px);
+    }
+
+    .share-icon-button[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 0.45rem);
+        z-index: 20;
+        min-width: max-content;
+        transform: translateX(-50%) translateY(-0.2rem);
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(12, 12, 11, 0.92);
+        padding: 0.35rem 0.65rem;
+        color: rgb(245 245 244);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .share-icon-button[data-tooltip]:hover::after,
+    .share-icon-button[data-tooltip]:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
 
     .share-icon-button-sm {

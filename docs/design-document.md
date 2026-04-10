@@ -33,7 +33,9 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Mailing-list subscribers receive email notices when an organization publishes a public or unlisted event
 - Each newly published event gets an automatic linked update mailing list that users can subscribe to from the event page
 - Organizers can create repeating daily, weekly, or monthly event series from the dashboard
-- Attendees with RSVP status `going` receive reminder emails before upcoming events
+- Event editors can optionally re-announce updates by email and connected outbound channels, and managers can manually re-announce an event from the event page
+- Organizers can choose follower reminder timings per event for one week, one day, and one hour before the start time
+- Attendees with RSVP status `going` can set their own one-week, one-day, and one-hour reminder preferences on each event page
 - Event discussions, organization posts, and organization member messages support BBCode-style formatting and optional image attachments
 - Event creation uses separate date and time controls and supports Google Maps Places-powered location lookup when `GOOGLE_MAPS_API_KEY` is configured
 - Event detail pages render a live venue map when coordinates are present, with a direct Google Maps directions link
@@ -87,6 +89,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Dark mode is the default visual theme across public, auth, and dashboard surfaces
 - Public-facing landing page with strong hierarchy and clear organizer CTA
 - Dashboard oriented around organizer actions instead of generic “you are logged in”
+- Dashboard includes an in-app help popup for first-time organizers
 - Organization uploads are normalized on save to a 512x512 avatar and a 1600x480 banner
 - Organization uploads accept larger originals before normalization so high-resolution source images can be converted server-side
 - Each organization can switch between twenty-two distinct public themes rather than a single shared presentation

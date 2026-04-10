@@ -6,6 +6,14 @@
                 <h2 class="text-3xl font-black leading-tight text-stone-900">{{ __('Run your event network') }}</h2>
             </div>
             <div class="flex items-center gap-3">
+                <button
+                    type="button"
+                    x-data
+                    x-on:click.prevent="$dispatch('open-modal', 'dashboard-help')"
+                    class="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-900"
+                >
+                    Help
+                </button>
                 <a href="#new-event" class="rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-stone-950">New event</a>
                 <a href="#new-organization" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">New organization</a>
                 <a href="#new-mailing-list" class="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">New mailing list</a>
@@ -545,6 +553,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <h4 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-300">Follower reminder emails</h4>
+                            <p class="mt-2 text-sm text-stone-400">Choose when CircleEvents should remind followers and subscribed list members about this event.</p>
+                            <div class="mt-4 space-y-3">
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="notify_followers_one_week_before" value="1" @checked(old('notify_followers_one_week_before')) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind followers 1 week before
+                                </label>
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="notify_followers_one_day_before" value="1" @checked(old('notify_followers_one_day_before')) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind followers 1 day before
+                                </label>
+                                <label class="flex items-center gap-3 text-sm text-stone-200">
+                                    <input type="checkbox" name="notify_followers_one_hour_before" value="1" @checked(old('notify_followers_one_hour_before')) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                                    Remind followers 1 hour before
+                                </label>
+                            </div>
+                        </div>
                         <div>
                             <label class="mb-2 block text-sm font-medium text-stone-300" for="event-image">Event image</label>
                             <input id="event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
@@ -587,4 +613,45 @@
             </div>
         </div>
     </div>
+
+    <x-modal name="dashboard-help" maxWidth="2xl" focusable>
+        <div class="p-6 sm:p-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-amber-300">Dashboard help</p>
+                    <h2 class="mt-2 text-2xl font-black text-stone-100">How CircleEvents works</h2>
+                </div>
+                <button
+                    type="button"
+                    x-on:click="$dispatch('close-modal', 'dashboard-help')"
+                    class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-300"
+                >
+                    Close
+                </button>
+            </div>
+
+            <div class="mt-6 space-y-5 text-sm leading-7 text-stone-300">
+                <p>
+                    Use the right-hand forms for the core organizer actions: create an organization, publish an event, or make a mailing list.
+                </p>
+                <div>
+                    <h3 class="font-semibold text-stone-100">Good first steps</h3>
+                    <ul class="mt-2 list-disc space-y-2 pl-5">
+                        <li>create an organization profile with a logo, banner, and theme</li>
+                        <li>publish your first event and choose follower reminder timings</li>
+                        <li>invite members or share a code from the organization page</li>
+                        <li>use member messages for announcements and event pages for discussion</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-stone-100">Where to manage things later</h3>
+                    <ul class="mt-2 list-disc space-y-2 pl-5">
+                        <li>organization pages: invites, member messages, published events, themes</li>
+                        <li>event pages: RSVPs, attendee reminders, discussion, re-announcing changes</li>
+                        <li>mailing lists: subscriber pages for updates and announcements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </x-modal>
 </x-app-layout>

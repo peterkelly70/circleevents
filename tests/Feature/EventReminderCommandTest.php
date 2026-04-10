@@ -114,4 +114,103 @@ class EventReminderCommandTest extends TestCase
 
         Mail::assertNothingSent();
     }
+
+    public function test_reminder_command_emails_followers_when_event_reminders_are_enabled(): void
+    {
+        Mail::fake();
+
+        $organizer = User::factory()->create();
+        $follower = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $organizer->id,
+            'name' => 'Forest Circle',
+            'slug' => 'forest-circle',
+            'summary' => 'Outdoor meetups',
+            'description' => 'Forest walks',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($organizer->id, ['role' => 'owner']);
+        $organization->members()->attach($follower->id, ['role' => 'follower']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $organizer->id,
+            'title' => 'Forest Gathering',
+            'slug' => 'forest-gathering',
+            'summary' => 'Bring walking shoes',
+            'description' => 'Meet at the trailhead.',
+            'venue_name' => 'Northern trail',
+            'venue_address' => 'Reserve entrance',
+            'city' => 'Perth',
+            'starts_at' => now()->addHour(),
+            'ends_at' => now()->addHours(3),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+            'notify_followers_one_hour_before' => true,
+        ]);
+
+        Artisan::call('events:send-reminders');
+
+        Mail::assertSent(EventReminderMail::class, function (EventReminderMail $mail) use ($follower) {
+            return $mail->hasTo($follower->email)
+                && $mail->recipient->is($follower)
+                && $mail->leadTime === '1 hour';
+        });
+
+        $this->assertNotNull($event->fresh()->follower_reminder_one_hour_sent_at);
+    }
+
+    public function test_reminder_command_uses_attendee_selected_reminder_windows(): void
+    {
+        Mail::fake();
+
+        $organizer = User::factory()->create();
+        $attendee = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $organizer->id,
+            'name' => 'Midnight Club',
+            'slug' => 'midnight-club',
+            'summary' => 'Late events',
+            'description' => 'After dark gatherings',
+            'visibility' => 'public',
+        ]);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $organizer->id,
+            'title' => 'Late Session',
+            'slug' => 'late-session',
+            'summary' => 'Night meetup',
+            'description' => 'Arrive early.',
+            'venue_name' => 'Studio',
+            'venue_address' => 'Perth',
+            'city' => 'Perth',
+            'starts_at' => now()->addHour(),
+            'ends_at' => now()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+        ]);
+
+        $rsvp = EventRsvp::create([
+            'event_id' => $event->id,
+            'user_id' => $attendee->id,
+            'status' => 'going',
+            'remind_one_hour_before' => true,
+        ]);
+
+        Artisan::call('events:send-reminders');
+
+        Mail::assertSent(EventReminderMail::class, function (EventReminderMail $mail) use ($attendee) {
+            return $mail->hasTo($attendee->email)
+                && $mail->recipient->is($attendee)
+                && $mail->leadTime === '1 hour';
+        });
+
+        $this->assertNotNull($rsvp->fresh()->reminder_one_hour_sent_at);
+    }
 }

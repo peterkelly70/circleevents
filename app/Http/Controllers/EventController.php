@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventRsvp;
 use App\Models\MailingList;
 use App\Models\Organization;
+use App\Models\User;
 use App\Support\DiscordEventPublisher;
 use App\Support\FacebookEventPublisher;
 use App\Support\ImageUploads;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -80,6 +82,9 @@ class EventController extends Controller
             'rsvpCounts' => $event->rsvps
                 ->groupBy('status')
                 ->map->count(),
+            'currentRsvp' => request()->user()
+                ? $event->rsvps->firstWhere('user_id', request()->user()->id)
+                : null,
             'discussionPosts' => $event->discussionPosts,
             'pendingInvitations' => $event->invitations
                 ->whereNotNull('email')
@@ -105,6 +110,7 @@ class EventController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->mergeDateTimeFields($request);
+        $this->mergeEventBooleanFields($request);
 
         $validated = $this->validatedEventData($request);
 
@@ -142,13 +148,13 @@ class EventController extends Controller
         $facebookPostedCount = 0;
 
         $eventSeries->each(function (Event $event) use (&$discordPostedCount, &$facebookPostedCount) {
-            $this->notifyMailingListSubscribers($event);
+            $result = $this->announceEvent($event);
 
-            if (DiscordEventPublisher::publish($event)) {
+            if ($result['discord']) {
                 $discordPostedCount++;
             }
 
-            if (FacebookEventPublisher::publish($event)) {
+            if ($result['facebook']) {
                 $facebookPostedCount++;
             }
         });
@@ -170,6 +176,7 @@ class EventController extends Controller
         abort_unless($request->user()->isManagerOf($event->organization), 403);
 
         $this->mergeDateTimeFields($request);
+        $this->mergeEventBooleanFields($request);
 
         $validated = $this->validatedEventData($request, false);
 
@@ -199,9 +206,35 @@ class EventController extends Controller
             ]);
         }
 
+        $result = $request->boolean('announce_update')
+            ? $this->announceEvent($event, true)
+            : ['emails' => 0, 'discord' => false, 'facebook' => false];
+
         return redirect()
             ->route('events.show', $event)
-            ->with('status', 'Event updated.');
+            ->with('status', match (true) {
+                ! $request->boolean('announce_update') => 'Event updated.',
+                $result['discord'] && $result['facebook'] => 'Event updated and re-announced by email, Discord, and Facebook.',
+                $result['discord'] => 'Event updated and re-announced by email and Discord.',
+                $result['facebook'] => 'Event updated and re-announced by email and Facebook.',
+                default => 'Event updated and re-announced by email.',
+            });
+    }
+
+    public function announce(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->isManagerOf($event->organization), 403);
+
+        $result = $this->announceEvent($event, true);
+
+        return redirect()
+            ->route('events.show', $event)
+            ->with('status', match (true) {
+                $result['discord'] && $result['facebook'] => 'Event re-announced by email, Discord, and Facebook.',
+                $result['discord'] => 'Event re-announced by email and Discord.',
+                $result['facebook'] => 'Event re-announced by email and Facebook.',
+                default => 'Event re-announced by email.',
+            });
     }
 
     protected function validatedEventData(Request $request, bool $allowRepeat = true): array
@@ -222,6 +255,9 @@ class EventController extends Controller
             'timezone' => ['required', 'string', 'max:64'],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
+            'notify_followers_one_week_before' => ['nullable', 'boolean'],
+            'notify_followers_one_day_before' => ['nullable', 'boolean'],
+            'notify_followers_one_hour_before' => ['nullable', 'boolean'],
             'repeat_frequency' => $allowRepeat
                 ? ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])]
                 : ['nullable', Rule::in(['none', 'daily', 'weekly', 'monthly'])],
@@ -271,29 +307,67 @@ class EventController extends Controller
         return $payloads;
     }
 
-    protected function notifyMailingListSubscribers(Event $event): void
+    protected function mergeEventBooleanFields(Request $request): void
     {
-        if ($event->visibility === 'private') {
-            return;
+        $request->merge([
+            'notify_followers_one_week_before' => $request->boolean('notify_followers_one_week_before'),
+            'notify_followers_one_day_before' => $request->boolean('notify_followers_one_day_before'),
+            'notify_followers_one_hour_before' => $request->boolean('notify_followers_one_hour_before'),
+            'announce_update' => $request->boolean('announce_update'),
+        ]);
+    }
+
+    protected function announceEvent(Event $event, bool $isUpdate = false): array
+    {
+        $emails = $this->notifyAnnouncementRecipients($event, $isUpdate);
+        $discord = DiscordEventPublisher::publish($event);
+        $facebook = FacebookEventPublisher::publish($event);
+
+        return compact('emails', 'discord', 'facebook');
+    }
+
+    protected function notifyAnnouncementRecipients(Event $event, bool $isUpdate = false): int
+    {
+        $recipients = $this->announcementRecipients($event, $isUpdate);
+
+        foreach ($recipients as $recipient) {
+            Mail::to($recipient->email)->send(new EventPublishedMail($event, $recipient, $isUpdate));
         }
 
-        $event->loadMissing('organization');
+        return $recipients->count();
+    }
 
-        $subscribers = $event->organization
-            ->mailingLists()
-            ->with([
-                'subscribers' => fn ($query) => $query
-                    ->wherePivot('status', 'subscribed')
-                    ->select('users.id', 'users.name', 'users.email'),
-            ])
-            ->get()
-            ->flatMap->subscribers
-            ->unique('email')
+    protected function announcementRecipients(Event $event, bool $includeMembers = false): Collection
+    {
+        $event->loadMissing([
+            'organization.members',
+            'organization.mailingLists.subscribers',
+            'mailingList.subscribers',
+        ]);
+
+        $memberRecipients = collect();
+
+        if ($includeMembers) {
+            $memberRecipients = $event->organization->members
+                ->filter(fn (User $member) => blank($member->pivot->email_opt_out_at))
+                ->map(fn (User $member) => ['key' => Str::lower($member->email), 'user' => $member]);
+        }
+
+        $mailingListRecipients = collect();
+
+        if ($event->visibility !== 'private') {
+            $mailingListRecipients = $event->organization->mailingLists
+                ->flatMap->subscribers
+                ->merge($event->mailingList?->subscribers ?? collect())
+                ->filter(fn (User $subscriber) => $subscriber->pivot->status === 'subscribed')
+                ->map(fn (User $subscriber) => ['key' => Str::lower($subscriber->email), 'user' => $subscriber]);
+        }
+
+        return $memberRecipients
+            ->merge($mailingListRecipients)
+            ->unique('key')
+            ->pluck('user')
             ->values();
-
-        foreach ($subscribers as $subscriber) {
-            Mail::to($subscriber->email)->send(new EventPublishedMail($event, $subscriber));
-        }
     }
 
     public function rsvp(Request $request, Event $event): RedirectResponse
@@ -301,7 +375,29 @@ class EventController extends Controller
         $validated = $request->validate([
             'status' => ['required', Rule::in(['interested', 'going', 'waitlist', 'not-going'])],
             'notes' => ['nullable', 'string', 'max:500'],
+            'remind_one_week_before' => ['nullable', 'boolean'],
+            'remind_one_day_before' => ['nullable', 'boolean'],
+            'remind_one_hour_before' => ['nullable', 'boolean'],
         ]);
+
+        $customReminderSelectionProvided = $request->hasAny([
+            'remind_one_week_before',
+            'remind_one_day_before',
+            'remind_one_hour_before',
+        ]);
+
+        $isGoing = $validated['status'] === 'going';
+
+        $validated['remind_one_week_before'] = $isGoing ? $request->boolean('remind_one_week_before') : false;
+        $validated['remind_one_day_before'] = $isGoing
+            ? ($customReminderSelectionProvided ? $request->boolean('remind_one_day_before') : true)
+            : false;
+        $validated['remind_one_hour_before'] = $isGoing ? $request->boolean('remind_one_hour_before') : false;
+
+        $validated['reminder_sent_at'] = null;
+        $validated['reminder_one_week_sent_at'] = null;
+        $validated['reminder_one_day_sent_at'] = null;
+        $validated['reminder_one_hour_sent_at'] = null;
 
         EventRsvp::updateOrCreate(
             [

@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/blocks', [BlockController::class, 'store'])->name('blocks.store');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::patch('/events/{event:slug}', [EventController::class, 'update'])->name('events.update');
+    Route::post('/events/{event:slug}/announce', [EventController::class, 'announce'])->name('events.announce');
     Route::post('/events/{event:slug}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
     Route::post('/events/{event:slug}/invitations', [EventInvitationController::class, 'store'])->middleware('throttle:12,1')->name('events.invitations.store');
     Route::post('/events/{event:slug}/invitations/{invitation}/revoke', [EventInvitationController::class, 'revoke'])->middleware('throttle:20,1')->name('events.invitations.revoke');

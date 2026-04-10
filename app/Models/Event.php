@@ -35,6 +35,12 @@ use Illuminate\Support\Str;
     'image_path',
     'discord_posted_at',
     'facebook_posted_at',
+    'notify_followers_one_week_before',
+    'notify_followers_one_day_before',
+    'notify_followers_one_hour_before',
+    'follower_reminder_one_week_sent_at',
+    'follower_reminder_one_day_sent_at',
+    'follower_reminder_one_hour_sent_at',
 ])]
 class Event extends Model
 {
@@ -49,6 +55,12 @@ class Event extends Model
             'is_published' => 'boolean',
             'discord_posted_at' => 'datetime',
             'facebook_posted_at' => 'datetime',
+            'notify_followers_one_week_before' => 'boolean',
+            'notify_followers_one_day_before' => 'boolean',
+            'notify_followers_one_hour_before' => 'boolean',
+            'follower_reminder_one_week_sent_at' => 'datetime',
+            'follower_reminder_one_day_sent_at' => 'datetime',
+            'follower_reminder_one_hour_sent_at' => 'datetime',
         ];
     }
 

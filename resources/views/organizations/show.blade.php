@@ -183,6 +183,7 @@
                                         data-share-title="{{ $message->subject }}"
                                         data-share-text="{{ \Illuminate\Support\Str::limit(strip_tags($message->body), 180) }}"
                                         data-share-url="{{ route('organizations.show', $organization) }}"
+                                        data-tooltip="Share"
                                         title="Share"
                                         aria-label="Share"
                                         class="share-icon-button share-icon-button-sm"
@@ -193,6 +194,7 @@
                                         href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($organizationUrl) }}"
                                         target="_blank"
                                         rel="noreferrer"
+                                        data-tooltip="Share on Facebook"
                                         title="Share on Facebook"
                                         aria-label="Share on Facebook"
                                         class="share-icon-button share-icon-button-sm"
@@ -203,6 +205,7 @@
                                         href="https://x.com/intent/tweet?text={{ urlencode($message->subject.' - '.$messagePreview) }}&url={{ urlencode($organizationUrl) }}"
                                         target="_blank"
                                         rel="noreferrer"
+                                        data-tooltip="Share on X"
                                         title="Share on X"
                                         aria-label="Share on X"
                                         class="share-icon-button share-icon-button-sm"
@@ -211,6 +214,7 @@
                                     </a>
                                     <a
                                         href="mailto:?subject={{ rawurlencode($message->subject) }}&body={{ $emailBody }}"
+                                        data-tooltip="Share by email"
                                         title="Share by email"
                                         aria-label="Share by email"
                                         class="share-icon-button share-icon-button-sm"
@@ -222,6 +226,7 @@
                                         data-copy-button
                                         data-copy-text="{{ $copyPayload }}"
                                         data-copy-success="Announcement copied"
+                                        data-tooltip="Copy text"
                                         title="Copy text"
                                         aria-label="Copy text"
                                         class="share-icon-button share-icon-button-sm"
@@ -502,6 +507,25 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                    <h3 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Follower reminder emails</h3>
+                                    <p class="mt-2 text-sm {{ $theme['body'] }}">Choose when CircleEvents should remind followers and subscribers about this event.</p>
+                                    <div class="mt-4 space-y-3">
+                                        <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                            <input type="checkbox" name="notify_followers_one_week_before" value="1" @checked(old('notify_followers_one_week_before')) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
+                                            Remind followers 1 week before
+                                        </label>
+                                        <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                            <input type="checkbox" name="notify_followers_one_day_before" value="1" @checked(old('notify_followers_one_day_before')) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
+                                            Remind followers 1 day before
+                                        </label>
+                                        <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
+                                            <input type="checkbox" name="notify_followers_one_hour_before" value="1" @checked(old('notify_followers_one_hour_before')) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
+                                            Remind followers 1 hour before
+                                        </label>
                                     </div>
                                 </div>
 

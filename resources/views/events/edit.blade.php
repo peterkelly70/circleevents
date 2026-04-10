@@ -128,6 +128,25 @@
                     </div>
                 </div>
 
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Follower reminder emails</h3>
+                    <p class="mt-2 text-sm text-stone-300">Choose when CircleEvents should remind followers and subscribed list members about this event.</p>
+                    <div class="mt-4 space-y-3">
+                        <label class="flex items-center gap-3 text-sm text-stone-200">
+                            <input type="checkbox" name="notify_followers_one_week_before" value="1" @checked(old('notify_followers_one_week_before', $event->notify_followers_one_week_before)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                            Remind followers 1 week before
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-stone-200">
+                            <input type="checkbox" name="notify_followers_one_day_before" value="1" @checked(old('notify_followers_one_day_before', $event->notify_followers_one_day_before)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                            Remind followers 1 day before
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-stone-200">
+                            <input type="checkbox" name="notify_followers_one_hour_before" value="1" @checked(old('notify_followers_one_hour_before', $event->notify_followers_one_hour_before)) class="rounded border-white/10 bg-white/5 text-amber-300 focus:ring-amber-300">
+                            Remind followers 1 hour before
+                        </label>
+                    </div>
+                </div>
+
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-stone-300" for="image">Event image</label>
@@ -153,6 +172,16 @@
                         This event belongs to a recurring series. Editing here updates only this occurrence.
                     </div>
                 @endif
+
+                <div class="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-4">
+                    <label class="flex items-start gap-3 text-sm text-emerald-100">
+                        <input type="checkbox" name="announce_update" value="1" @checked(old('announce_update')) class="mt-1 rounded border-emerald-300/30 bg-white/5 text-emerald-300 focus:ring-emerald-300">
+                        <span>
+                            <span class="block font-semibold">Re-announce this event after saving</span>
+                            <span class="mt-1 block text-emerald-200/90">Send an update email to followers and subscribers, and repost to connected channels.</span>
+                        </span>
+                    </label>
+                </div>
 
                 <div class="flex gap-3 pt-4">
                     <button class="rounded-full bg-amber-300 px-6 py-3 text-sm font-semibold text-stone-950">Save changes</button>
