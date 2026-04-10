@@ -42,6 +42,9 @@
                             type="password"
                             name="password"
                             required autocomplete="new-password" />
+            <p class="mt-2 text-xs leading-5 text-stone-400">
+                Password must be at least 8 characters long.
+            </p>
 
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
