@@ -19,13 +19,15 @@ class DiscordEventPublisher
         }
 
         try {
+            $eventUrl = route('events.show', $event);
+
             $response = Http::timeout(10)
                 ->asJson()
                 ->post($organization->discord_webhook_url, [
-                    'content' => null,
+                    'content' => "Event link: {$eventUrl}",
                     'embeds' => [[
                         'title' => $event->title,
-                        'url' => route('events.show', $event),
+                        'url' => $eventUrl,
                         'description' => $event->summary,
                         'color' => 0xfbbf24,
                         'fields' => array_values(array_filter([
@@ -48,6 +50,11 @@ class DiscordEventPublisher
                                 'name' => 'Visibility',
                                 'value' => $event->visibilityLabel(),
                                 'inline' => true,
+                            ],
+                            [
+                                'name' => 'Event link',
+                                'value' => $eventUrl,
+                                'inline' => false,
                             ],
                         ])),
                         'image' => $event->imageUrl() ? ['url' => $event->imageUrl()] : null,

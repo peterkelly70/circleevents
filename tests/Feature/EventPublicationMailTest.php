@@ -248,9 +248,22 @@ class EventPublicationMailTest extends TestCase
             'visibility' => 'public',
         ])->assertRedirect();
 
+        $event = Event::query()->firstOrFail();
+        $eventUrl = route('events.show', $event);
+
         Http::assertSentCount(1);
-        Http::assertSent(fn ($request) => $request->url() === 'https://discord.example/webhook');
-        $this->assertNotNull(Event::query()->firstOrFail()->discord_posted_at);
+        Http::assertSent(function ($request) use ($eventUrl) {
+            $payload = $request->data();
+
+            return $request->url() === 'https://discord.example/webhook'
+                && $payload['content'] === 'Event link: '.$eventUrl
+                && $payload['embeds'][0]['url'] === $eventUrl
+                && collect($payload['embeds'][0]['fields'])->contains(
+                    fn (array $field) => $field['name'] === 'Event link'
+                        && $field['value'] === $eventUrl
+                );
+        });
+        $this->assertNotNull($event->fresh()->discord_posted_at);
     }
 
     public function test_manager_can_manually_post_public_event_to_discord(): void
