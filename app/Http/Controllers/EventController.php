@@ -288,6 +288,31 @@ class EventController extends Controller
             });
     }
 
+    public function postToDiscord(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->isManagerOf($event->organization), 403);
+
+        if (! $event->organization->discord_webhook_url) {
+            return redirect()
+                ->route('events.show', $event)
+                ->with('status', 'Discord is not connected for this organization.');
+        }
+
+        if ($event->visibility === 'private') {
+            return redirect()
+                ->route('events.show', $event)
+                ->with('status', 'Private events are not posted to Discord. Change the event to public or unlisted first.');
+        }
+
+        $posted = DiscordEventPublisher::publish($event, force: true);
+
+        return redirect()
+            ->route('events.show', $event)
+            ->with('status', $posted
+                ? 'Event posted to Discord.'
+                : 'Discord post failed. Check the webhook URL and server logs.');
+    }
+
     protected function validatedEventData(Request $request, bool $allowRepeat = true): array
     {
         return $request->validate([

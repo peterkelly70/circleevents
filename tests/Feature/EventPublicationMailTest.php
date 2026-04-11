@@ -253,6 +253,94 @@ class EventPublicationMailTest extends TestCase
         $this->assertNotNull(Event::query()->firstOrFail()->discord_posted_at);
     }
 
+    public function test_manager_can_manually_post_public_event_to_discord(): void
+    {
+        Http::fake([
+            'https://discord.example/webhook' => Http::response(['id' => '123'], 204),
+        ]);
+
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Discord Club',
+            'slug' => 'discord-club',
+            'summary' => 'Discord events',
+            'description' => 'Posts manually',
+            'visibility' => 'public',
+            'discord_webhook_url' => 'https://discord.example/webhook',
+            'auto_post_discord_events' => false,
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $owner->id,
+            'title' => 'Manual Discord Post',
+            'slug' => 'manual-discord-post',
+            'summary' => 'Post this manually',
+            'description' => 'Manual cross-post test.',
+            'venue_name' => 'Community Hall',
+            'starts_at' => now()->addWeek(),
+            'ends_at' => now()->addWeek()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'public',
+            'is_published' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('events.discord', $event))
+            ->assertRedirect(route('events.show', $event))
+            ->assertSessionHas('status', 'Event posted to Discord.');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.example/webhook');
+        $this->assertNotNull($event->fresh()->discord_posted_at);
+    }
+
+    public function test_private_events_are_not_manually_posted_to_discord(): void
+    {
+        Http::fake();
+
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Private Discord Club',
+            'slug' => 'private-discord-club',
+            'summary' => 'Private events',
+            'description' => 'Do not leak these',
+            'visibility' => 'public',
+            'discord_webhook_url' => 'https://discord.example/webhook',
+            'auto_post_discord_events' => true,
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner']);
+
+        $event = Event::create([
+            'organization_id' => $organization->id,
+            'creator_id' => $owner->id,
+            'title' => 'Private Discord Post',
+            'slug' => 'private-discord-post',
+            'summary' => 'Private event',
+            'description' => 'Should not post.',
+            'venue_name' => 'Private Room',
+            'starts_at' => now()->addWeek(),
+            'ends_at' => now()->addWeek()->addHours(2),
+            'timezone' => 'Australia/Perth',
+            'visibility' => 'private',
+            'is_published' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('events.discord', $event))
+            ->assertRedirect(route('events.show', $event))
+            ->assertSessionHas('status', 'Private events are not posted to Discord. Change the event to public or unlisted first.');
+
+        Http::assertNothingSent();
+        $this->assertNull($event->fresh()->discord_posted_at);
+    }
+
     public function test_publishing_an_event_can_post_to_facebook_when_configured(): void
     {
         Mail::fake();

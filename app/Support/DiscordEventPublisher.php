@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Log;
 
 class DiscordEventPublisher
 {
-    public static function publish(Event $event): bool
+    public static function publish(Event $event, bool $force = false): bool
     {
         $event->loadMissing('organization');
 
         $organization = $event->organization;
 
-        if (! $organization?->discord_webhook_url || ! $organization->auto_post_discord_events) {
+        if (! $organization?->discord_webhook_url || (! $force && ! $organization->auto_post_discord_events)) {
             return false;
         }
 

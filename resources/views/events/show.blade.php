@@ -12,6 +12,12 @@
                             @csrf
                             <button class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-5 py-3 text-sm font-semibold text-emerald-100">Re-announce event</button>
                         </form>
+                        @if ($event->organization->discord_webhook_url)
+                            <form method="POST" action="{{ route('events.discord', $event) }}">
+                                @csrf
+                                <button class="rounded-full border border-indigo-300/30 bg-indigo-300/10 px-5 py-3 text-sm font-semibold text-indigo-100">Post to Discord</button>
+                            </form>
+                        @endif
                         <a href="{{ route('events.edit', $event) }}" class="rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-stone-950">Edit event</a>
                     </div>
                 @endif
@@ -20,6 +26,12 @@
     </x-slot>
 
     <div class="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_.8fr] lg:px-8">
+        @if (session('status'))
+            <div class="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 px-5 py-4 text-sm font-medium text-emerald-100 lg:col-span-2">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-8 shadow-sm ring-1 ring-white/10">
             @if ($event->image_path)
                 <img src="{{ $event->imageUrl() }}" alt="{{ $event->title }}" class="mb-8 h-80 w-full rounded-[1.5rem] object-cover">
@@ -263,6 +275,36 @@
 
             @auth
                 @if (auth()->user()->isManagerOf($event->organization))
+                    <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
+                        <h2 class="text-2xl font-bold text-stone-100">Outbound posting</h2>
+                        <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="font-semibold text-stone-100">Discord</p>
+                                    <p class="mt-1 text-sm text-stone-400">
+                                        @if (! $event->organization->discord_webhook_url)
+                                            Not connected for this organization.
+                                        @elseif ($event->visibility === 'private')
+                                            Connected, but private events are not posted to Discord.
+                                        @elseif ($event->discord_posted_at)
+                                            Last posted {{ $event->discord_posted_at->diffForHumans() }}.
+                                        @elseif ($event->organization->auto_post_discord_events)
+                                            Auto-post is enabled, but this event has not been marked as posted.
+                                        @else
+                                            Connected. Use the button to post manually.
+                                        @endif
+                                    </p>
+                                </div>
+                                @if ($event->organization->discord_webhook_url)
+                                    <form method="POST" action="{{ route('events.discord', $event) }}">
+                                        @csrf
+                                        <button @disabled($event->visibility === 'private') class="rounded-full bg-indigo-300 px-4 py-2 text-sm font-semibold text-stone-950 disabled:cursor-not-allowed disabled:opacity-40">Post now</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="rounded-[2rem] border border-white/10 bg-stone-900/70 p-6 shadow-sm ring-1 ring-white/10">
                         <h2 class="text-2xl font-bold text-stone-100">Invite people</h2>
                         <form method="POST" action="{{ route('events.invitations.store', $event) }}" class="mt-5 space-y-4">
