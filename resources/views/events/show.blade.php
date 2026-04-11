@@ -185,7 +185,10 @@
                     @forelse ($discussionPosts as $post)
                         <div class="rounded-2xl border p-5 {{ $theme['panel'] }}">
                             <div class="flex items-center justify-between gap-4">
-                                <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
+                                <div class="flex items-center gap-3">
+                                    <x-user-avatar :user="$post->user" size="sm" :shell="$theme['logo_shell']" />
+                                    <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
+                                </div>
                                 <p class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ $post->created_at->diffForHumans() }}</p>
                             </div>
                             <div class="mt-3 max-w-none {{ $theme['body'] }} {{ $themeProseClass }}">{!! \App\Support\Bbcode::render($post->body) !!}</div>

@@ -122,7 +122,10 @@
                                                 @forelse ($event->discussionPosts->take(3) as $post)
                                                     <div class="rounded-2xl border p-3 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
                                                         <div class="flex items-center justify-between gap-3">
-                                                            <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
+                                                            <div class="flex items-center gap-3">
+                                                                <x-user-avatar :user="$post->user" size="sm" :shell="$theme['logo_shell']" />
+                                                                <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
+                                                            </div>
                                                             <p class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ $post->created_at->diffForHumans() }}</p>
                                                         </div>
                                                         <div class="mt-2 text-sm leading-6 {{ $theme['body'] }}">{!! \App\Support\Bbcode::render(\Illuminate\Support\Str::limit($post->body, 220)) !!}</div>
@@ -181,9 +184,12 @@
                             @endphp
                             <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
                                 <div class="flex items-center justify-between gap-4">
-                                    <div>
-                                        <h3 class="font-semibold {{ $theme['heading'] }}">{{ $message->subject }}</h3>
-                                        <p class="mt-1 text-sm {{ $theme['meta'] }}">From {{ $message->user->name }}</p>
+                                    <div class="flex items-center gap-3">
+                                        <x-user-avatar :user="$message->user" size="md" :shell="$theme['logo_shell']" />
+                                        <div>
+                                            <h3 class="font-semibold {{ $theme['heading'] }}">{{ $message->subject }}</h3>
+                                            <p class="mt-1 text-sm {{ $theme['meta'] }}">From {{ $message->user->name }}</p>
+                                        </div>
                                     </div>
                                     <p class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ $message->created_at->diffForHumans() }}</p>
                                 </div>
@@ -384,8 +390,10 @@
                         @forelse ($organization->posts as $post)
                             <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
                                 <div class="flex items-center justify-between gap-4">
-                                    <div>
-                                        <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
+                                    <div class="flex items-center gap-3">
+                                        <x-user-avatar :user="$post->user" size="md" :shell="$theme['logo_shell']" />
+                                        <div>
+                                            <p class="font-semibold {{ $theme['heading'] }}">{{ $post->user->name }}</p>
                                         @auth
                                             @if (auth()->id() !== $post->user->id)
                                                 <div class="mt-1 flex gap-2">
@@ -405,6 +413,7 @@
                                                 </div>
                                             @endif
                                         @endauth
+                                        </div>
                                     </div>
                                     <p class="text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>

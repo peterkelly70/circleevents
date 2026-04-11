@@ -98,6 +98,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Organization uploads accept larger originals before normalization so high-resolution source images can be converted server-side
 - Each organization can switch between twenty-two distinct public themes rather than a single shared presentation
 - Event detail pages inherit the owning organization theme, unless the signed-in user has selected a personal organization-theme override
+- Message and post lists display the sender profile avatar or initials beside the author name for faster scanning
 - Event image uploads are normalized on save to 1600x900
 
 ## Next Steps

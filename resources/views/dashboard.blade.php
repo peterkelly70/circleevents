@@ -232,21 +232,24 @@
                         @forelse ($feedItems as $item)
                             <div class="rounded-3xl border border-white/10 bg-black/20 p-5">
                                 <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <div class="flex items-center gap-3 text-xs uppercase tracking-[0.2em]">
-                                            <span class="{{ $item->type === 'message' ? 'text-emerald-300' : 'text-amber-300' }}">
-                                                {{ $item->type === 'message' ? 'Member message' : 'Community post' }}
-                                            </span>
-                                            <a href="{{ route('organizations.show', $item->organization) }}" class="text-stone-500 hover:text-stone-300">
-                                                {{ $item->organization->name }}
-                                            </a>
+                                    <div class="flex items-start gap-3">
+                                        <x-user-avatar :user="$item->author" size="md" shell="border-white/10 bg-white/5 text-stone-100" />
+                                        <div>
+                                            <div class="flex items-center gap-3 text-xs uppercase tracking-[0.2em]">
+                                                <span class="{{ $item->type === 'message' ? 'text-emerald-300' : 'text-amber-300' }}">
+                                                    {{ $item->type === 'message' ? 'Member message' : 'Community post' }}
+                                                </span>
+                                                <a href="{{ route('organizations.show', $item->organization) }}" class="text-stone-500 hover:text-stone-300">
+                                                    {{ $item->organization->name }}
+                                                </a>
+                                            </div>
+
+                                            @if ($item->title)
+                                                <h4 class="mt-3 text-xl font-bold text-stone-100">{{ $item->title }}</h4>
+                                            @endif
+
+                                            <p class="mt-2 text-sm text-stone-400">By {{ $item->author->name }}</p>
                                         </div>
-
-                                        @if ($item->title)
-                                            <h4 class="mt-3 text-xl font-bold text-stone-100">{{ $item->title }}</h4>
-                                        @endif
-
-                                        <p class="mt-2 text-sm text-stone-400">By {{ $item->author->name }}</p>
                                     </div>
 
                                     <p class="shrink-0 text-xs uppercase tracking-[0.2em] text-stone-500">{{ $item->created_at->diffForHumans() }}</p>
