@@ -102,6 +102,15 @@
         background: rgb(28 25 23);
     }
 
+    .select-readable-light {
+        color-scheme: light;
+    }
+
+    .select-readable-light option {
+        color: rgb(28 25 23);
+        background: rgb(255 255 255);
+    }
+
     .share-icon-button {
         position: relative;
         display: inline-flex;
