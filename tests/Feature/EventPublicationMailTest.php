@@ -298,9 +298,11 @@ class EventPublicationMailTest extends TestCase
         $this->assertNotNull($event->fresh()->discord_posted_at);
     }
 
-    public function test_private_events_are_not_manually_posted_to_discord(): void
+    public function test_private_events_can_be_manually_posted_to_discord(): void
     {
-        Http::fake();
+        Http::fake([
+            'https://discord.example/webhook' => Http::response(['id' => '123'], 204),
+        ]);
 
         $owner = User::factory()->create();
 
@@ -335,10 +337,10 @@ class EventPublicationMailTest extends TestCase
         $this->actingAs($owner)
             ->post(route('events.discord', $event))
             ->assertRedirect(route('events.show', $event))
-            ->assertSessionHas('status', 'Private events are not posted to Discord. Change the event to public or unlisted first.');
+            ->assertSessionHas('status', 'Event posted to Discord.');
 
-        Http::assertNothingSent();
-        $this->assertNull($event->fresh()->discord_posted_at);
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.example/webhook');
+        $this->assertNotNull($event->fresh()->discord_posted_at);
     }
 
     public function test_publishing_an_event_can_post_to_facebook_when_configured(): void

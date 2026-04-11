@@ -14,8 +14,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'city', 'bio', 'font_size', 'organization_theme_override', 'is_admin', 'registration_status', 'approved_at'])]
+#[Fillable(['name', 'email', 'password', 'city', 'bio', 'avatar_path', 'font_size', 'organization_theme_override', 'is_admin', 'registration_status', 'approved_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -47,6 +48,23 @@ class User extends Authenticatable
     public function isApproved(): bool
     {
         return $this->registration_status === 'active';
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
+    }
+
+    public function avatarInitials(): string
+    {
+        return str($this->name)
+            ->replaceMatches('/[^A-Za-z0-9 ]/', '')
+            ->squish()
+            ->explode(' ')
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => str($part)->substr(0, 1)->upper())
+            ->implode('') ?: 'CE';
     }
 
     public function isSuspended(): bool

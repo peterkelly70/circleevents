@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'city' => ['nullable', 'string', 'max:120'],
             'bio' => ['nullable', 'string', 'max:500'],
+            'avatar' => ['nullable', 'image', 'max:8192'],
             'font_size' => ['required', Rule::in(['small', 'medium', 'large', 'x-large'])],
             'organization_theme_override' => ['nullable', Rule::in(OrganizationThemes::keys())],
         ];

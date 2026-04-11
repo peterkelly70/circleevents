@@ -26,7 +26,14 @@
 
             <div class="hidden sm:flex sm:items-center sm:gap-3 sm:ms-6">
                 @auth
-                    <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-stone-300">
+                    <span class="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-4 text-sm font-medium text-stone-300">
+                        <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-amber-300/15 text-xs font-black text-amber-200">
+                            @if (Auth::user()->avatarUrl())
+                                <img src="{{ Auth::user()->avatarUrl() }}" alt="{{ Auth::user()->name }} avatar" class="h-full w-full object-cover">
+                            @else
+                                {{ Auth::user()->avatarInitials() }}
+                            @endif
+                        </span>
                         {{ Auth::user()->name }}
                     </span>
 
@@ -79,9 +86,18 @@
 
         <div class="border-t border-white/10 pt-4 pb-1">
             @auth
-                <div class="px-4">
-                    <div class="text-base font-medium text-stone-100">{{ Auth::user()->name }}</div>
-                    <div class="text-sm font-medium text-stone-400">{{ Auth::user()->email }}</div>
+                <div class="flex items-center gap-3 px-4">
+                    <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-amber-300/15 text-sm font-black text-amber-200">
+                        @if (Auth::user()->avatarUrl())
+                            <img src="{{ Auth::user()->avatarUrl() }}" alt="{{ Auth::user()->name }} avatar" class="h-full w-full object-cover">
+                        @else
+                            {{ Auth::user()->avatarInitials() }}
+                        @endif
+                    </div>
+                    <div>
+                        <div class="text-base font-medium text-stone-100">{{ Auth::user()->name }}</div>
+                        <div class="text-sm font-medium text-stone-400">{{ Auth::user()->email }}</div>
+                    </div>
                 </div>
 
                 <div class="mt-3 space-y-1">

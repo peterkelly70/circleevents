@@ -298,12 +298,6 @@ class EventController extends Controller
                 ->with('status', 'Discord is not connected for this organization.');
         }
 
-        if ($event->visibility === 'private') {
-            return redirect()
-                ->route('events.show', $event)
-                ->with('status', 'Private events are not posted to Discord. Change the event to public or unlisted first.');
-        }
-
         $posted = DiscordEventPublisher::publish($event, force: true);
 
         return redirect()

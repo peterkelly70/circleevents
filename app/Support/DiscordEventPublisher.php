@@ -18,10 +18,6 @@ class DiscordEventPublisher
             return false;
         }
 
-        if ($event->visibility === 'private') {
-            return false;
-        }
-
         try {
             $response = Http::timeout(10)
                 ->asJson()

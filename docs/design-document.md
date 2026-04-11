@@ -10,6 +10,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 
 ## MVP Scope
 - Authentication with registration, login, password reset, and profile management
+- User profiles support 256x256 normalized avatar uploads
 - Registration requires accepting a lightweight usage-conditions notice, viewable in a popup from the sign-up form
 - Site admins can switch both user registration and organization creation between open and moderated approval modes
 - Uploaded images are re-encoded, MIME-checked, size-checked, and can optionally be scanned with ClamAV when configured

@@ -13,9 +13,27 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
+
+        <div>
+            <x-input-label for="avatar" :value="__('Avatar')" />
+            <div class="mt-3 flex flex-wrap items-center gap-4">
+                <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-white/5 text-xl font-black text-amber-200">
+                    @if ($user->avatarUrl())
+                        <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }} avatar" class="h-full w-full object-cover">
+                    @else
+                        <span>{{ $user->avatarInitials() }}</span>
+                    @endif
+                </div>
+                <div class="min-w-0 flex-1">
+                    <input id="avatar" name="avatar" type="file" accept="image/*" class="block w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                    <p class="mt-2 text-sm text-stone-400">Upload a square image. CircleEvents stores it as 256 x 256.</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+                </div>
+            </div>
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />

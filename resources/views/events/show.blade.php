@@ -284,10 +284,10 @@
                                     <p class="mt-1 text-sm text-stone-400">
                                         @if (! $event->organization->discord_webhook_url)
                                             Not connected for this organization.
-                                        @elseif ($event->visibility === 'private')
-                                            Connected, but private events are not posted to Discord.
                                         @elseif ($event->discord_posted_at)
                                             Last posted {{ $event->discord_posted_at->diffForHumans() }}.
+                                        @elseif ($event->visibility === 'private')
+                                            Connected. Private means hidden from public discovery; Discord posting is still allowed for this channel.
                                         @elseif ($event->organization->auto_post_discord_events)
                                             Auto-post is enabled, but this event has not been marked as posted.
                                         @else
@@ -298,7 +298,7 @@
                                 @if ($event->organization->discord_webhook_url)
                                     <form method="POST" action="{{ route('events.discord', $event) }}">
                                         @csrf
-                                        <button @disabled($event->visibility === 'private') class="rounded-full bg-indigo-300 px-4 py-2 text-sm font-semibold text-stone-950 disabled:cursor-not-allowed disabled:opacity-40">Post now</button>
+                                        <button class="rounded-full bg-indigo-300 px-4 py-2 text-sm font-semibold text-stone-950">Post now</button>
                                     </form>
                                 @endif
                             </div>
