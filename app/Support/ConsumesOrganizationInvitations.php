@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Organization;
+use App\Models\OrganizationBlacklist;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -49,6 +50,12 @@ class ConsumesOrganizationInvitations
 
         if ($invitation->email !== null && strtolower($invitation->email) !== strtolower($user->email)) {
             $request->session()->flash('status', 'Invitation email did not match this account.');
+
+            return null;
+        }
+
+        if (OrganizationBlacklist::where('organization_id', $invitation->organization_id)->where('user_id', $user->id)->exists()) {
+            $request->session()->flash('status', 'You are blocked from this organization.');
 
             return null;
         }

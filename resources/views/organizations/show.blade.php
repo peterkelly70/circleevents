@@ -3,6 +3,7 @@
         $theme = \App\Support\OrganizationThemes::get(auth()->user()?->resolvedOrganizationThemeKey($organization) ?? $organization->theme_key);
         $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
     @endphp
+    <div x-data="{ manageMembersModal: false, messageMemberModal: false, selectedUsers: [], searchQuery: '' }" @open-members-modal.window="manageMembersModal = true">
     <x-slot name="header">
         <div class="flex items-end justify-between gap-4">
             <div>
@@ -11,7 +12,10 @@
             </div>
             @auth
                 @if (auth()->user()->isManagerOf($organization))
-                    <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['header_button'] }}">Edit organization</a>
+                    <div class="flex gap-3">
+                        <a href="{{ route('organizations.members.index', $organization) }}" class="rounded-full border px-4 py-3 text-sm font-semibold {{ $theme['header_button'] }}">Manage members</a>
+                        <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['header_button'] }}">Edit organization</a>
+                    </div>
                 @endif
             @endauth
         </div>
@@ -776,5 +780,157 @@
                 </div>
             </section>
         </div>
+
+    <div x-data="{ manageMembersModal: false, messageMemberModal: false, selectedUsers: [], searchQuery: '' }" @open-members-modal.window="manageMembersModal = true">
+            <div x-show="manageMembersModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @click.self="manageMembersModal = false; selectedUsers = []">
+                <div @click.stop class="w-full max-w-3xl max-h-[80vh] overflow-auto rounded-3xl {{ $theme['surface'] }} p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Manage Members</h2>
+                        <button type="button" @click="manageMembersModal = false; selectedUsers = []" class="{{ $theme['muted'] }} hover:{{ $theme['heading'] }} text-xl">×</button>
+                    </div>
+
+                    <input type="text" x-model="searchQuery" placeholder="Search members..." class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }} mb-4">
+
+                    <div x-show="selectedUsers.length > 0" class="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3">
+                        <span class="text-sm text-amber-200" x-text="selectedUsers.length + ' selected'"></span>
+                        <button type="button" @click="selectedUsers = []" class="text-xs {{ $theme['muted'] }} hover:{{ $theme['body'] }}">Clear</button>
+                        <div class="flex gap-2 border-l border-white/10 pl-2">
+                            <button type="button" @click="messageMemberModal = true" class="rounded-full border border-emerald-500 px-3 py-1 text-xs text-emerald-400">Message</button>
+                            @if(auth()->user()->isOwnerOf($organization))
+                            <button type="button" @click="$refs.promoteForm.submit()" class="rounded-full border border-amber-500 px-3 py-1 text-xs text-amber-400">Promote</button>
+                            <button type="button" @click="$refs.demoteForm.submit()" class="rounded-full border border-blue-500 px-3 py-1 text-xs text-blue-400">Demote</button>
+                            @endif
+                            <button type="button" @click="$refs.removeForm.submit()" class="rounded-full border border-rose-500 px-3 py-1 text-xs text-rose-400">Remove</button>
+                            <button type="button" @click="$refs.blacklistForm.submit()" class="rounded-full border border-red-600 px-3 py-1 text-xs text-red-400">Ban</button>
+                        </div>
+                        <form x-ref="promoteForm" method="POST" action="{{ route('organizations.members.promote', $organization) }}" class="hidden">
+                            @csrf
+                            <template x-for="id in selectedUsers" :key="id">
+                                <input type="hidden" name="user_ids[]" :value="id">
+                            </template>
+                        </form>
+                        <form x-ref="demoteForm" method="POST" action="{{ route('organizations.members.demote', $organization) }}" class="hidden">
+                            @csrf
+                            <template x-for="id in selectedUsers" :key="id">
+                                <input type="hidden" name="user_ids[]" :value="id">
+                            </template>
+                        </form>
+                        <form x-ref="removeForm" method="POST" action="{{ route('organizations.members.remove', $organization) }}" class="hidden">
+                            @csrf
+                            @method('delete')
+                            <template x-for="id in selectedUsers" :key="id">
+                                <input type="hidden" name="user_ids[]" :value="id">
+                            </template>
+                        </form>
+                        <form x-ref="blacklistForm" method="POST" action="{{ route('organizations.members.remove', $organization) }}" class="hidden">
+                            @csrf
+                            @method('delete')
+                            <input type="hidden" name="blacklist" value="1">
+                            <template x-for="id in selectedUsers" :key="id">
+                                <input type="hidden" name="user_ids[]" :value="id">
+                            </template>
+                        </form>
+                    </div>
+
+                    @php
+                        $managerMembersList = $organization->members->whereIn('pivot.role', ['owner', 'manager']);
+                        $followerMembersList = $organization->members->where('pivot.role', 'follower');
+                    @endphp
+
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }} mb-3">Managers ({{ $managerMembersList->count() }})</h3>
+                            <div class="space-y-2">
+                                @forelse($managerMembersList as $member)
+                                    <div class="flex items-center justify-between rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" x-model="selectedUsers" value="{{ $member->id }}" class="rounded border {{ $theme['checkbox'] }}">
+                                            <div class="flex h-10 w-10 items-center justify-center rounded-full {{ $theme['logo_shell'] }} text-sm font-bold">
+                                                {{ str($member->name)->substr(0, 2)->upper() }}
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold {{ $theme['heading'] }}">{{ $member->name }}</div>
+                                                <div class="text-sm {{ $theme['meta'] }}">{{ $member->email }}</div>
+                                            </div>
+                                        </div>
+                                        @if($member->pivot->role === 'manager' && auth()->user()->isOwnerOf($organization))
+                                            <div class="flex gap-2">
+                                                <button type="button" @click="selectedUsers = [...selectedUsers, {{ $member->id }}]; messageMemberModal = true" class="rounded-full border px-3 py-1 text-xs {{ $theme['soft_button'] }}">Message</button>
+                                                <form method="POST" action="{{ route('organizations.members.remove', [$organization, $member]) }}">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button type="submit" class="rounded-full border px-3 py-1 text-xs {{ $theme['danger_button'] }}">Remove</button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <span class="text-xs {{ $theme['muted'] }}">Owner</span>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="text-sm {{ $theme['meta'] }}">No managers found.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }} mb-3">Followers ({{ $followerMembersList->count() }})</h3>
+                            <div class="space-y-2">
+                                @forelse($followerMembersList as $member)
+                                    <div class="flex items-center justify-between rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" x-model="selectedUsers" value="{{ $member->id }}" class="rounded border {{ $theme['checkbox'] }}">
+                                            <div class="flex h-10 w-10 items-center justify-center rounded-full {{ $theme['logo_shell'] }} text-sm font-bold">
+                                                {{ str($member->name)->substr(0, 2)->upper() }}
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold {{ $theme['heading'] }}">{{ $member->name }}</div>
+                                                <div class="text-sm {{ $theme['meta'] }}">{{ $member->email }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="button" @click="selectedUsers = [...selectedUsers, {{ $member->id }}]; messageMemberModal = true" class="rounded-full border px-3 py-1 text-xs {{ $theme['soft_button'] }}">Message</button>
+                                            <form method="POST" action="{{ route('organizations.members.remove', [$organization, $member]) }}">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="submit" class="rounded-full border px-3 py-1 text-xs {{ $theme['danger_button'] }}">Remove</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-sm {{ $theme['meta'] }}">No followers yet.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="messageMemberModal" x-cloak x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" @click.self="messageMemberModal = false">
+                <div @click.stop class="w-full max-w-lg rounded-3xl {{ $theme['surface'] }} p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold {{ $theme['heading'] }}">Send Message</h2>
+                        <button type="button" @click="messageMemberModal = false" class="{{ $theme['muted'] }} hover:{{ $theme['heading'] }} text-xl">×</button>
+                    </div>
+                    <form method="POST" action="{{ route('organizations.messages.send-member', $organization) }}">
+                        @csrf
+                        <template x-for="id in selectedUsers" :key="id">
+                            <input type="hidden" name="user_ids[]" :value="id">
+                        </template>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium {{ $theme['body'] }} mb-2">Subject</label>
+                                <input type="text" name="subject" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium {{ $theme['body'] }} mb-2">Message</label>
+                                <textarea name="body" rows="4" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}"></textarea>
+                            </div>
+                            <button type="submit" class="w-full rounded-full px-5 py-2.5 font-semibold {{ $theme['secondary_button'] }}">Send message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </x-app-layout>

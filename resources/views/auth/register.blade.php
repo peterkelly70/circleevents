@@ -1,15 +1,28 @@
 <x-guest-layout>
-    @if (! empty($inviteEventTitle))
-        <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            You were invited to <span class="font-semibold">{{ $inviteEventTitle }}</span>. Create your account with the invited email to accept it.
-        </div>
-    @endif
+    @auth
+        @if (! empty($inviteEventTitle) || ! empty($inviteOrganizationName))
+            <div class="mb-4 rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
+                @if (! empty($inviteEventTitle))
+                    You were invited to <span class="font-semibold">{{ $inviteEventTitle }}</span>. You're already logged in.
+                @elseif (! empty($inviteOrganizationName))
+                    You were invited to follow <span class="font-semibold">{{ $inviteOrganizationName }}</span>. You're already logged in.
+                @endif
+                Create an account to accept the invitation.
+            </div>
+        @endif
+    @else
+        @if (! empty($inviteEventTitle))
+            <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                You were invited to <span class="font-semibold">{{ $inviteEventTitle }}</span>. Create your account with the invited email to accept it.
+            </div>
+        @endif
 
-    @if (! empty($inviteOrganizationName))
-        <div class="mb-4 rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
-            You were invited to follow <span class="font-semibold">{{ $inviteOrganizationName }}</span>. Create your account with the invited email to accept it.
-        </div>
-    @endif
+        @if (! empty($inviteOrganizationName))
+            <div class="mb-4 rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
+                You were invited to follow <span class="font-semibold">{{ $inviteOrganizationName }}</span>. Create your account with the invited email to accept it.
+            </div>
+        @endif
+    @endauth
 
     @if (($userRegistrationMode ?? 'open') === 'moderated')
         <div class="mb-4 rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
@@ -38,10 +51,12 @@
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+            <x-password-input 
+                            id="password" 
+                            name="password" 
+                            required 
+                            autocomplete="new-password" 
+                        />
             <p class="mt-2 text-xs leading-5 text-stone-400">
                 Password must be at least 8 characters long.
             </p>
@@ -53,9 +68,12 @@
         <div class="mt-4">
             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+            <x-password-input 
+                            id="password_confirmation" 
+                            name="password_confirmation" 
+                            required 
+                            autocomplete="new-password" 
+                        />
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>

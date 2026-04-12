@@ -1,141 +1,170 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ config('app.name', 'CircleEvents') }}</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="min-h-screen bg-stone-950 text-stone-100">
-        <div class="relative overflow-hidden">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.28),_transparent_32%),radial-gradient(circle_at_80%_20%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,_#1c1917,_#0c0a09)]"></div>
-            <div class="relative mx-auto max-w-7xl px-6 py-8 lg:px-8">
-                <header class="flex items-center justify-between">
-                    <a href="{{ route('home') }}" class="text-2xl font-black tracking-tight text-amber-300">CircleEvents</a>
-                    <nav class="flex items-center gap-3 text-sm">
-                        <a href="{{ route('events.index') }}" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Browse events</a>
-                        <a href="#organizations" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Organizations</a>
-                        <a href="{{ route('install') }}" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Install</a>
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="rounded-full bg-amber-300 px-4 py-2 font-semibold text-stone-950">Dashboard</a>
-                        @else
-                            <a href="{{ route('login') }}" class="rounded-full border border-white/15 px-4 py-2 text-stone-200 transition hover:border-amber-300 hover:text-amber-200">Log in</a>
-                            <a href="{{ route('register') }}" class="rounded-full bg-emerald-300 px-4 py-2 font-semibold text-stone-950">Register</a>
-                        @endauth
-                    </nav>
-                </header>
+<?php
+$isLoggedIn = isset($isLoggedIn) && $isLoggedIn;
+$themeKey = $theme['key'] ?? 'embers';
+$themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
+?>
 
-                <section class="grid gap-10 py-16 lg:grid-cols-[1.3fr_.7fr] lg:items-end">
-                    <div>
-                        <p class="mb-4 text-sm uppercase tracking-[0.35em] text-amber-200/80">Find events. Follow communities. Stay in the loop.</p>
-                        <h1 class="max-w-4xl text-5xl font-black leading-tight text-white lg:text-7xl">One place for public events and the communities behind them.</h1>
-                        <p class="mt-6 max-w-2xl text-lg leading-8 text-stone-300">
-                            Discover upcoming public events, browse local organizations, RSVP, and follow the groups you care about. CircleEvents is built for clubs, hobby groups, campuses, neighborhoods, and recurring community organizers.
-                        </p>
-                        <div class="mt-8 flex flex-wrap gap-4">
-                            <a href="{{ route('register') }}" class="rounded-full bg-emerald-300 px-6 py-3 font-semibold text-stone-950">Create free account</a>
-                            <a href="{{ route('events.index') }}" class="rounded-full bg-amber-300 px-6 py-3 font-semibold text-stone-950">See upcoming events</a>
-                            @auth
-                                <a href="{{ route('dashboard') }}" class="rounded-full border border-white/20 px-6 py-3 font-semibold text-white">Open dashboard</a>
-                            @else
-                                <a href="#organizations" class="rounded-full border border-white/20 px-6 py-3 font-semibold text-white">Browse organizations</a>
-                            @endauth
-                        </div>
-                    </div>
-
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur">
-                        <p class="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-200">Why people use it</p>
-                        <div class="mt-6 grid gap-4">
-                            <div class="rounded-2xl bg-black/20 p-4">
-                                <p class="text-sm text-stone-400">Public discovery</p>
-                                <p class="mt-1 text-lg font-semibold text-white">Find public events without digging through social feeds</p>
-                            </div>
-                            <div class="rounded-2xl bg-black/20 p-4">
-                                <p class="text-sm text-stone-400">Community follow</p>
-                                <p class="mt-1 text-lg font-semibold text-white">Follow organizations and get notified when they publish new events</p>
-                            </div>
-                            <div class="rounded-2xl bg-black/20 p-4">
-                                <p class="text-sm text-stone-400">Real event pages</p>
-                                <p class="mt-1 text-lg font-semibold text-white">RSVP, invitations, attendee updates, and discussion in one place</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="py-8">
-                    <div class="mb-6 flex items-end justify-between gap-4">
-                        <div>
-                            <p class="text-sm uppercase tracking-[0.3em] text-amber-200/70">Public events</p>
-                            <h2 class="mt-2 text-3xl font-bold text-white">What’s coming up</h2>
-                        </div>
-                        <a href="{{ route('events.index') }}" class="text-sm font-semibold text-amber-200">See all events</a>
-                    </div>
-                    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                        @forelse ($featuredEvents as $event)
-                            <a href="{{ route('events.show', $event) }}" class="group rounded-[1.75rem] border border-white/10 bg-white/5 p-6 transition hover:-translate-y-1 hover:border-amber-300/60 hover:bg-white/10">
-                                <p class="text-sm uppercase tracking-[0.2em] text-amber-200">{{ $event->starts_at->format('D, d M Y') }}</p>
-                                <h3 class="mt-3 text-2xl font-bold text-white">{{ $event->title }}</h3>
-                                <p class="mt-3 text-sm leading-6 text-stone-300">{{ $event->summary }}</p>
-                                <div class="mt-6 flex items-center justify-between text-sm text-stone-300">
-                                    <span>{{ $event->organization->name }}</span>
-                                    <span>{{ $event->venue_name }}</span>
-                                </div>
-                            </a>
-                        @empty
-                            <div class="rounded-[1.75rem] border border-dashed border-white/20 bg-white/5 p-8 text-stone-300">No public events have been published yet.</div>
-                        @endforelse
-                    </div>
-                </section>
-
-                <section id="organizations" class="grid gap-8 py-12 lg:grid-cols-[1.1fr_.9fr]">
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-                        <p class="text-sm uppercase tracking-[0.3em] text-emerald-200/80">Organizations</p>
-                        <h2 class="mt-2 text-3xl font-bold text-white">Public organizations</h2>
-                        <p class="mt-3 max-w-2xl text-sm leading-7 text-stone-300">Browse communities, see what they organize, and follow the ones you want updates from.</p>
-                        <div class="mt-6 space-y-4">
-                            @forelse ($organizations as $organization)
-                                <a href="{{ route('organizations.show', $organization) }}" class="flex items-start justify-between gap-4 rounded-2xl bg-black/20 p-4 transition hover:bg-black/30">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-white">{{ $organization->name }}</h3>
-                                        <p class="mt-1 text-sm text-stone-300">{{ $organization->summary }}</p>
-                                    </div>
-                                    <div class="text-right text-xs uppercase tracking-[0.2em] text-stone-400">
-                                        <div>{{ $organization->events_count }} events</div>
-                                        <div class="mt-1">{{ $organization->mailing_lists_count }} lists</div>
-                                    </div>
-                                </a>
-                            @empty
-                                <p class="text-stone-300">No organizations created yet.</p>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-                        <p class="text-sm uppercase tracking-[0.3em] text-amber-200/80">Get started</p>
-                        <h2 class="mt-2 text-3xl font-bold text-white">Join and organize</h2>
-                        <div class="mt-6 space-y-4">
-                            <div class="rounded-2xl bg-black/20 p-5">
-                                <h3 class="text-lg font-semibold text-white">For attendees</h3>
-                                <p class="mt-2 text-sm leading-6 text-stone-300">Create an account to RSVP, follow organizations, receive new event emails, and join attendee discussions.</p>
-                            </div>
-                            <div class="rounded-2xl bg-black/20 p-5">
-                                <h3 class="text-lg font-semibold text-white">For organizers</h3>
-                                <p class="mt-2 text-sm leading-6 text-stone-300">Create a public organization page, publish events, invite people, message members, and keep your community updated.</p>
-                            </div>
-                            <div class="flex flex-wrap gap-3 pt-2">
-                                @auth
-                                    <a href="{{ route('dashboard') }}" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Open dashboard</a>
-                                @else
-                                    <a href="{{ route('register') }}" class="rounded-full bg-emerald-300 px-5 py-3 font-semibold text-stone-950">Register now</a>
-                                    <a href="{{ route('login') }}" class="rounded-full border border-white/20 px-5 py-3 font-semibold text-white">Log in</a>
-                                @endauth
-                                <a href="{{ route('install') }}" class="rounded-full border border-white/20 px-5 py-3 font-semibold text-white">Self-host CircleEvents</a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-end justify-between gap-4">
+            <div>
+                <p class="text-sm uppercase tracking-[0.3em] {{ $theme['eyebrow'] }}">Home</p>
+                <h2 class="text-3xl font-black leading-tight {{ $theme['header_heading'] }}">{{ $isLoggedIn ? 'Your feed' : 'Welcome to CircleEvents' }}</h2>
             </div>
         </div>
-    </body>
-</html>
+    </x-slot>
+
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 {{ $theme['mode'] === 'light' ? 'text-stone-900' : 'text-stone-100' }} {{ $theme['page_backdrop'] }} {{ $theme['font_body'] }}">
+
+    @if($isLoggedIn)
+        @if($managedOrganizations->count() > 0 || $followedOrganizations->count() > 0)
+            <div class="grid gap-6 lg:grid-cols-3">
+                <div class="lg:col-span-1 space-y-4">
+                    @if($managedOrganizations->count() > 0)
+                        <div class="rounded-2xl border p-5 {{ $theme['panel'] }}">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['link'] }}">Your organizations</p>
+                            <div class="mt-4 space-y-2">
+                                @foreach($managedOrganizations as $org)
+                                    <a href="{{ route('organizations.show', $org) }}" class="flex items-center gap-3 rounded-xl bg-white/5 p-3 transition hover:bg-white/10">
+                                        @if($org->avatar_path)
+                                            <img src="{{ $org->avatarUrl() }}" class="h-8 w-8 rounded-full object-cover">
+                                        @else
+                                            <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $theme['logo_shell'] }} text-xs font-bold">{{ str($org->name)->substr(0,2)->upper() }}</div>
+                                        @endif
+                                        <div>
+                                            <div class="text-sm font-semibold {{ $theme['heading'] }}">{{ $org->name }}</div>
+                                            <div class="text-xs {{ $theme['meta'] }}">Manager</div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($followedOrganizations->count() > 0)
+                        <div class="rounded-2xl border p-5 {{ $theme['panel'] }}">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Following</p>
+                            <div class="mt-4 space-y-2">
+                                @foreach($followedOrganizations as $org)
+                                    <a href="{{ route('organizations.show', $org) }}" class="flex items-center gap-3 rounded-xl bg-white/5 p-3 transition hover:bg-white/10">
+                                        @if($org->avatar_path)
+                                            <img src="{{ $org->avatarUrl() }}" class="h-8 w-8 rounded-full object-cover">
+                                        @else
+                                            <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $theme['logo_shell'] }} text-xs font-bold">{{ str($org->name)->substr(0,2)->upper() }}</div>
+                                        @endif
+                                        <div>
+                                            <div class="text-sm font-semibold {{ $theme['heading'] }}">{{ $org->name }}</div>
+                                            <div class="text-xs {{ $theme['meta'] }}">Following</div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($upcomingEvents->count() > 0)
+                        <div class="rounded-2xl border p-5 {{ $theme['panel'] }}">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Upcoming events</p>
+                            <div class="mt-4 space-y-3">
+                                @foreach($upcomingEvents->take(5) as $event)
+                                    <a href="{{ route('events.show', $event) }}" class="block rounded-xl bg-white/5 p-3 transition hover:bg-white/10">
+                                        <div class="text-sm font-semibold {{ $theme['heading'] }}">{{ $event->title }}</div>
+                                        <div class="text-xs {{ $theme['meta'] }}">{{ $event->starts_at->format('M j, g:i a') }}</div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="lg:col-span-2 space-y-6">
+                    @if($feedItems->count() > 0)
+                        @foreach($feedItems as $item)
+                            <div class="rounded-[2rem] border p-6 {{ $theme['surface'] }}">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full {{ $theme['logo_shell'] }} text-sm font-bold">
+                                        {{ str($item->author->name)->substr(0,2)->upper() }}
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold {{ $theme['heading'] }}">{{ $item->author->name }}</div>
+                                        <div class="text-xs {{ $theme['meta'] }}">{{ $item->organization->name }} · {{ $item->created_at->diffForHumans() }}</div>
+                                    </div>
+                                </div>
+                                @if($item->title)
+                                    <h3 class="text-xl font-bold {{ $theme['heading'] }} mb-2">{{ $item->title }}</h3>
+                                @endif
+                                <div class="{{ $theme['body'] }}">{{ $item->body }}</div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="rounded-[2rem] border p-8 {{ $theme['surface'] }} text-center">
+                            <p class="{{ $theme['meta'] }}">No posts or announcements yet.</p>
+                            <p class="text-sm {{ $theme['muted'] }} mt-2">Follow some organizations to see their updates here.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @else
+            <div class="rounded-[2rem] border p-8 {{ $theme['surface'] }} text-center">
+                <p class="{{ $theme['body'] }}">You're not following any organizations yet.</p>
+                <a href="{{ route('events.index') }}" class="mt-4 inline-block rounded-full px-5 py-2.5 font-semibold {{ $theme['secondary_button'] }}">Browse events</a>
+            </div>
+        @endif
+    @else
+        <div class="space-y-12">
+            <section class="text-center">
+                <h1 class="text-4xl font-black {{ $theme['header_heading'] }}">Discover community events</h1>
+                <p class="mt-4 text-xl {{ $theme['body'] }}">Join organizations, RSVP to events, and stay connected with your communities.</p>
+                <div class="mt-8 flex justify-center gap-4">
+                    <a href="{{ route('register') }}" class="rounded-full px-6 py-3 font-semibold {{ $theme['primary_button'] }}">Get started</a>
+                    <a href="{{ route('events.index') }}" class="rounded-full border px-6 py-3 font-semibold {{ $theme['soft_button'] }}">Browse events</a>
+                </div>
+            </section>
+
+            @if(isset($featuredEvents) && $featuredEvents->count() > 0)
+            <section>
+                <h2 class="text-2xl font-bold {{ $theme['heading'] }} mb-6">Upcoming events</h2>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach($featuredEvents as $event)
+                        <a href="{{ route('events.show', $event) }}" class="rounded-[2rem] border p-5 {{ $theme['surface'] }} hover:scale-[1.02] transition">
+                            @if($event->image_path)
+                                <img src="{{ $event->imageUrl() }}" class="h-40 w-full rounded-2xl object-cover mb-4">
+                            @endif
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['link'] }}">{{ $event->starts_at->format('M j, g:i a') }}</div>
+                            <h3 class="mt-2 text-lg font-bold {{ $theme['heading'] }}">{{ $event->title }}</h3>
+                            <p class="mt-1 text-sm {{ $theme['meta'] }}">{{ $event->organization->name }}</p>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+            @endif
+
+            @if(isset($organizations) && $organizations->count() > 0)
+            <section id="organizations">
+                <h2 class="text-2xl font-bold {{ $theme['heading'] }} mb-6">Popular organizations</h2>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach($organizations as $org)
+                        <a href="{{ route('organizations.show', $org) }}" class="rounded-[2rem] border p-5 {{ $theme['surface'] }} hover:scale-[1.02] transition">
+                            <div class="flex items-center gap-3 mb-3">
+                                @if($org->avatar_path)
+                                    <img src="{{ $org->avatarUrl() }}" class="h-12 w-12 rounded-full object-cover">
+                                @else
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-full {{ $theme['logo_shell'] }} font-bold">{{ str($org->name)->substr(0,2)->upper() }}</div>
+                                @endif
+                                <div>
+                                    <h3 class="font-bold {{ $theme['heading'] }}">{{ $org->name }}</h3>
+                                    <p class="text-xs {{ $theme['meta'] }}">{{ $org->events_count }} events · {{ $org->mailing_lists_count }} lists</p>
+                                </div>
+                            </div>
+                            @if($org->description)
+                                <p class="text-sm {{ $theme['body'] }} line-clamp-2">{{ $org->description }}</p>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+            @endif
+        </div>
+    @endif
+    </div>
+</x-app-layout>

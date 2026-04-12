@@ -3,7 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Support\OrganizationThemes;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -13,10 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'city', 'bio', 'avatar_path', 'font_size', 'organization_theme_override', 'is_admin', 'registration_status', 'approved_at'])]
+#[Fillable(['name', 'email', 'password', 'city', 'bio', 'avatar_path', 'font_size', 'organization_theme_override', 'personal_theme', 'is_admin', 'registration_status', 'approved_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -50,43 +48,19 @@ class User extends Authenticatable
         return $this->registration_status === 'active';
     }
 
-    public function avatarUrl(): ?string
-    {
-        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
-    }
-
-    public function avatarInitials(): string
-    {
-        return str($this->name)
-            ->replaceMatches('/[^A-Za-z0-9 ]/', '')
-            ->squish()
-            ->explode(' ')
-            ->filter()
-            ->take(2)
-            ->map(fn (string $part) => str($part)->substr(0, 1)->upper())
-            ->implode('') ?: 'CE';
-    }
-
     public function isSuspended(): bool
     {
         return $this->registration_status === 'suspended';
     }
 
+    public function isPending(): bool
+    {
+        return $this->registration_status === 'pending';
+    }
+
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class)
-            ->withPivot('role', 'email_opt_out_at', 'email_opt_out_token')
-            ->withTimestamps();
-    }
-
-    public function createdOrganizations(): HasMany
-    {
-        return $this->hasMany(Organization::class, 'owner_id');
-    }
-
-    public function events(): HasMany
-    {
-        return $this->hasMany(Event::class, 'creator_id');
+        return $this->belongsToMany(Organization::class)->withPivot('role', 'email_opt_out_at', 'email_opt_out_token')->withTimestamps();
     }
 
     public function rsvps(): HasMany
@@ -94,65 +68,30 @@ class User extends Authenticatable
         return $this->hasMany(EventRsvp::class);
     }
 
-    public function sentEventInvitations(): HasMany
+    public function mailingLists(): BelongsToMany
     {
-        return $this->hasMany(EventInvitation::class, 'invited_by_user_id');
+        return $this->belongsToMany(MailingList::class)->withPivot('status', 'subscribed_at')->withTimestamps();
     }
 
-    public function discussionPosts(): HasMany
-    {
-        return $this->hasMany(EventDiscussionPost::class);
-    }
-
-    public function organizationPosts(): HasMany
-    {
-        return $this->hasMany(OrganizationPost::class);
-    }
-
-    public function organizationMessages(): HasMany
-    {
-        return $this->hasMany(OrganizationMessage::class);
-    }
-
-    public function organizationInvitations(): HasMany
-    {
-        return $this->hasMany(OrganizationInvitation::class, 'invited_by_user_id');
-    }
-
-    public function submittedReports(): HasMany
-    {
-        return $this->hasMany(Report::class, 'reporter_user_id');
-    }
-
-    public function blocks(): HasMany
-    {
-        return $this->hasMany(Block::class);
-    }
-
-    public function reportsAgainst(): MorphMany
-    {
-        return $this->morphMany(Report::class, 'reportable');
-    }
-
-    public function blocksAgainst(): MorphMany
+    public function blocks(): MorphMany
     {
         return $this->morphMany(Block::class, 'blockable');
     }
 
-    public function mailingLists(): BelongsToMany
+    public function createdOrganizations(): HasMany
     {
-        return $this->belongsToMany(MailingList::class)
-            ->withPivot('status', 'subscribed_at')
-            ->withTimestamps();
+        return $this->hasMany(Organization::class, 'owner_id');
     }
 
     public function isManagerOf(Organization $organization): bool
     {
-        if ($this->is_admin) {
+        $resolved = $this->resolvedUser();
+
+        if ($resolved->is_admin) {
             return true;
         }
 
-        return $this->organizations()
+        return $resolved->organizations()
             ->where('organization_id', $organization->id)
             ->wherePivotIn('role', ['owner', 'manager'])
             ->exists();
@@ -160,11 +99,13 @@ class User extends Authenticatable
 
     public function isOwnerOf(Organization $organization): bool
     {
-        if ($this->is_admin) {
+        $resolved = $this->resolvedUser();
+
+        if ($resolved->is_admin) {
             return true;
         }
 
-        return $this->organizations()
+        return $resolved->organizations()
             ->where('organization_id', $organization->id)
             ->wherePivot('role', 'owner')
             ->exists();
@@ -172,30 +113,34 @@ class User extends Authenticatable
 
     public function isMemberOf(Organization $organization): bool
     {
-        if ($this->is_admin) {
-            return true;
+        $resolved = $this->resolvedUser();
+
+        return $resolved->organizations()
+            ->where('organization_id', $organization->id)
+            ->exists();
+    }
+
+    public function roleIn(Organization $organization): ?string
+    {
+        $resolved = $this->resolvedUser();
+
+        return $resolved->organizations()
+            ->where('organization_id', $organization->id)
+            ->first()?->pivot->role;
+    }
+
+    public function avatarUrl(): string
+    {
+        if ($this->avatar_path) {
+            return Storage::disk('public')->url($this->avatar_path);
         }
 
-        return $this->organizations()
-            ->where('organization_id', $organization->id)
-            ->exists();
+        return '';
     }
 
-    public function isEmailOptedOutOf(Organization $organization): bool
+    public function avatarInitials(): string
     {
-        return DB::table('organization_user')
-            ->where('organization_id', $organization->id)
-            ->where('user_id', $this->id)
-            ->whereNotNull('email_opt_out_at')
-            ->exists();
-    }
-
-    public function hasBlocked(User|Organization $target): bool
-    {
-        return $this->blocks()
-            ->where('blockable_type', $target::class)
-            ->where('blockable_id', $target->id)
-            ->exists();
+        return str($this->name)->substr(0, 2)->upper();
     }
 
     public function fontSizeClass(): string
@@ -205,10 +150,42 @@ class User extends Authenticatable
 
     public function resolvedOrganizationThemeKey(?Organization $organization = null): string
     {
-        if ($this->organization_theme_override && in_array($this->organization_theme_override, OrganizationThemes::keys(), true)) {
-            return $this->organization_theme_override;
+        $resolved = $this->resolvedUser();
+
+        if ($organization) {
+            if ($resolved->organization_theme_override) {
+                return $resolved->personal_theme ?? 'embers';
+            }
+
+            return $organization->theme_key ?? 'embers';
         }
 
-        return $organization?->theme_key ?: OrganizationThemes::DEFAULT;
+        return $resolved->personal_theme ?? 'embers';
+    }
+
+    public function shouldOverrideOrganizationTheme(): bool
+    {
+        return ! empty($this->organization_theme_override);
+    }
+
+    public function resolvedUser(): ?User
+    {
+        if ($this->is_admin && session()->has('impersonating_user_id')) {
+            return User::find(session()->get('impersonating_user_id'));
+        }
+
+        return $this;
+    }
+
+    public function isBlacklistedFrom(int $organizationId): bool
+    {
+        return OrganizationBlacklist::where('organization_id', $organizationId)
+            ->where('user_id', $this->id)
+            ->exists();
+    }
+
+    public function memberMessages()
+    {
+        return $this->hasMany(OrganizationMemberMessage::class, 'user_id');
     }
 }

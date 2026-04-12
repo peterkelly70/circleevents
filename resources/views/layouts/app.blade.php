@@ -16,11 +16,15 @@
         @endif
     </head>
     <body class="antialiased">
-        <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.14),_transparent_28%),radial-gradient(circle_at_80%_10%,_rgba(16,185,129,0.08),_transparent_24%),linear-gradient(180deg,_#1c1917,_#0c0a09)] text-stone-100 {{ auth()->user()?->fontSizeClass() ?? 'text-base leading-7' }}">
+        @php
+            $personalThemeKey = auth()->user()?->personal_theme ?? 'embers';
+            $personalTheme = \App\Support\OrganizationThemes::get($personalThemeKey);
+        @endphp
+        <div class="min-h-screen {{ $personalTheme['page_backdrop'] }} text-stone-100 {{ auth()->user()?->fontSizeClass() ?? 'text-base leading-7' }}">
             @include('layouts.navigation')
 
             @isset($header)
-                <header class="border-b border-white/10 bg-stone-950/60 backdrop-blur">
+                <header class="border-b {{ $personalTheme['panel'] }} {{ $personalTheme['page_backdrop'] }}">
                     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

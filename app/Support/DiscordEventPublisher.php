@@ -29,7 +29,7 @@ class DiscordEventPublisher
                         'title' => $event->title,
                         'url' => $eventUrl,
                         'description' => $event->summary,
-                        'color' => 0xfbbf24,
+                        'color' => 0xFBBF24,
                         'fields' => array_values(array_filter([
                             [
                                 'name' => 'When',

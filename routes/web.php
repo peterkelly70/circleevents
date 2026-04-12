@@ -1,13 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\EventDiscussionController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventDiscussionController;
 use App\Http\Controllers\EventInvitationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MailingListController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationEmailPreferenceController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -31,20 +32,26 @@ Route::get('/organization-invitations/code/{code}', [OrganizationInvitationContr
 Route::get('/organizations/{organization:slug}/email-preferences/{token}/opt-out', [OrganizationEmailPreferenceController::class, 'optOut'])->name('organizations.email-preferences.opt-out');
 Route::get('/mailing-lists/{mailingList:slug}', [MailingListController::class, 'show'])->name('mailing-lists.show');
 
-Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'impersonate'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'impersonate')->group(function () {
     Route::get('/events/{event:slug}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::get('/organizations/{organization:slug}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::patch('/organizations/{organization:slug}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{organization:slug}/follow', [OrganizationMemberController::class, 'follow'])->name('organizations.follow');
     Route::delete('/organizations/{organization:slug}/leave', [OrganizationMemberController::class, 'leave'])->name('organizations.leave');
+    Route::get('/organizations/{organization:slug}/members', [OrganizationMemberController::class, 'index'])->name('organizations.members.index');
     Route::post('/organizations/{organization:slug}/members/promote', [OrganizationMemberController::class, 'promote'])->name('organizations.members.promote');
+    Route::post('/organizations/{organization:slug}/members/demote', [OrganizationMemberController::class, 'demote'])->name('organizations.members.demote');
+    Route::post('/organizations/{organization:slug}/members/ban', [OrganizationMemberController::class, 'ban'])->name('organizations.members.ban');
+    Route::post('/organizations/{organization:slug}/members/unban', [OrganizationMemberController::class, 'unban'])->name('organizations.members.unban');
+    Route::delete('/organizations/{organization:slug}/members/remove', [OrganizationMemberController::class, 'remove'])->name('organizations.members.remove');
     Route::post('/organizations/{organization:slug}/invitations', [OrganizationInvitationController::class, 'store'])->middleware('throttle:12,1')->name('organizations.invitations.store');
     Route::post('/organizations/{organization:slug}/invitations/{invitation}/revoke', [OrganizationInvitationController::class, 'revoke'])->middleware('throttle:20,1')->name('organizations.invitations.revoke');
     Route::post('/organizations/{organization:slug}/posts', [OrganizationPostController::class, 'store'])->name('organizations.posts.store');
     Route::post('/organizations/{organization:slug}/messages', [OrganizationMessageController::class, 'store'])->name('organizations.messages.store');
+    Route::post('/organizations/{organization:slug}/messages/send-member', [OrganizationMemberController::class, 'sendMemberMessage'])->name('organizations.messages.send-member');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     Route::post('/blocks', [BlockController::class, 'store'])->name('blocks.store');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
@@ -57,17 +64,27 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{event:slug}/discussion', [EventDiscussionController::class, 'store'])->name('events.discussion.store');
     Route::post('/mailing-lists', [MailingListController::class, 'store'])->name('mailing-lists.store');
     Route::post('/mailing-lists/{mailingList:slug}/subscribe', [MailingListController::class, 'subscribe'])->name('mailing-lists.subscribe');
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/users/{user}/approve', [AdminController::class, 'approveUser'])->name('admin.users.approve');
     Route::post('/admin/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.users.suspend');
     Route::post('/admin/users/{user}/restore', [AdminController::class, 'restoreUser'])->name('admin.users.restore');
+    Route::post('/admin/users/{user}/reset-password', [AdminController::class, 'resetUserPassword'])->name('admin.users.reset-password');
+    Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::post('/admin/organizations/{organization}/approve', [AdminController::class, 'approveOrganization'])->name('admin.organizations.approve');
     Route::post('/admin/organizations/{organization}/suspend', [AdminController::class, 'suspendOrganization'])->name('admin.organizations.suspend');
     Route::post('/admin/organizations/{organization}/restore', [AdminController::class, 'restoreOrganization'])->name('admin.organizations.restore');
+    Route::delete('/admin/organizations/{organization}', [AdminController::class, 'deleteOrganization'])->name('admin.organizations.delete');
+    Route::post('/admin/organizations/{organization}/members', [AdminController::class, 'addUserToOrganization'])->name('admin.organizations.members.add');
+    Route::delete('/admin/organizations/{organization}/members/{user}', [AdminController::class, 'removeUserFromOrganization'])->name('admin.organizations.members.remove');
     Route::post('/admin/reports/{report}/status', [AdminController::class, 'updateReportStatus'])->name('admin.reports.update');
+    Route::post('/admin/impersonate', [AdminController::class, 'impersonate'])->name('admin.impersonate');
+    Route::post('/admin/impersonate/stop', [AdminController::class, 'stopImpersonating'])->name('admin.impersonate.stop');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/notifications/member-messages', [NotificationController::class, 'memberMessages'])->name('notifications.member-messages');
+    Route::post('/notifications/member-messages/{id}/read', [NotificationController::class, 'markMessageRead'])->name('notifications.member-messages.read');
 });
 
 require __DIR__.'/auth.php';

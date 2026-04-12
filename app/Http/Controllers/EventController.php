@@ -11,12 +11,13 @@ use App\Models\User;
 use App\Support\DiscordEventPublisher;
 use App\Support\FacebookEventPublisher;
 use App\Support\ImageUploads;
+use App\Support\OrganizationThemes;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -51,8 +52,11 @@ class EventController extends Controller
         return trim($date).' '.trim($time).':00';
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $themeKey = $request->user()?->resolvedOrganizationThemeKey(null) ?? 'embers';
+        $theme = OrganizationThemes::get($themeKey);
+
         return view('events.index', [
             'events' => Event::query()
                 ->with('organization')
@@ -62,10 +66,11 @@ class EventController extends Controller
                 ->where('starts_at', '>=', now()->subDay())
                 ->orderBy('starts_at')
                 ->paginate(12),
+            'theme' => $theme,
         ]);
     }
 
-    public function show(Event $event): View
+    public function show(Event $event, Request $request): View
     {
         $this->authorizeVisibleEvent($event, request());
 
@@ -78,8 +83,12 @@ class EventController extends Controller
             'invitations',
         ]);
 
+        $themeKey = $request->user()?->resolvedOrganizationThemeKey($event->organization) ?? $event->organization->theme_key;
+        $theme = OrganizationThemes::get($themeKey);
+
         return view('events.show', [
             'event' => $event,
+            'theme' => $theme,
             'rsvpCounts' => $event->rsvps
                 ->groupBy('status')
                 ->map->count(),
@@ -412,8 +421,8 @@ class EventController extends Controller
     protected function escapeIcsText(string $value): string
     {
         return str_replace(
-            ["\\", ";", ",", "\r\n", "\n", "\r"],
-            ["\\\\", '\;', '\,', '\n', '\n', '\n'],
+            ['\\', ';', ',', "\r\n", "\n", "\r"],
+            ['\\\\', '\;', '\,', '\n', '\n', '\n'],
             $value,
         );
     }

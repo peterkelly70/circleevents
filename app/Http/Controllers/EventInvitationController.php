@@ -7,8 +7,8 @@ use App\Models\Event;
 use App\Models\EventInvitation;
 use App\Support\ConsumesEventInvitations;
 use App\Support\InvitationAuditLogger;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -174,11 +174,7 @@ class EventInvitationController extends Controller
         }
 
         $request->session()->put('event_invitation_token', $invitation->token);
-        if ($invitation->email) {
-            $request->session()->put('invited_email', $invitation->email);
-        } else {
-            $request->session()->forget('invited_email');
-        }
+        $request->session()->put('invited_email', $invitation->email);
         $request->session()->put('invited_event_title', $invitation->event->title);
 
         if ($request->user()) {
@@ -188,8 +184,8 @@ class EventInvitationController extends Controller
         }
 
         return $invitation->email
-            ? redirect()->route('register', ['email' => $invitation->email])
-            : redirect()->route('register');
+            ? redirect()->route('login', ['email' => $invitation->email])
+            : redirect()->route('login');
     }
 
     protected function generateShareCode(): string

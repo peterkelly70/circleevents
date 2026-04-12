@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\SiteSetting;
+use App\Models\User;
 use App\Support\ImageUploads;
 use App\Support\OrganizationThemes;
-use App\Models\User;
-use App\Models\SiteSetting;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -151,7 +151,7 @@ class OrganizationController extends Controller
 
     public function edit(Request $request, Organization $organization): View
     {
-        abort_unless($request->user()->isManagerOf($organization), 403);
+        abort_unless($request->user()->isManagerOf($organization) || $request->user()->is_admin, 403);
 
         return view('organizations.edit', [
             'organization' => $organization,
@@ -204,7 +204,7 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organization $organization): RedirectResponse
     {
-        abort_unless($request->user()->isManagerOf($organization), 403);
+        abort_unless($request->user()->isManagerOf($organization) || $request->user()->is_admin, 403);
 
         $validated = $this->validatedOrganizationData($request);
 

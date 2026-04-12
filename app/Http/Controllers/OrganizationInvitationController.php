@@ -180,11 +180,7 @@ class OrganizationInvitationController extends Controller
         }
 
         $request->session()->put('organization_invitation_token', $invitation->token);
-        if ($invitation->email) {
-            $request->session()->put('invited_email', $invitation->email);
-        } else {
-            $request->session()->forget('invited_email');
-        }
+        $request->session()->put('invited_email', $invitation->email);
         $request->session()->put('invited_organization_name', $invitation->organization->name);
 
         if ($request->user()) {
@@ -194,8 +190,8 @@ class OrganizationInvitationController extends Controller
         }
 
         return $invitation->email
-            ? redirect()->route('register', ['email' => $invitation->email])
-            : redirect()->route('register');
+            ? redirect()->route('login', ['email' => $invitation->email])
+            : redirect()->route('login');
     }
 
     protected function generateShareCode(): string

@@ -24,8 +24,17 @@
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:gap-3 sm:ms-6">
+                <div class="hidden sm:flex sm:items-center sm:gap-3 sm:ms-6">
                 @auth
+                    @php
+                        $unreadMemberMessages = Auth::user()->memberMessages()->whereNull('read_at')->count();
+                    @endphp
+                    @if ($unreadMemberMessages > 0)
+                        <a href="{{ route('notifications.member-messages') }}" class="relative inline-flex items-center justify-center rounded-full bg-amber-500 px-3 py-2 text-xs font-bold text-stone-950">
+                            {{ $unreadMemberMessages }}
+                        </a>
+                    @endif
+
                     <span class="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-4 text-sm font-medium text-stone-300">
                         <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-amber-300/15 text-xs font-black text-amber-200">
                             @if (Auth::user()->avatarUrl())

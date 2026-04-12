@@ -213,7 +213,7 @@
                     </div>
                     <div class="rounded-2xl border p-3 {{ $theme['panel'] }}">
                         <div class="text-2xl font-black {{ $theme['heading'] }}">{{ $rsvpCounts->get('interested', 0) }}</div>
-                        <div class="mt-1 text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">Interested</div>
+                        <div class="mt-1 text-xs uppercase tracking-[0.2em] {{ $theme['muted'] }}">Maybe</div>
                     </div>
                     <div class="rounded-2xl border p-3 {{ $theme['panel'] }}">
                         <div class="text-2xl font-black {{ $theme['heading'] }}">{{ $rsvpCounts->get('waitlist', 0) }}</div>
@@ -253,7 +253,7 @@
                     <form method="POST" action="{{ route('events.rsvp', $event) }}" class="mt-6 space-y-4">
                         @csrf
                         <select name="status" class="{{ $selectReadableClass }} w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }}">
-                            <option value="interested" @selected(old('status', $currentRsvp?->status) === 'interested')>Interested</option>
+                            <option value="interested" @selected(old('status', $currentRsvp?->status) === 'interested')>Maybe</option>
                             <option value="going" @selected(old('status', $currentRsvp?->status) === 'going')>Going</option>
                             <option value="waitlist" @selected(old('status', $currentRsvp?->status) === 'waitlist')>Waitlist</option>
                             <option value="not-going" @selected(old('status', $currentRsvp?->status) === 'not-going')>Not going</option>
