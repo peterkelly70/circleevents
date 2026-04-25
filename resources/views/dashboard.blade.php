@@ -19,8 +19,17 @@ $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
                 >
                     Help
                 </button>
+                <button
+                    type="button"
+                    x-data
+                    x-on:click.prevent="$dispatch('open-modal', 'organization-search')"
+                    class="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold {{ $theme['soft_button'] }}"
+                >
+                    Search organizations
+                </button>
+                <a href="{{ route('dashboard.organizations') }}" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['primary_button'] }}">Organization dashboard</a>
                 <a href="#new-event" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['primary_button'] }}">New event</a>
-                <a href="#new-organization" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['primary_button'] }}">New organization</a>
+                <a href="{{ route('dashboard.organizations') }}#new-organization" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['primary_button'] }}">New organization</a>
                 <a href="#new-mailing-list" class="rounded-full px-5 py-3 text-sm font-semibold {{ $theme['secondary_button'] }}">New mailing list</a>
                 <p class="max-w-md text-sm {{ $theme['muted'] }}">Create organizations, publish events, and manage audience subscriptions from one place.</p>
             </div>
@@ -263,89 +272,13 @@ $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
                     </div>
                 @endif
 
-                <section id="followed-organizations" class="rounded-[2rem] border border-white/10 p-6 shadow-sm ring-1 ring-white/10 {{ $theme['surface'] }}">
-                    <div class="flex items-center justify-between gap-4">
+                <section class="rounded-[2rem] border border-white/10 p-6 shadow-sm ring-1 ring-white/10 {{ $theme['surface'] }}">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 class="text-2xl font-bold {{ $theme['heading'] }}">Following</h3>
-                            <p class="mt-1 text-sm {{ $theme['meta'] }}">Organizations you follow. Click to view their feed, events and posts.</p>
+                            <h3 class="text-2xl font-bold {{ $theme['heading'] }}">Organizations</h3>
+                            <p class="mt-1 text-sm {{ $theme['meta'] }}">You manage {{ $managedOrganizations->count() }} and follow {{ $followedOrganizations->count() }}.</p>
                         </div>
-                    </div>
-
-                    <div class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        @forelse ($followedOrganizations as $org)
-                            <a href="{{ route('organizations.show', $org) }}" class="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-amber-300/50">
-                                <div class="flex items-center gap-3">
-                                    @if($org->avatar_path)
-                                        <img src="{{ $org->avatarUrl() }}" class="h-10 w-10 rounded-full object-cover">
-                                    @else
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-stone-700 text-sm font-bold {{ $theme['meta'] }}">
-                                            {{ str($org->name)->substr(0, 2)->upper() }}
-                                        </div>
-                                    @endif
-                                    <div>
-                                        <div class="font-semibold {{ $theme['heading'] }}">{{ $org->name }}</div>
-                                        <div class="text-xs {{ $theme['meta'] }}">{{ $org->pivot->role }}</div>
-                                    </div>
-                                </div>
-                            </a>
-                        @empty
-                            <p class="col-span-full text-sm {{ $theme['meta'] }}">You're not following any organizations yet. Discover organizations on the home page.</p>
-                        @endforelse
-                    </div>
-                </section>
-
-                <section class="rounded-[2rem] p-6 shadow-sm ring-1 ring-stone-200 {{ $theme['surface'] }}">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-2xl font-bold {{ $theme['heading'] }}">Your organizations</h3>
-                            <p class="mt-1 text-sm {{ $theme['muted'] }}">Manager access controls who can publish events and own mailing lists.</p>
-                        </div>
-                        <span class="rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800">{{ $managedOrganizations->count() }} managed</span>
-                    </div>
-                    <div class="mt-6 grid gap-4 md:grid-cols-2">
-                        @forelse ($managedOrganizations as $organization)
-                            <div class="overflow-hidden rounded-3xl border border-stone-200 transition hover:-translate-y-1 hover:border-amber-300 {{ $theme['panel'] }}">
-                                <div class="relative h-48 overflow-hidden bg-stone-900 {{ $theme['page_backdrop'] }}">
-                                    @if ($organization->banner_path)
-                                        <img src="{{ $organization->bannerUrl() }}" alt="{{ $organization->name }} banner" class="h-full w-full object-cover">
-                                    @elseif ($organization->avatar_path)
-                                        <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
-                                    @else
-                                        <div class="h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.28),_transparent_30%),linear-gradient(135deg,_#292524,_#0c0a09)]"></div>
-                                    @endif
-
-                                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/10 to-transparent"></div>
-
-                                    <div class="absolute bottom-4 left-4 flex items-end gap-4">
-                                        <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-stone-950/80 text-lg font-black text-amber-200 shadow-lg">
-                                            @if ($organization->avatar_path)
-                                                <img src="{{ $organization->avatarUrl() }}" alt="{{ $organization->name }} logo" class="h-full w-full object-cover">
-                                            @else
-                                                <span>{{ str($organization->name)->substr(0, 2)->upper() }}</span>
-                                            @endif
-                                        </div>
-
-                                        <div class="min-w-0 pb-1">
-                                            <p class="text-xs uppercase tracking-[0.2em] text-amber-200/90">{{ $organization->pivot->role }}</p>
-                                            <a href="{{ route('organizations.show', $organization) }}" class="mt-1 block text-xl font-bold {{ $theme['heading'] }}">{{ $organization->name }}</a>
-                                            @if ($organization->approval_status !== 'approved')
-                                                <p class="mt-1 text-xs uppercase tracking-[0.2em] text-amber-200">Pending admin approval</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="p-5">
-                                    <p class="text-sm {{ $theme['muted'] }}">{{ $organization->summary }}</p>
-                                    <div class="mt-4 flex gap-3">
-                                        <a href="{{ route('organizations.show', $organization) }}" class="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">View</a>
-                                        <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full px-4 py-2 text-sm font-semibold {{ $theme['secondary_button'] }}">Edit</a>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="rounded-3xl border border-dashed border-stone-300 p-5 text-sm {{ $theme['muted'] }}">No organizations yet. Use the form on the right to create the first one.</div>
-                        @endforelse
+                        <a href="{{ route('dashboard.organizations') }}" class="rounded-full px-5 py-3 text-center text-sm font-semibold {{ $theme['primary_button'] }}">Open organization dashboard</a>
                     </div>
                 </section>
 
@@ -406,89 +339,13 @@ $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
             </div>
 
             <div class="space-y-6">
-                <section class="rounded-[2rem] p-6 shadow-sm {{ $theme['page_backdrop'] }}">
-                    <h3 class="text-2xl font-bold {{ $theme['heading'] }}">Create an organization</h3>
-                    @if ($organizationRegistrationMode === 'moderated' && ! auth()->user()->is_admin)
-                        <p class="mt-2 text-sm text-amber-200">New organizations currently need approval from a CircleEvents admin before they go public or can publish events.</p>
-                    @endif
-
-                    @if ($errors->any())
-                        <div class="mt-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                            Please fix the highlighted fields and try again.
-                        </div>
-                    @endif
-
-                    <form method="POST" action="{{ route('organizations.store') }}" enctype="multipart/form-data" novalidate class="mt-5 space-y-4">
-                        @csrf
-                        <div>
-                            <label class="text-sm font-medium {{ $theme['body'] }}" for="org-name">Name</label>
-                            <input id="org-name" name="name" value="{{ old('name') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium {{ $theme['body'] }}" for="org-summary">Summary</label>
-                            <input id="org-summary" name="summary" value="{{ old('summary') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white" required>
-                            <x-input-error :messages="$errors->get('summary')" class="mt-2" />
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium {{ $theme['body'] }}" for="org-description">Description</label>
-                            <textarea id="org-description" name="description" rows="4" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">{{ old('description') }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                        </div>
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-city">City</label>
-                                <input id="org-city" name="city" value="{{ old('city') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('city')" class="mt-2" />
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-url">Website</label>
-                                <input id="org-url" name="website_url" value="{{ old('website_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('website_url')" class="mt-2" />
-                            </div>
-                        </div>
-                        <div class="grid gap-4 md:grid-cols-3">
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-discord">Discord</label>
-                                <input id="org-discord" name="discord_url" value="{{ old('discord_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('discord_url')" class="mt-2" />
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-twitter">X / Twitter</label>
-                                <input id="org-twitter" name="twitter_url" value="{{ old('twitter_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('twitter_url')" class="mt-2" />
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-facebook">Facebook</label>
-                                <input id="org-facebook" name="facebook_url" value="{{ old('facebook_url') }}" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('facebook_url')" class="mt-2" />
-                            </div>
-                        </div>
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-avatar">Logo / avatar</label>
-                                <p class="mt-1 text-xs {{ $theme['muted'] }}">Best at 512 x 512. Square logos work best here.</p>
-                                <input id="org-avatar" name="avatar" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium {{ $theme['body'] }}" for="org-banner">Banner image</label>
-                                <p class="mt-1 text-xs {{ $theme['muted'] }}">Best at 1600 x 480. Keep important artwork in the center band.</p>
-                                <input id="org-banner" name="banner" type="file" accept="image/*" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <x-input-error :messages="$errors->get('banner')" class="mt-2" />
-                            </div>
-                        </div>
-                        @include('organizations.partials.theme-picker', ['selectedThemeKey' => old('theme_key', 'embers')])
-                        <div>
-                            <select name="visibility" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-                                <option value="public" @selected(old('visibility', 'public') === 'public')>Public</option>
-                                <option value="private" @selected(old('visibility') === 'private')>Private</option>
-                                <option value="unlisted" @selected(old('visibility') === 'unlisted')>Unlisted</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('visibility')" class="mt-2" />
-                        </div>
-                        <button type="submit" class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold {{ $theme['secondary_button'] }}">Create organization</button>
-                    </form>
+                <section class="rounded-[2rem] border border-white/10 p-6 shadow-sm ring-1 ring-white/10 {{ $theme['surface'] }}">
+                    <h3 class="text-2xl font-bold {{ $theme['heading'] }}">Organization work</h3>
+                    <p class="mt-2 text-sm {{ $theme['meta'] }}">Memberships, followed organizations, public tag search, and organization creation now live on the organization dashboard.</p>
+                    <div class="mt-5 grid gap-3">
+                        <a href="{{ route('dashboard.organizations') }}" class="rounded-full px-5 py-3 text-center text-sm font-semibold {{ $theme['primary_button'] }}">Open organization dashboard</a>
+                        <button type="button" x-data x-on:click.prevent="$dispatch('open-modal', 'organization-search')" class="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold {{ $theme['soft_button'] }}">Search by tag</button>
+                    </div>
                 </section>
 
                 <section id="new-event" class="rounded-[2rem] border border-emerald-300/20 p-6 shadow-sm ring-1 ring-emerald-300/15 {{ $theme['surface'] }}">
@@ -657,6 +514,43 @@ $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
             </div>
         </div>
     </div>
+
+    <x-modal name="organization-search" maxWidth="2xl" focusable>
+        <div class="p-6 sm:p-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-amber-300">Organization search</p>
+                    <h2 class="mt-2 text-2xl font-black {{ $theme['heading'] }}">Find public organizations by tag</h2>
+                </div>
+                <button
+                    type="button"
+                    x-on:click="$dispatch('close-modal', 'organization-search')"
+                    class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['body'] }}"
+                >
+                    Close
+                </button>
+            </div>
+
+            <form method="GET" action="{{ route('dashboard.organizations') }}" class="mt-6 space-y-4">
+                <div>
+                    <label class="text-sm font-medium {{ $theme['body'] }}" for="dashboard-organization-tag-search">Tags</label>
+                    <input id="dashboard-organization-tag-search" name="tag" placeholder="music, community, volunteering" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-stone-100">
+                </div>
+                <button class="w-full rounded-full bg-amber-300 px-5 py-3 font-semibold text-stone-950">Search organizations</button>
+            </form>
+
+            @if ($availableTags->isNotEmpty())
+                <div class="mt-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-[0.2em] {{ $theme['meta'] }}">Popular tags</h3>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        @foreach ($availableTags as $tag)
+                            <a href="{{ route('dashboard.organizations', ['tag' => $tag]) }}" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm {{ $theme['body'] }}">{{ $tag }}</a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </x-modal>
 
     <x-modal name="dashboard-help" maxWidth="2xl" focusable>
         <div class="p-6 sm:p-8">

@@ -20,6 +20,9 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('dashboard.organizations')" :active="request()->routeIs('dashboard.organizations')">
+                            {{ __('Organizations') }}
+                        </x-nav-link>
                     @endauth
                 </div>
             </div>
@@ -89,6 +92,9 @@
             @auth
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('dashboard.organizations')" :active="request()->routeIs('dashboard.organizations')">
+                    {{ __('Organizations') }}
                 </x-responsive-nav-link>
             @endauth
         </div>

@@ -71,10 +71,17 @@
                         @endif
                     </div>
 
-                    <div class="pb-1">
-                        <p class="text-xs uppercase tracking-[0.35em] {{ $theme['hero_eyebrow'] }}">Community profile</p>
-                        <h2 class="mt-1.5 text-2xl font-black leading-tight sm:text-[2rem] {{ $theme['hero_heading'] }} {{ $theme['font_display'] }}">{{ $organization->name }}</h2>
-                    </div>
+	                    <div class="pb-1">
+	                        <p class="text-xs uppercase tracking-[0.35em] {{ $theme['hero_eyebrow'] }}">Community profile</p>
+	                        <h2 class="mt-1.5 text-2xl font-black leading-tight sm:text-[2rem] {{ $theme['hero_heading'] }} {{ $theme['font_display'] }}">{{ $organization->name }}</h2>
+	                        @if ($organization->tagList() !== [])
+	                            <div class="mt-3 flex flex-wrap gap-2">
+	                                @foreach ($organization->tagList() as $tag)
+	                                    <span class="rounded-full border px-3 py-1 text-xs {{ $theme['panel'] }}">{{ $tag }}</span>
+	                                @endforeach
+	                            </div>
+	                        @endif
+	                    </div>
                 </div>
             </div>
         </section>

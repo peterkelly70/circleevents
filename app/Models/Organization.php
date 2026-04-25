@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
     'summary',
     'description',
     'city',
+    'tags',
     'website_url',
     'discord_url',
     'twitter_url',
@@ -48,6 +49,7 @@ class Organization extends Model
             'auto_post_facebook_events' => 'boolean',
             'auto_post_facebook_announcements' => 'boolean',
             'approved_at' => 'datetime',
+            'tags' => 'array',
         ];
     }
 
@@ -163,6 +165,14 @@ class Organization extends Model
     public function visibilityLabel(): string
     {
         return Str::headline($this->visibility);
+    }
+
+    public function tagList(): array
+    {
+        return collect($this->tags ?? [])
+            ->filter()
+            ->values()
+            ->all();
     }
 
     public function theme(): array

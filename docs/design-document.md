@@ -20,14 +20,18 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Helper scripts include scheduler, permission lockdown, certificate repair, and optional ClamAV install support for safer uploads
 - Public events index and event detail pages
 - Public organization pages with follower posts and member announcements
+- Organizations can define topic tags for public discovery
 - Organization pages lead with published events and recent member messages, and published events can expand inline to show event discussion previews
 - Organizations can choose from twenty-two full profile themes, including fantasy/medieval, light serif editorial, dark sci-fi, royal-blue, cosmic, woodland, marine, bright iridescent, and fantasy-palette treatments with distinct typography
 - Invite-by-email flow for organizations with account creation/login handoff
 - Manager assignment for organizations through promotion or manager-role invites
 - Organizer dashboard for:
-  - creating organizations
   - creating events
   - creating mailing lists
+- Separate organization dashboard for:
+  - viewing managed and followed organizations
+  - creating organizations
+  - searching public organizations by tag
 - Subscriber flow for joining mailing lists
 - Follower flow for joining organizations directly
 - RSVP flow for marking interest, going, or waitlist
@@ -57,7 +61,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
   - `city`
   - `bio`
 - `organizations`
-  - owner, name, slug, summary, description, city, website, avatar, banner, visibility (`public`, `private`, `unlisted`)
+  - owner, name, slug, summary, description, city, tags, website, avatar, banner, visibility (`public`, `private`, `unlisted`)
 - `organization_user`
   - membership pivot with role including owner, manager, and follower
 - `organization_posts`
@@ -86,6 +90,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - `/organizations/{slug}`
 - `/mailing-lists/{slug}`
 - `/dashboard`
+- `/dashboard/organizations`
 - auth/profile routes from Breeze
 
 ## UI Direction
@@ -93,6 +98,8 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Dark mode is the default visual theme across public, auth, and dashboard surfaces
 - Public-facing landing page with strong hierarchy and clear organizer CTA
 - Dashboard oriented around organizer actions instead of generic “you are logged in”
+- Main dashboard keeps event, RSVP, subscription, and admin work visible while linking to a dedicated organization dashboard for membership-heavy workflows
+- Dashboard includes a popup search entry that routes to public organization tag search
 - Dashboard includes an in-app help popup for first-time organizers
 - Organization uploads are normalized on save to a 512x512 avatar and a 1600x480 banner
 - Organization uploads accept larger originals before normalization so high-resolution source images can be converted server-side

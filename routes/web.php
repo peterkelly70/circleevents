@@ -34,6 +34,7 @@ Route::get('/organizations/{organization:slug}/email-preferences/{token}/opt-out
 Route::get('/mailing-lists/{mailingList:slug}', [MailingListController::class, 'show'])->name('mailing-lists.show');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'impersonate'])->name('dashboard');
+Route::get('/dashboard/organizations', [DashboardController::class, 'organizations'])->middleware(['auth', 'verified', 'impersonate'])->name('dashboard.organizations');
 
 Route::middleware('auth', 'impersonate')->group(function () {
     Route::get('/events/{event:slug}/edit', [EventController::class, 'edit'])->name('events.edit');

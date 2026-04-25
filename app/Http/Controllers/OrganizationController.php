@@ -32,11 +32,12 @@ class OrganizationController extends Controller
             'theme_key' => $request->input('theme_key', OrganizationThemes::DEFAULT),
         ]);
 
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'summary' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:120'],
+            'tags' => ['nullable', 'string', 'max:500'],
             'website_url' => ['nullable', 'url', 'max:255'],
             'discord_url' => ['nullable', 'url', 'max:255'],
             'twitter_url' => ['nullable', 'url', 'max:255'],
@@ -53,6 +54,21 @@ class OrganizationController extends Controller
             'theme_key' => ['required', Rule::in(OrganizationThemes::keys())],
             'visibility' => ['required', Rule::in(['public', 'private', 'unlisted'])],
         ]);
+
+        $validated['tags'] = $this->normalizeTags($validated['tags'] ?? null);
+
+        return $validated;
+    }
+
+    protected function normalizeTags(?string $value): array
+    {
+        return collect(explode(',', $value ?? ''))
+            ->map(fn (string $tag) => Str::of($tag)->lower()->replaceMatches('/\s+/', ' ')->trim()->toString())
+            ->filter()
+            ->unique()
+            ->take(12)
+            ->values()
+            ->all();
     }
 
     protected function normalizeWebsiteUrl(?string $value): ?string
