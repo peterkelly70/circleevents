@@ -8,6 +8,7 @@ use App\Models\OrganizationMessage;
 use App\Support\DiscordOrganizationMessagePublisher;
 use App\Support\FacebookOrganizationMessagePublisher;
 use App\Support\ImageUploads;
+use App\Support\UploadLimits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,12 +21,20 @@ class OrganizationMessageController extends Controller
     {
         abort_unless($request->user()->isManagerOf($organization), 403);
 
+        $maxUploadKilobytes = UploadLimits::maxUploadKilobytes();
+        $maxUploadLabel = UploadLimits::maxUploadLabel();
+
         $validated = $request->validateWithBag('organizationMessage', [
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:10000'],
-            'image' => ['nullable', 'image', 'max:12288'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.$maxUploadKilobytes],
             'post_to_discord' => ['nullable', 'boolean'],
             'post_to_facebook' => ['nullable', 'boolean'],
+        ], [
+            'image.uploaded' => 'The image did not upload. Use a JPEG, PNG, or WebP image under '.$maxUploadLabel.'.',
+            'image.image' => 'The attachment must be a JPEG, PNG, or WebP image.',
+            'image.mimes' => 'The attachment must be a JPEG, PNG, or WebP image.',
+            'image.max' => 'The image must be '.$maxUploadLabel.' or smaller. CircleEvents will resize it after upload.',
         ]);
 
         $message = OrganizationMessage::create([

@@ -74,6 +74,7 @@ class OrganizationMessageDiscordTest extends TestCase
             ])
             ->assertOk()
             ->assertSee('Fix the highlighted member message details and try sending again.')
+            ->assertSee('The attachment must be a JPEG, PNG, or WebP image.')
             ->assertDontSee('Fix the highlighted event details and try publishing again.');
     }
 }

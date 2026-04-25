@@ -212,7 +212,7 @@
 	                                <x-input-error :messages="$errors->organizationMessage->get('subject')" class="mt-2" />
 	                                <textarea name="body" rows="4" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>{{ old('body') }}</textarea>
 	                                <x-input-error :messages="$errors->organizationMessage->get('body')" class="mt-2" />
-	                                <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional image attachment.</p>
+	                                <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional JPEG, PNG, or WebP image up to {{ \App\Support\UploadLimits::maxUploadLabel() }}. CircleEvents resizes accepted images after upload.</p>
 	                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
 	                                <x-input-error :messages="$errors->organizationMessage->get('image')" class="mt-2" />
                                 <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
