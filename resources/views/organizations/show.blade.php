@@ -190,18 +190,26 @@
                     <h2 class="text-2xl font-bold {{ $theme['heading'] }}">Member messages</h2>
                     <p class="mt-2 text-sm {{ $theme['meta'] }}">Managers can write announcements here and email them to all followers and members.</p>
 
-                    @auth
-                        @if (auth()->user()->isManagerOf($organization))
-                            @php
-                                $managerMembers = $organization->members->whereIn('pivot.role', ['owner', 'manager']);
-                                $followerMembers = $organization->members->where('pivot.role', 'follower');
-                            @endphp
-                            <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" enctype="multipart/form-data" class="mt-4 space-y-3.5">
-                                @csrf
-                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
-                                <textarea name="body" rows="4" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required></textarea>
-                                <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional image attachment.</p>
-                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+	                    @auth
+	                        @if (auth()->user()->isManagerOf($organization))
+	                            @php
+	                                $managerMembers = $organization->members->whereIn('pivot.role', ['owner', 'manager']);
+	                                $followerMembers = $organization->members->where('pivot.role', 'follower');
+	                            @endphp
+	                            @if ($errors->organizationMessage->any())
+	                                <div class="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+	                                    Fix the highlighted member message details and try sending again.
+	                                </div>
+	                            @endif
+	                            <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" enctype="multipart/form-data" class="mt-4 space-y-3.5">
+	                                @csrf
+	                                <input name="subject" value="{{ old('subject') }}" placeholder="Message subject" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+	                                <x-input-error :messages="$errors->organizationMessage->get('subject')" class="mt-2" />
+	                                <textarea name="body" rows="4" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>{{ old('body') }}</textarea>
+	                                <x-input-error :messages="$errors->organizationMessage->get('body')" class="mt-2" />
+	                                <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional image attachment.</p>
+	                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+	                                <x-input-error :messages="$errors->organizationMessage->get('image')" class="mt-2" />
                                 <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
                                     <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
                                     Send this announcement to Discord too

@@ -20,7 +20,7 @@ class OrganizationMessageController extends Controller
     {
         abort_unless($request->user()->isManagerOf($organization), 403);
 
-        $validated = $request->validate([
+        $validated = $request->validateWithBag('organizationMessage', [
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:10000'],
             'image' => ['nullable', 'image', 'max:12288'],

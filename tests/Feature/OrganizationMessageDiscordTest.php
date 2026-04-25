@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\OrganizationMessage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -46,5 +47,33 @@ class OrganizationMessageDiscordTest extends TestCase
 
         Http::assertSentCount(1);
         $this->assertNotNull(OrganizationMessage::query()->firstOrFail()->discord_posted_at);
+    }
+
+    public function test_invalid_member_message_attachment_does_not_trigger_event_form_error(): void
+    {
+        $owner = User::factory()->create();
+
+        $organization = Organization::create([
+            'owner_id' => $owner->id,
+            'name' => 'Boardgame Brigade',
+            'slug' => 'boardgame-brigade',
+            'summary' => 'Board games',
+            'description' => 'Weekly games',
+            'visibility' => 'public',
+        ]);
+
+        $organization->members()->attach($owner->id, ['role' => 'owner', 'email_opt_out_token' => 'owner-token']);
+
+        $this->actingAs($owner)
+            ->followingRedirects()
+            ->from(route('organizations.show', $organization))
+            ->post(route('organizations.messages.store', $organization), [
+                'subject' => 'Tonight',
+                'body' => 'Bring snacks.',
+                'image' => UploadedFile::fake()->create('notes.pdf', 10, 'application/pdf'),
+            ])
+            ->assertOk()
+            ->assertSee('Fix the highlighted member message details and try sending again.')
+            ->assertDontSee('Fix the highlighted event details and try publishing again.');
     }
 }
