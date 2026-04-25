@@ -111,6 +111,54 @@
         background: rgb(255 255 255);
     }
 
+    .control-readable {
+        color-scheme: dark;
+    }
+
+    .control-readable::placeholder {
+        color: inherit;
+        opacity: 0.6;
+    }
+
+    .control-readable option {
+        color: rgb(245 245 244);
+        background: rgb(28 25 23);
+    }
+
+    .control-readable-light {
+        color-scheme: light;
+    }
+
+    .control-readable-light::placeholder {
+        color: inherit;
+        opacity: 0.6;
+    }
+
+    .control-readable-light option {
+        color: rgb(28 25 23);
+        background: rgb(255 255 255);
+    }
+
+    .control-surface-dark {
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        background-color: rgba(0, 0, 0, 0.2) !important;
+        color: rgb(245 245 244) !important;
+    }
+
+    .control-surface-dark::placeholder {
+        color: rgb(120 113 108) !important;
+    }
+
+    .control-surface-light {
+        border-color: rgb(214 211 209) !important;
+        background-color: rgb(255 255 255) !important;
+        color: rgb(28 25 23) !important;
+    }
+
+    .control-surface-light::placeholder {
+        color: rgb(168 162 158) !important;
+    }
+
     .share-icon-button {
         position: relative;
         display: inline-flex;

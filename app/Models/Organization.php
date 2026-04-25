@@ -4,10 +4,10 @@ namespace App\Models;
 
 use App\Support\OrganizationThemes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -101,6 +101,26 @@ class Organization extends Model
     public function blocks(): MorphMany
     {
         return $this->morphMany(Block::class, 'blockable');
+    }
+
+    public function facebookAccount(): HasMany
+    {
+        return $this->hasMany(OrganizationFacebookAccount::class)->where('is_active', true);
+    }
+
+    public function xAccount(): HasMany
+    {
+        return $this->hasMany(OrganizationXAccount::class)->where('is_active', true);
+    }
+
+    public function discordAccount(): HasMany
+    {
+        return $this->hasMany(OrganizationDiscordAccount::class)->where('is_active', true);
+    }
+
+    public function socialPublications(): HasMany
+    {
+        return $this->hasMany(SocialPublication::class);
     }
 
     public function avatarUrl(): ?string

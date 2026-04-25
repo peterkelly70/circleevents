@@ -17,6 +17,7 @@ use App\Http\Controllers\OrganizationMessageController;
 use App\Http\Controllers\OrganizationPostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SocialController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -85,6 +86,16 @@ Route::middleware('auth', 'impersonate')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/notifications/member-messages', [NotificationController::class, 'memberMessages'])->name('notifications.member-messages');
     Route::post('/notifications/member-messages/{id}/read', [NotificationController::class, 'markMessageRead'])->name('notifications.member-messages.read');
+
+    Route::get('/organizations/{organization:slug}/social/facebook/connect', [SocialController::class, 'facebookConnect'])->name('social.facebook.connect');
+    Route::get('/social/facebook/callback', [SocialController::class, 'facebookCallback'])->name('social.facebook.callback');
+    Route::get('/organizations/{organization:slug}/social/facebook/select-page', [SocialController::class, 'facebookSelectPage'])->name('social.facebook.select-page');
+    Route::delete('/organizations/{organization:slug}/social/facebook', [SocialController::class, 'facebookDisconnect'])->name('social.facebook.disconnect');
+    Route::get('/organizations/{organization:slug}/social/x/connect', [SocialController::class, 'xConnect'])->name('social.x.connect');
+    Route::get('/social/x/callback', [SocialController::class, 'xCallback'])->name('social.x.callback');
+    Route::delete('/organizations/{organization:slug}/social/x', [SocialController::class, 'xDisconnect'])->name('social.x.disconnect');
+    Route::post('/organizations/{organization:slug}/social/discord/connect', [SocialController::class, 'discordConnect'])->name('social.discord.connect');
+    Route::delete('/organizations/{organization:slug}/social/discord', [SocialController::class, 'discordDisconnect'])->name('social.discord.disconnect');
 });
 
 require __DIR__.'/auth.php';

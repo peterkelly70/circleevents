@@ -39,6 +39,16 @@ return [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+    ],
+
+    'twitter' => [
+        'client_id' => env('TWITTER_CLIENT_ID'),
+        'client_secret' => env('TWITTER_CLIENT_SECRET'),
+    ],
+
     'security' => [
         'clamscan_binary' => env('CLAMSCAN_BINARY'),
     ],

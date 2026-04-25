@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\PublishEventToDiscordJob;
+use App\Jobs\PublishEventToFacebookJob;
+use App\Jobs\PublishEventToXJob;
 use App\Mail\EventPublishedMail;
 use App\Models\Event;
 use App\Models\EventRsvp;
@@ -430,10 +433,34 @@ class EventController extends Controller
     protected function announceEvent(Event $event, bool $isUpdate = false): array
     {
         $emails = $this->notifyAnnouncementRecipients($event, $isUpdate);
-        $discord = DiscordEventPublisher::publish($event);
-        $facebook = FacebookEventPublisher::publish($event);
 
-        return compact('emails', 'discord', 'facebook');
+        $event->loadMissing('organization');
+        $organization = $event->organization;
+
+        $discord = false;
+        $facebook = false;
+        $x = false;
+
+        if ($organization->discordAccount()->exists()) {
+            dispatch(new PublishEventToDiscordJob($event, $organization));
+            $discord = true;
+        } elseif ($organization->discord_webhook_url) {
+            $discord = DiscordEventPublisher::publish($event);
+        }
+
+        if ($organization->facebookAccount()->exists()) {
+            dispatch(new PublishEventToFacebookJob($event, $organization));
+            $facebook = true;
+        } elseif ($organization->facebook_page_id && $organization->facebook_page_access_token) {
+            $facebook = FacebookEventPublisher::publish($event);
+        }
+
+        if ($organization->xAccount()->exists()) {
+            dispatch(new PublishEventToXJob($event, $organization));
+            $x = true;
+        }
+
+        return compact('emails', 'discord', 'facebook', 'x');
     }
 
     protected function notifyAnnouncementRecipients(Event $event, bool $isUpdate = false): int

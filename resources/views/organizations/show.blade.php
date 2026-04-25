@@ -2,6 +2,37 @@
     @php
         $theme = \App\Support\OrganizationThemes::get(auth()->user()?->resolvedOrganizationThemeKey($organization) ?? $organization->theme_key);
         $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
+        $controlReadableClass = $theme['mode'] === 'light' ? 'control-readable-light' : 'control-readable';
+        $controlThemeClass = $theme['mode'] === 'light' ? 'control-surface-light' : 'control-surface-dark';
+        $eventErrorFields = [
+            'organization_id',
+            'title',
+            'summary',
+            'description',
+            'is_online',
+            'online_url',
+            'venue_name',
+            'venue_address',
+            'google_place_id',
+            'latitude',
+            'longitude',
+            'start_date',
+            'start_time',
+            'end_date',
+            'end_time',
+            'city',
+            'timezone',
+            'capacity',
+            'repeat_frequency',
+            'repeat_until_date',
+            'repeat_until_time',
+            'notify_followers_one_week_before',
+            'notify_followers_one_day_before',
+            'notify_followers_one_hour_before',
+            'image',
+            'visibility',
+        ];
+        $hasEventErrors = collect($eventErrorFields)->contains(fn (string $field) => $errors->has($field));
     @endphp
     <div x-data="{ manageMembersModal: false, messageMemberModal: false, selectedUsers: [], searchQuery: '' }" @open-members-modal.window="manageMembersModal = true">
     <x-slot name="header">
@@ -160,10 +191,10 @@
                             @endphp
                             <form method="POST" action="{{ route('organizations.messages.store', $organization) }}" enctype="multipart/form-data" class="mt-4 space-y-3.5">
                                 @csrf
-                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
-                                <textarea name="body" rows="4" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required></textarea>
+                                <input name="subject" placeholder="Message subject" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                <textarea name="body" rows="4" placeholder="Write the message that members should receive on-site and by email." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required></textarea>
                                 <p class="text-xs {{ $theme['muted'] }}">Supports BBCode and an optional image attachment.</p>
-                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                <input name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
                                     <input type="checkbox" name="post_to_discord" value="1" @checked(old('post_to_discord', $organization->auto_post_discord_announcements)) class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
                                     Send this announcement to Discord too
@@ -378,9 +409,9 @@
                         @if (auth()->user()->isMemberOf($organization))
                             <form method="POST" action="{{ route('organizations.posts.store', $organization) }}" enctype="multipart/form-data" class="mt-4">
                                 @csrf
-                                <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">{{ old('body') }}</textarea>
+                                <textarea name="body" rows="4" placeholder="Share an update, ask a question, or post to the community." class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">{{ old('body') }}</textarea>
                                 <p class="mt-2 text-xs {{ $theme['muted'] }}">Supports BBCode: `[b]bold[/b]`, `[i]italic[/i]`, `[quote]quote[/quote]`, `[url=https://...]link[/url]`.</p>
-                                <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                <input name="image" type="file" accept="image/*" class="mt-3 w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 <button class="mt-3 rounded-full px-5 py-2.5 text-sm font-semibold {{ $theme['primary_button'] }}">Post to organization</button>
                             </form>
                         @else
@@ -456,7 +487,7 @@
                                 </div>
                             </div>
 
-                            @if ($errors->any())
+                            @if ($hasEventErrors)
                                 <div class="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                                     Fix the highlighted event details and try publishing again.
                                 </div>
@@ -465,21 +496,21 @@
                             <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data" class="mt-4 space-y-3.5" x-data="{ isOnline: {{ old('is_online') ? 'true' : 'false' }} }">
                                 @csrf
                                 <input type="hidden" name="organization_id" value="{{ $organization->id }}">
-                                <input name="title" value="{{ old('title') }}" placeholder="Event title" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
-                                <input name="summary" value="{{ old('summary') }}" placeholder="Short summary" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
-                                <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">{{ old('description') }}</textarea>
+                                <input name="title" value="{{ old('title') }}" placeholder="Event title" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                <input name="summary" value="{{ old('summary') }}" placeholder="Short summary" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                <textarea name="description" rows="4" placeholder="Full description" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">{{ old('description') }}</textarea>
 
                                 <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
                                     <label class="flex items-center gap-3 text-sm {{ $theme['body'] }}">
                                         <input type="checkbox" name="is_online" value="1" x-model="isOnline" class="rounded border-white/10 bg-white/5 {{ $theme['checkbox'] }}">
                                         This is an online event
                                     </label>
-                                    <input x-show="isOnline" x-cloak name="online_url" value="{{ old('online_url') }}" placeholder="Optional meeting link" class="mt-3 w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input x-show="isOnline" x-cloak name="online_url" value="{{ old('online_url') }}" placeholder="Optional meeting link" class="mt-3 w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 </div>
 
                                 <div x-show="!isOnline" x-cloak class="grid gap-4 md:grid-cols-2">
-                                    <input name="venue_name" value="{{ old('venue_name') }}" data-event-venue-name placeholder="Venue" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" x-bind:required="!isOnline">
-                                    <input name="venue_address" value="{{ old('venue_address') }}" data-event-venue-address placeholder="Address" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input name="venue_name" value="{{ old('venue_name') }}" data-event-venue-name placeholder="Venue" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" x-bind:required="!isOnline">
+                                    <input name="venue_address" value="{{ old('venue_address') }}" data-event-venue-address placeholder="Address" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 </div>
 
                                 <div x-show="!isOnline" x-cloak>
@@ -493,11 +524,11 @@
                                 <div class="grid gap-4 md:grid-cols-4">
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-start-date">Start date</label>
-                                        <input id="org-event-start-date" type="date" name="start_date" value="{{ old('start_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                        <input id="org-event-start-date" type="date" name="start_date" value="{{ old('start_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
                                     </div>
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-start-time">Start time</label>
-                                        <select id="org-event-start-time" name="start_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                        <select id="org-event-start-time" name="start_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
                                             @foreach ($timeOptions as $option)
                                                 <option value="{{ $option['value'] }}" @selected(old('start_time', '00:00') === $option['value'])>{{ $option['label'] }}</option>
                                             @endforeach
@@ -505,11 +536,11 @@
                                     </div>
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-end-date">End date</label>
-                                        <input id="org-event-end-date" type="date" name="end_date" value="{{ old('end_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                        <input id="org-event-end-date" type="date" name="end_date" value="{{ old('end_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
                                     </div>
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-end-time">End time</label>
-                                        <select id="org-event-end-time" name="end_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
+                                        <select id="org-event-end-time" name="end_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
                                             @foreach ($timeOptions as $option)
                                                 <option value="{{ $option['value'] }}" @selected(old('end_time', '00:00') === $option['value'])>{{ $option['label'] }}</option>
                                             @endforeach
@@ -518,15 +549,15 @@
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-3">
-                                    <input x-show="!isOnline" x-cloak name="city" value="{{ old('city') }}" data-event-city placeholder="City" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                    <input name="timezone" value="{{ old('timezone', 'Australia/Perth') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
-                                    <input name="capacity" value="{{ old('capacity') }}" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input x-show="!isOnline" x-cloak name="city" value="{{ old('city') }}" data-event-city placeholder="City" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                    <input name="timezone" value="{{ old('timezone', 'Australia/Perth') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                    <input name="capacity" value="{{ old('capacity') }}" type="number" min="1" placeholder="Capacity" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 </div>
 
                                 <div class="grid gap-4 md:grid-cols-2">
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-repeat-frequency">Repeats</label>
-                                        <select id="org-event-repeat-frequency" name="repeat_frequency" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                        <select id="org-event-repeat-frequency" name="repeat_frequency" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                             <option value="none" @selected(old('repeat_frequency', 'none') === 'none')>Does not repeat</option>
                                             <option value="daily" @selected(old('repeat_frequency') === 'daily')>Daily</option>
                                             <option value="weekly" @selected(old('repeat_frequency') === 'weekly')>Weekly</option>
@@ -536,8 +567,8 @@
                                     <div>
                                         <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-repeat-until">Repeat until</label>
                                         <div class="grid grid-cols-2 gap-3">
-                                            <input id="org-event-repeat-until" type="date" name="repeat_until_date" value="{{ old('repeat_until_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                            <select name="repeat_until_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                            <input id="org-event-repeat-until" type="date" name="repeat_until_date" value="{{ old('repeat_until_date') }}" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                            <select name="repeat_until_time" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                                 <option value="">Time</option>
                                                 @foreach ($timeOptions as $option)
                                                     <option value="{{ $option['value'] }}" @selected(old('repeat_until_time') === $option['value'])>{{ $option['label'] }}</option>
@@ -568,10 +599,10 @@
 
                                 <div>
                                     <label class="mb-2 block text-sm font-medium {{ $theme['meta'] }}" for="org-event-image">Event image</label>
-                                    <input id="org-event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                    <input id="org-event-image" name="image" type="file" accept="image/*" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                 </div>
 
-                                <select name="visibility" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                <select name="visibility" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                     <option value="public" @selected(old('visibility', 'public') === 'public')>Public</option>
                                     <option value="private" @selected(old('visibility') === 'private')>Private</option>
                                     <option value="unlisted" @selected(old('visibility') === 'unlisted')>Unlisted</option>
@@ -584,42 +615,96 @@
                 @endauth
 
                 @auth
-                    @if (auth()->user()->isManagerOf($organization) && ($organization->discord_webhook_url || ($organization->facebook_page_id && $organization->facebook_page_access_token)))
+                    @if (auth()->user()->isOwnerOf($organization))
                         <div class="rounded-[2rem] border p-5 shadow-sm ring-1 lg:p-6 {{ $theme['surface_secondary'] ?? $theme['surface'] }}">
                             <div class="flex items-center justify-between gap-3">
                                 <div>
-                                    <p class="text-sm uppercase tracking-[0.25em] {{ $theme['muted'] }}">Publishing channels</p>
-                                    <h2 class="mt-1 text-xl font-bold {{ $theme['heading'] }}">Connected outbound posting</h2>
+                                    <p class="text-sm uppercase tracking-[0.25em] {{ $theme['muted'] }}">Publishing integrations</p>
+                                    <h2 class="mt-1 text-xl font-bold {{ $theme['heading'] }}">Social accounts</h2>
                                 </div>
-                                <a href="{{ route('organizations.edit', $organization) }}" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['soft_button'] }}">Manage</a>
                             </div>
 
-                            <div class="mt-4 space-y-3">
-                                @if ($organization->discord_webhook_url)
-                                    <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
-                                        <div class="flex items-center justify-between gap-3">
-                                            <h3 class="font-semibold {{ $theme['heading'] }}">Discord</h3>
+                            <div class="mt-4 space-y-4">
+                                {{-- Facebook --}}
+                                <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h3 class="font-semibold {{ $theme['heading'] }}">Facebook Page</h3>
+                                        @if ($organization->facebookAccount->first())
                                             <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['accent_badge'] }}">Connected</span>
-                                        </div>
-                                        <p class="mt-2 text-sm {{ $theme['body'] }}">
-                                            {{ $organization->auto_post_discord_events ? 'Events auto-post.' : 'Events are manual only.' }}
-                                            {{ $organization->auto_post_discord_announcements ? 'Announcements default on.' : 'Announcements require opt-in.' }}
-                                        </p>
+                                        @else
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Not connected</span>
+                                        @endif
                                     </div>
-                                @endif
+                                    @if ($fbAccount = $organization->facebookAccount->first())
+                                        <p class="mt-2 text-sm {{ $theme['body'] }}">{{ $fbAccount->facebook_page_name }}</p>
+                                        <form method="POST" action="{{ route('social.facebook.disconnect', $organization) }}" class="mt-3">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400">Disconnect</button>
+                                        </form>
+                                    @else
+                                        <p class="mt-2 text-sm {{ $theme['meta'] }}">Connect a Facebook Page to auto-post events.</p>
+                                        <a href="{{ route('social.facebook.connect', $organization) }}" class="mt-3 inline-block rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['primary_button'] }}">Connect Facebook</a>
+                                    @endif
+                                </div>
 
-                                @if ($organization->facebook_page_id && $organization->facebook_page_access_token)
-                                    <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
-                                        <div class="flex items-center justify-between gap-3">
-                                            <h3 class="font-semibold {{ $theme['heading'] }}">Facebook Page</h3>
+                                {{-- X (Twitter) --}}
+                                <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h3 class="font-semibold {{ $theme['heading'] }}">X / Twitter</h3>
+                                        @if ($organization->xAccount->first())
                                             <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['accent_badge'] }}">Connected</span>
-                                        </div>
-                                        <p class="mt-2 text-sm {{ $theme['body'] }}">
-                                            {{ $organization->auto_post_facebook_events ? 'Events auto-post.' : 'Events are manual only.' }}
-                                            {{ $organization->auto_post_facebook_announcements ? 'Announcements default on.' : 'Announcements require opt-in.' }}
-                                        </p>
+                                        @else
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Not connected</span>
+                                        @endif
                                     </div>
-                                @endif
+                                    @if ($xAccount = $organization->xAccount->first())
+                                        <p class="mt-2 text-sm {{ $theme['body'] }}">@{{ $xAccount->x_screen_name }}</p>
+                                        <form method="POST" action="{{ route('social.x.disconnect', $organization) }}" class="mt-3">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400">Disconnect</button>
+                                        </form>
+                                    @else
+                                        <p class="mt-2 text-sm {{ $theme['meta'] }}">Connect an X account to post event announcements.</p>
+                                        <a href="{{ route('social.x.connect', $organization) }}" class="mt-3 inline-block rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['primary_button'] }}">Connect X</a>
+                                    @endif
+                                </div>
+
+                                {{-- Discord --}}
+                                <div class="rounded-2xl border p-4 {{ $theme['panel'] }}">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h3 class="font-semibold {{ $theme['heading'] }}">Discord</h3>
+                                        @if ($organization->discordAccount->first())
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['accent_badge'] }}">Connected</span>
+                                        @else
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Not connected</span>
+                                        @endif
+                                    </div>
+                                    @if ($discordAccount = $organization->discordAccount->first())
+                                        <p class="mt-2 text-sm {{ $theme['body'] }}">
+                                            @if ($discordAccount->channel_name)
+                                                #{{ $discordAccount->channel_name }}
+                                                @if ($discordAccount->guild_name)
+                                                    ({{ $discordAccount->guild_name }})
+                                                @endif
+                                            @else
+                                                Webhook configured
+                                            @endif
+                                        </p>
+                                        <form method="POST" action="{{ route('social.discord.disconnect', $organization) }}" class="mt-3">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400">Disconnect</button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('social.discord.connect', $organization) }}" class="mt-3 space-y-3">
+                                            @csrf
+                                            <input type="url" name="webhook_url" placeholder="Discord webhook URL" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                            <button type="submit" class="rounded-full border px-4 py-2 text-sm font-semibold {{ $theme['primary_button'] }}">Connect Discord Webhook</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -636,13 +721,13 @@
                                 @csrf
                                 <input type="hidden" name="delivery" value="email">
                                 <h3 class="text-lg font-semibold {{ $theme['heading'] }}">Invite people to the group</h3>
-                                <input name="name" placeholder="Name (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                <input name="email" type="email" placeholder="Email address" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" required>
-                                <select name="role" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                <input name="name" placeholder="Name (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                <input name="email" type="email" placeholder="Email address" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" required>
+                                <select name="role" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                                     <option value="follower">Invite as follower</option>
                                     <option value="manager">Invite as manager</option>
                                 </select>
-                                <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}"></textarea>
+                                <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}"></textarea>
                                 <button class="w-full rounded-full px-5 py-2.5 font-semibold {{ $theme['primary_button'] }}">Send invite</button>
                             </form>
 
@@ -652,10 +737,10 @@
                                 <input type="hidden" name="role" value="follower">
                                 <h3 class="text-lg font-semibold {{ $theme['heading'] }}">Create share invite code</h3>
                                 <p class="text-sm {{ $theme['meta'] }}">Share links join people as followers. Use email invites or promotion for managers.</p>
-                                <input name="name" placeholder="Label (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                <input name="expires_at" type="datetime-local" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                <input name="max_uses" type="number" min="1" step="1" placeholder="Max uses (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
-                                <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}"></textarea>
+                                <input name="name" placeholder="Label (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                <input name="expires_at" type="datetime-local" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                <input name="max_uses" type="number" min="1" step="1" placeholder="Max uses (optional)" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                <textarea name="message" rows="3" placeholder="Optional invite note" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}"></textarea>
                                 <button class="w-full rounded-full px-5 py-2.5 font-semibold {{ $theme['secondary_button'] }}">Create share code</button>
                             </form>
 
@@ -672,11 +757,22 @@
                                             <div class="mt-1 text-xs uppercase tracking-[0.2em] {{ $theme['link'] }}">Code {{ $invitation->share_code }}</div>
                                             <div class="mt-2 text-sm {{ $theme['meta'] }}">{{ $invitation->expires_at ? 'Expires '.$invitation->expires_at->diffForHumans() : 'No expiry' }}</div>
                                             <div class="mt-1 text-sm {{ $theme['meta'] }}">{{ $invitation->use_count }} uses{{ $invitation->max_uses ? ' of '.$invitation->max_uses : '' }}</div>
-                                            <input readonly value="{{ $shareAcceptUrl }}" class="mt-3 w-full rounded-2xl border px-4 py-2.5 text-sm {{ $theme['input'] }}">
-                                            <form method="POST" action="{{ $shareRevokeUrl }}" class="mt-3">
-                                                @csrf
-                                                <button class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['danger_button'] }}">Revoke code</button>
-                                            </form>
+                                            <input readonly value="{{ $shareAcceptUrl }}" class="mt-3 w-full rounded-2xl border px-4 py-2.5 text-sm {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
+                                            <div class="mt-3 flex flex-wrap gap-3">
+                                                <button
+                                                    type="button"
+                                                    data-copy-button
+                                                    data-copy-text="{{ $shareAcceptUrl }}"
+                                                    data-copy-success="Link copied"
+                                                    class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['soft_button'] }}"
+                                                >
+                                                    Copy link
+                                                </button>
+                                                <form method="POST" action="{{ $shareRevokeUrl }}">
+                                                    @csrf
+                                                    <button class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['danger_button'] }}">Revoke code</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     @empty
                                         <p class="text-sm {{ $theme['meta'] }}">No active share invites.</p>
@@ -700,7 +796,7 @@
                                                 <form x-show="cancelling" x-cloak method="POST" action="{{ route('organizations.invitations.revoke', [$organization, $invitation]) }}" class="mt-4 space-y-3">
                                                     @csrf
                                                     <label class="block text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['muted'] }}">Reason shown if they use the invite</label>
-                                                    <textarea name="revoked_reason" rows="3" maxlength="500" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}" placeholder="Example: This invite was sent in error, so it is no longer valid." required></textarea>
+                                                    <textarea name="revoked_reason" rows="3" maxlength="500" class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}" placeholder="Example: This invite was sent in error, so it is no longer valid." required></textarea>
                                                     <div class="flex gap-3">
                                                         <button class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['danger_button'] }}">Confirm cancelation</button>
                                                         <button type="button" @click="cancelling = false" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $theme['soft_button'] }}">Keep invite</button>
@@ -736,7 +832,7 @@
                                         @forelse ($followerMembers as $member)
                                             <form method="POST" action="{{ route('organizations.members.promote', $organization) }}" class="flex items-center justify-between gap-4 rounded-2xl border p-4 {{ $theme['panel'] }}">
                                                 @csrf
-                                                <input type="hidden" name="user_id" value="{{ $member->id }}">
+                                                <input type="hidden" name="user_ids[]" value="{{ $member->id }}">
                                                 <div>
                                                     <div class="font-semibold {{ $theme['heading'] }}">{{ $member->name }}</div>
                                                     <div class="mt-1 text-sm {{ $theme['meta'] }}">{{ $member->email }}</div>
@@ -789,7 +885,7 @@
                         <button type="button" @click="manageMembersModal = false; selectedUsers = []" class="{{ $theme['muted'] }} hover:{{ $theme['heading'] }} text-xl">×</button>
                     </div>
 
-                    <input type="text" x-model="searchQuery" placeholder="Search members..." class="w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }} mb-4">
+                    <input type="text" x-model="searchQuery" placeholder="Search members..." class="mb-4 w-full rounded-2xl border px-4 py-3 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
 
                     <div x-show="selectedUsers.length > 0" class="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3">
                         <span class="text-sm text-amber-200" x-text="selectedUsers.length + ' selected'"></span>
@@ -919,11 +1015,11 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium {{ $theme['body'] }} mb-2">Subject</label>
-                                <input type="text" name="subject" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}">
+                                <input type="text" name="subject" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium {{ $theme['body'] }} mb-2">Message</label>
-                                <textarea name="body" rows="4" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }}"></textarea>
+                                <textarea name="body" rows="4" required class="w-full rounded-2xl border px-4 py-2.5 {{ $theme['input'] }} {{ $controlThemeClass }} {{ $controlReadableClass }}"></textarea>
                             </div>
                             <button type="submit" class="w-full rounded-full px-5 py-2.5 font-semibold {{ $theme['secondary_button'] }}">Send message</button>
                         </div>

@@ -85,6 +85,9 @@ class OrganizationController extends Controller
                 ->with(['mailingList', 'discussionPosts.user'])
                 ->orderBy('starts_at'),
             'mailingLists',
+            'facebookAccount',
+            'xAccount',
+            'discordAccount',
         ]);
 
         $user = request()->user();
