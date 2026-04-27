@@ -36,8 +36,15 @@ class OrganizationMemberController extends Controller
             $request->user()->organizations()->attach($organization->id, ['role' => 'follower']);
             $request->user()->organizations()->updateExistingPivot($organization->id, [
                 'email_opt_out_token' => Str::random(48),
+                'email_opt_out_at' => null,
+            ]);
+        } else {
+            $request->user()->organizations()->updateExistingPivot($organization->id, [
+                'email_opt_out_at' => null,
             ]);
         }
+
+        $organization->subscribeMemberToDefaultMailingList($request->user());
 
         return redirect()
             ->route('organizations.show', $organization)
@@ -61,12 +68,7 @@ class OrganizationMemberController extends Controller
         }
 
         $request->user()->organizations()->detach($organization->id);
-
-        $mailingListIds = $organization->mailingLists()->pluck('mailing_lists.id');
-
-        if ($mailingListIds->isNotEmpty()) {
-            $request->user()->mailingLists()->detach($mailingListIds);
-        }
+        $request->user()->mailingLists()->detach($organization->mailingLists()->pluck('mailing_lists.id'));
 
         return redirect()
             ->route('organizations.show', $organization)
@@ -124,6 +126,7 @@ class OrganizationMemberController extends Controller
             }
 
             $organization->members()->detach($userId);
+            $organization->unsubscribeMemberFromDefaultMailingList($member);
         }
 
         $action = $request->boolean('blacklist') ? 'removed and banned' : 'removed';
@@ -148,6 +151,7 @@ class OrganizationMemberController extends Controller
             }
 
             $organization->members()->updateExistingPivot($userId, ['role' => 'follower']);
+            $organization->subscribeMemberToDefaultMailingList($member);
         }
 
         return back()->with('status', 'Managers demoted to followers.');
@@ -210,6 +214,7 @@ class OrganizationMemberController extends Controller
             ]);
 
             $organization->members()->detach($userId);
+            $organization->unsubscribeMemberFromDefaultMailingList($member);
         }
 
         return back()->with('status', 'Members banned.');

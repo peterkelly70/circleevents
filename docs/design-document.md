@@ -35,7 +35,8 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - Subscriber flow for joining mailing lists
 - Follower flow for joining organizations directly
 - RSVP flow for marking interest, going, or waitlist
-- Mailing-list subscribers receive email notices when an organization publishes a public or unlisted event
+- Each organization has a default mailing list for organization-wide announcements and public/unlisted event notices
+- Joining or following an organization subscribes the user to that default mailing list
 - Each newly published event gets an automatic linked update mailing list that users can subscribe to from the event page
 - Organizers can create repeating daily, weekly, or monthly event series from the dashboard
 - Event editors can optionally re-announce updates by email and connected outbound channels, and managers can manually re-announce an event from the event page
@@ -79,7 +80,7 @@ Build a Laravel application that replaces the practical parts of Facebook Events
 - `event_rsvps`
   - event, user, status, notes
 - `mailing_lists`
-  - organization, name, slug, description, audience
+  - organization, default flag, name, slug, description, audience
 - `mailing_list_user`
   - subscriber state and subscribed timestamp
 

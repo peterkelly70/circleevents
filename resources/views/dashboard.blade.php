@@ -45,19 +45,13 @@ $themeProseClass = $theme['mode'] === 'light' ? 'prose' : 'prose prose-invert';
                     </div>
                 @endif
 
-                @if (auth()->user()->is_admin || session()->has('impersonating_user_id'))
-                    @if (session()->has('impersonating_user_id'))
-                        <div class="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4">
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-amber-200">You are impersonating another user.</span>
-                                <form method="POST" action="{{ route('admin.impersonate.stop') }}">
-                                    @csrf
-                                    <button class="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-stone-950">Stop Impersonating</button>
-                                </form>
-                            </div>
-                        </div>
-                    @endif
+                @if (session()->has('impersonator_user_id'))
+                    <div class="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4">
+                        <span class="text-amber-200">You are viewing this account as another user. Log out to return to your admin account.</span>
+                    </div>
+                @endif
 
+                @if (auth()->user()->is_admin)
                     <section class="rounded-[2rem] border border-amber-300/20 p-6 shadow-sm ring-1 ring-amber-300/10 {{ $theme['surface'] }}">
                         <div class="flex items-start justify-between gap-4">
                             <div>

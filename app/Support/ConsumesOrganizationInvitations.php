@@ -96,6 +96,8 @@ class ConsumesOrganizationInvitations
                 ]);
         }
 
+        $invitation->organization->subscribeMemberToDefaultMailingList($user);
+
         if ($invitation->isShareLink() && $newMembership) {
             $invitation->increment('use_count');
         }

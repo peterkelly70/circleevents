@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\OrganizationAnnouncementMail;
 use App\Models\Organization;
 use App\Models\OrganizationMessage;
+use App\Models\User;
 use App\Support\DiscordOrganizationMessagePublisher;
 use App\Support\FacebookOrganizationMessagePublisher;
 use App\Support\ImageUploads;
@@ -49,33 +50,49 @@ class OrganizationMessageController extends Controller
         ]);
 
         $message->loadMissing('organization');
-        $organization->loadMissing('members');
+        $defaultMailingList = $organization->ensureDefaultMailingList();
+        $defaultMailingList->load('subscribers');
+        $recipients = $defaultMailingList->subscribers
+            ->map(function (User $subscriber) use ($organization) {
+                $membership = DB::table('organization_user')
+                    ->where('organization_id', $organization->id)
+                    ->where('user_id', $subscriber->id)
+                    ->first();
 
-        foreach ($organization->members->unique('email') as $member) {
-            $membership = DB::table('organization_user')
-                ->where('organization_id', $organization->id)
-                ->where('user_id', $member->id)
-                ->first();
+                if (! $membership || $membership->email_opt_out_at) {
+                    return null;
+                }
 
-            if (! $membership || $membership->email_opt_out_at) {
+                if (! $membership->email_opt_out_token) {
+                    $token = Str::random(48);
+
+                    DB::table('organization_user')
+                        ->where('organization_id', $organization->id)
+                        ->where('user_id', $subscriber->id)
+                        ->update([
+                            'email_opt_out_token' => $token,
+                            'updated_at' => now(),
+                        ]);
+
+                    $membership->email_opt_out_token = $token;
+                }
+
+                return [
+                    'key' => Str::lower($subscriber->email),
+                    'user' => $subscriber,
+                    'opt_out_token' => $membership->email_opt_out_token,
+                ];
+            })
+            ->filter()
+            ->unique('key')
+            ->values();
+
+        foreach ($recipients as $recipient) {
+            if (! $recipient['opt_out_token']) {
                 continue;
             }
 
-            if (! $membership->email_opt_out_token) {
-                $token = Str::random(48);
-
-                DB::table('organization_user')
-                    ->where('organization_id', $organization->id)
-                    ->where('user_id', $member->id)
-                    ->update([
-                        'email_opt_out_token' => $token,
-                        'updated_at' => now(),
-                    ]);
-
-                $membership->email_opt_out_token = $token;
-            }
-
-            Mail::to($member->email)->send(new OrganizationAnnouncementMail($message, $member, $membership->email_opt_out_token));
+            Mail::to($recipient['user']->email)->send(new OrganizationAnnouncementMail($message, $recipient['user'], $recipient['opt_out_token']));
         }
 
         $discordPosted = false;
@@ -92,10 +109,10 @@ class OrganizationMessageController extends Controller
         return redirect()
             ->route('organizations.show', $organization)
             ->with('status', match (true) {
-                $discordPosted && $facebookPosted => 'Message saved, emailed to members, and posted to Discord and Facebook.',
-                $discordPosted => 'Message saved, emailed to members, and posted to Discord.',
-                $facebookPosted => 'Message saved, emailed to members, and posted to Facebook.',
-                default => 'Message saved and emailed to organization members.',
+                $discordPosted && $facebookPosted => 'Message saved, emailed to the default mailing list, and posted to Discord and Facebook.',
+                $discordPosted => 'Message saved, emailed to the default mailing list, and posted to Discord.',
+                $facebookPosted => 'Message saved, emailed to the default mailing list, and posted to Facebook.',
+                default => 'Message saved and emailed to the default mailing list.',
             });
     }
 }

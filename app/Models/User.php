@@ -170,10 +170,6 @@ class User extends Authenticatable
 
     public function resolvedUser(): ?User
     {
-        if ($this->is_admin && session()->has('impersonating_user_id')) {
-            return User::find(session()->get('impersonating_user_id'));
-        }
-
         return $this;
     }
 

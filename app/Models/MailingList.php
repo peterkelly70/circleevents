@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'organization_id',
+    'is_default',
     'name',
     'slug',
     'description',

@@ -42,6 +42,11 @@ class EventPublicationMailTest extends TestCase
             'audience' => 'all-members',
         ]);
 
+        $organization->defaultMailingList()->firstOrFail()->subscribers()->attach($subscriber->id, [
+            'status' => 'subscribed',
+            'subscribed_at' => now(),
+        ]);
+
         $secondList = MailingList::create([
             'organization_id' => $organization->id,
             'name' => 'Volunteers',
@@ -158,7 +163,7 @@ class EventPublicationMailTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame(3, Event::count());
-        $this->assertSame(3, MailingList::count());
+        $this->assertSame(4, MailingList::count());
         $this->assertNotNull(Event::query()->first()->recurrence_group);
     }
 

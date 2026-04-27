@@ -1,6 +1,6 @@
 <div style="font-family: Arial, sans-serif; color: #1c1917;">
     <p>Hello {{ $recipient->name }},</p>
-    <p>{{ $messageRecord->organization->name }} sent a message to its members.</p>
+    <p>{{ $messageRecord->organization->name }} sent a message to its updates list.</p>
     <h2>{{ $messageRecord->subject }}</h2>
     <p style="white-space: pre-line;">{{ $messageRecord->body }}</p>
     @if ($messageRecord->image_path)

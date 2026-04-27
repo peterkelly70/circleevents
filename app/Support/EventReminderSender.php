@@ -60,7 +60,7 @@ class EventReminderSender
     protected function sendFollowerRemindersForSlot(string $slot, array $config): int
     {
         $events = Event::query()
-            ->with(['organization.members', 'organization.mailingLists.subscribers', 'mailingList.subscribers', 'rsvps.user'])
+            ->with(['organization.defaultMailingList.subscribers', 'mailingList.subscribers', 'rsvps.user'])
             ->where('is_published', true)
             ->where($config['event_toggle'], true)
             ->whereNull($config['event_sent_at'])
@@ -145,21 +145,15 @@ class EventReminderSender
             ->pluck('user_id')
             ->filter();
 
-        $memberRecipients = $event->organization->members
-            ->filter(fn (User $member) => $member->pivot->role === 'follower')
-            ->filter(fn (User $member) => blank($member->pivot->email_opt_out_at))
-            ->map(fn (User $member) => [
-                'key' => Str::lower($member->email),
-                'user_id' => $member->id,
-                'user' => $member,
-            ]);
-
         $mailingListRecipients = collect();
 
         if ($event->visibility !== 'private') {
-            $mailingListRecipients = $event->organization->mailingLists
+            $mailingListRecipients = collect([
+                $event->organization->defaultMailingList,
+                $event->mailingList,
+            ])
+                ->filter()
                 ->flatMap->subscribers
-                ->merge($event->mailingList?->subscribers ?? collect())
                 ->filter(fn (User $subscriber) => $subscriber->pivot->status === 'subscribed')
                 ->map(fn (User $subscriber) => [
                     'key' => Str::lower($subscriber->email),
@@ -168,8 +162,7 @@ class EventReminderSender
                 ]);
         }
 
-        return $memberRecipients
-            ->merge($mailingListRecipients)
+        return $mailingListRecipients
             ->reject(fn (array $recipient) => ($recipient['user_id'] && $goingAttendeeIds->contains($recipient['user_id']))
                 || $goingAttendeeEmails->contains($recipient['key']))
             ->unique('key')

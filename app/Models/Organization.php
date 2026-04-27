@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -78,6 +79,11 @@ class Organization extends Model
     public function mailingLists(): HasMany
     {
         return $this->hasMany(MailingList::class);
+    }
+
+    public function defaultMailingList(): HasOne
+    {
+        return $this->hasOne(MailingList::class)->where('is_default', true);
     }
 
     public function posts(): HasMany
@@ -178,5 +184,58 @@ class Organization extends Model
     public function theme(): array
     {
         return OrganizationThemes::get($this->theme_key);
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Organization $organization): void {
+            $organization->ensureDefaultMailingList();
+        });
+    }
+
+    public function ensureDefaultMailingList(): MailingList
+    {
+        $list = $this->mailingLists()->firstOrCreate(
+            ['is_default' => true],
+            [
+                'name' => $this->name.' updates',
+                'slug' => Str::slug($this->name.' updates').'-'.Str::lower(Str::random(6)),
+                'description' => 'Organization-wide updates and announcements.',
+                'audience' => 'all-members',
+            ],
+        );
+
+        if (! $list->wasRecentlyCreated) {
+            $list->update([
+                'name' => $this->name.' updates',
+                'description' => 'Organization-wide updates and announcements.',
+                'audience' => 'all-members',
+            ]);
+
+            return $list->refresh();
+        }
+
+        return $list;
+    }
+
+    public function subscribeMemberToDefaultMailingList(User $user): void
+    {
+        $list = $this->ensureDefaultMailingList();
+
+        $user->mailingLists()->syncWithoutDetaching([
+            $list->id => [
+                'status' => 'subscribed',
+                'subscribed_at' => now(),
+            ],
+        ]);
+    }
+
+    public function unsubscribeMemberFromDefaultMailingList(User $user): void
+    {
+        $list = $this->defaultMailingList()->first();
+
+        if ($list) {
+            $user->mailingLists()->detach($list->id);
+        }
     }
 }

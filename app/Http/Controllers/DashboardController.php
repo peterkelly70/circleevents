@@ -67,7 +67,7 @@ class DashboardController extends Controller
             'suspendedOrganizations' => $user->is_admin
                 ? Organization::query()->with('owner')->where('approval_status', 'suspended')->latest()->get()
                 : collect(),
-            'allUsers' => ($user->is_admin || $request->session()->has('impersonating_user_id'))
+            'allUsers' => $user->is_admin
                 ? User::query()->latest()->take(50)->get()
                 : collect(),
             'availableTags' => $this->publicOrganizationTags($blockedOrganizationIds),

@@ -213,6 +213,7 @@ class OrganizationController extends Controller
         $organization->members()->updateExistingPivot($request->user()->id, [
             'email_opt_out_token' => Str::random(48),
         ]);
+        $organization->subscribeMemberToDefaultMailingList($request->user());
 
         return redirect()
             ->route('organizations.show', $organization)

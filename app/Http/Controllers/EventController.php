@@ -465,7 +465,7 @@ class EventController extends Controller
 
     protected function notifyAnnouncementRecipients(Event $event, bool $isUpdate = false): int
     {
-        $recipients = $this->announcementRecipients($event, $isUpdate);
+        $recipients = $this->announcementRecipients($event);
 
         foreach ($recipients as $recipient) {
             Mail::to($recipient->email)->send(new EventPublishedMail($event, $recipient, $isUpdate));
@@ -474,34 +474,27 @@ class EventController extends Controller
         return $recipients->count();
     }
 
-    protected function announcementRecipients(Event $event, bool $includeMembers = false): Collection
+    protected function announcementRecipients(Event $event): Collection
     {
         $event->loadMissing([
-            'organization.members',
-            'organization.mailingLists.subscribers',
+            'organization.defaultMailingList.subscribers',
             'mailingList.subscribers',
         ]);
-
-        $memberRecipients = collect();
-
-        if ($includeMembers) {
-            $memberRecipients = $event->organization->members
-                ->filter(fn (User $member) => blank($member->pivot->email_opt_out_at))
-                ->map(fn (User $member) => ['key' => Str::lower($member->email), 'user' => $member]);
-        }
 
         $mailingListRecipients = collect();
 
         if ($event->visibility !== 'private') {
-            $mailingListRecipients = $event->organization->mailingLists
+            $mailingListRecipients = collect([
+                $event->organization->defaultMailingList,
+                $event->mailingList,
+            ])
+                ->filter()
                 ->flatMap->subscribers
-                ->merge($event->mailingList?->subscribers ?? collect())
                 ->filter(fn (User $subscriber) => $subscriber->pivot->status === 'subscribed')
                 ->map(fn (User $subscriber) => ['key' => Str::lower($subscriber->email), 'user' => $subscriber]);
         }
 
-        return $memberRecipients
-            ->merge($mailingListRecipients)
+        return $mailingListRecipients
             ->unique('key')
             ->pluck('user')
             ->values();

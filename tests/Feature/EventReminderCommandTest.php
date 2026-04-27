@@ -133,6 +133,10 @@ class EventReminderCommandTest extends TestCase
 
         $organization->members()->attach($organizer->id, ['role' => 'owner']);
         $organization->members()->attach($follower->id, ['role' => 'follower']);
+        $organization->defaultMailingList()->firstOrFail()->subscribers()->attach($follower->id, [
+            'status' => 'subscribed',
+            'subscribed_at' => now(),
+        ]);
 
         $event = Event::create([
             'organization_id' => $organization->id,
@@ -232,6 +236,10 @@ class EventReminderCommandTest extends TestCase
 
         $organization->members()->attach($organizer->id, ['role' => 'owner']);
         $organization->members()->attach($attendeeFollower->id, ['role' => 'follower']);
+        $organization->defaultMailingList()->firstOrFail()->subscribers()->attach($attendeeFollower->id, [
+            'status' => 'subscribed',
+            'subscribed_at' => now(),
+        ]);
 
         $event = Event::create([
             'organization_id' => $organization->id,

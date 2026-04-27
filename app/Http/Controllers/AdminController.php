@@ -217,6 +217,8 @@ class AdminController extends Controller
             'updated_at' => now(),
         ]);
 
+        $organization->subscribeMemberToDefaultMailingList($user);
+
         return back()->with('status', 'User added to organization.');
     }
 
@@ -228,6 +230,8 @@ class AdminController extends Controller
             ->where('user_id', $user->id)
             ->where('organization_id', $organization->id)
             ->delete();
+
+        $organization->unsubscribeMemberFromDefaultMailingList($user);
 
         return back()->with('status', 'User removed from organization.');
     }
@@ -243,19 +247,21 @@ class AdminController extends Controller
         $user = User::findOrFail($validated['user_id']);
         abort_if($user->is_admin, 403);
 
-        $request->session()->put('impersonating_user_id', $user->id);
+        $request->session()->put('impersonator_user_id', $request->user()->id);
+        auth()->login($user);
+        $request->session()->regenerate();
 
         return redirect()->route('dashboard');
     }
 
     public function stopImpersonating(Request $request): RedirectResponse
     {
-        $originalUserId = $request->session()->pull('impersonating_user_id');
+        $request->session()->forget('impersonator_user_id');
 
-        if (! $originalUserId) {
-            return redirect()->route('dashboard');
-        }
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return redirect()->route('admin.index');
+        return redirect('/');
     }
 }
